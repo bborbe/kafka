@@ -9,10 +9,11 @@ import (
 	"time"
 
 	"github.com/IBM/sarama"
-	libkafka "github.com/bborbe/kafka"
 	"github.com/bborbe/run"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+
+	libkafka "github.com/bborbe/kafka"
 )
 
 var _ = Describe("OffsetTriggerMessageHandler", func() {

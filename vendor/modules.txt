@@ -22,7 +22,7 @@ github.com/bborbe/log
 # github.com/bborbe/math v1.0.0
 ## explicit; go 1.21.8
 github.com/bborbe/math
-# github.com/bborbe/parse v1.0.1 => ../parse
+# github.com/bborbe/parse v1.0.1
 ## explicit; go 1.21.8
 github.com/bborbe/parse
 # github.com/bborbe/run v1.4.0

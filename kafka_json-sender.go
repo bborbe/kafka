@@ -13,9 +13,8 @@ import (
 	"github.com/bborbe/errors"
 	"github.com/bborbe/log"
 	"github.com/bborbe/parse"
-	"github.com/golang/glog"
-
 	"github.com/bborbe/validation"
+	"github.com/golang/glog"
 )
 
 type Entries []Entry
@@ -63,7 +62,7 @@ type JsonSenderOptions struct {
 	ValidationDisabled bool
 }
 
-//counterfeiter:generate -o ../mocks/kafka-json-sender.go --fake-name KafkaJsonSender . JsonSender
+//counterfeiter:generate -o mocks/kafka-json-sender.go --fake-name KafkaJsonSender . JsonSender
 type JsonSender interface {
 	SendUpdate(ctx context.Context, topic Topic, key Key, value Value, headers ...sarama.RecordHeader) error
 	SendUpdates(ctx context.Context, topic Topic, entries Entries) error

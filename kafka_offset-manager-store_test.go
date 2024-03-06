@@ -8,9 +8,10 @@ import (
 	"context"
 
 	libboltkv "github.com/bborbe/boltkv"
-	libkafka "github.com/bborbe/kafka"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+
+	libkafka "github.com/bborbe/kafka"
 )
 
 var _ = Describe("StoreOffsetManager", func() {
