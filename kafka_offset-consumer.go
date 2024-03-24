@@ -37,7 +37,7 @@ func NewOffsetConsumerBatch(
 	topic Topic,
 	offsetManager OffsetManager,
 	messageHandlerBatch MessageHandlerBatch,
-	batchSize int,
+	batchSize BatchSize,
 	logSamplerFactory log.SamplerFactory,
 ) Consumer {
 	return &offsetConsumer{
@@ -55,7 +55,7 @@ type offsetConsumer struct {
 	topic               Topic
 	offsetManager       OffsetManager
 	messageHandlerBatch MessageHandlerBatch
-	batchSize           int
+	batchSize           BatchSize
 	logSampler          log.Sampler
 }
 
@@ -152,7 +152,7 @@ func (c *offsetConsumer) consumeMessages(ctx context.Context, consumePartition s
 	}
 
 	for {
-		if len(result) == c.batchSize {
+		if len(result) == c.batchSize.Int() {
 			glog.V(4).Infof("reached batch size => return %d messages", len(result))
 			return result, nil
 		}

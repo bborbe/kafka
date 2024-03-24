@@ -38,7 +38,7 @@ func NewOffsetConsumerHighwaterMarksBatch(
 	topic Topic,
 	offsetManager OffsetManager,
 	messageHandlerBatch MessageHandlerBatch,
-	batchSize int,
+	batchSize BatchSize,
 	trigger run.Fire,
 	logSamplerFactory log.SamplerFactory,
 ) Consumer {
