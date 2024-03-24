@@ -22,13 +22,13 @@ github.com/bborbe/log
 # github.com/bborbe/math v1.0.0
 ## explicit; go 1.21.8
 github.com/bborbe/math
-# github.com/bborbe/parse v1.0.1
+# github.com/bborbe/parse v1.1.0
 ## explicit; go 1.21.8
 github.com/bborbe/parse
-# github.com/bborbe/run v1.4.0
+# github.com/bborbe/run v1.5.0
 ## explicit; go 1.21
 github.com/bborbe/run
-# github.com/bborbe/time v1.0.0
+# github.com/bborbe/time v1.1.1
 ## explicit; go 1.21.8
 github.com/bborbe/time
 # github.com/bborbe/validation v1.0.0
@@ -86,13 +86,13 @@ github.com/google/go-cmp/cmp/internal/diff
 github.com/google/go-cmp/cmp/internal/flags
 github.com/google/go-cmp/cmp/internal/function
 github.com/google/go-cmp/cmp/internal/value
-# github.com/google/pprof v0.0.0-20240207164012-fb44976bdcd5
+# github.com/google/pprof v0.0.0-20240320155624-b11c3daa6f07
 ## explicit; go 1.19
 github.com/google/pprof/profile
 # github.com/gorilla/mux v1.8.1
 ## explicit; go 1.20
 github.com/gorilla/mux
-# github.com/hashicorp/errwrap v1.0.0
+# github.com/hashicorp/errwrap v1.1.0
 ## explicit
 github.com/hashicorp/errwrap
 # github.com/hashicorp/go-multierror v1.1.1
@@ -174,7 +174,7 @@ github.com/maxbrunsfeld/counterfeiter/v6
 github.com/maxbrunsfeld/counterfeiter/v6/arguments
 github.com/maxbrunsfeld/counterfeiter/v6/command
 github.com/maxbrunsfeld/counterfeiter/v6/generator
-# github.com/onsi/ginkgo/v2 v2.16.0
+# github.com/onsi/ginkgo/v2 v2.17.0
 ## explicit; go 1.20
 github.com/onsi/ginkgo/v2
 github.com/onsi/ginkgo/v2/config
@@ -196,7 +196,7 @@ github.com/onsi/ginkgo/v2/internal/parallel_support
 github.com/onsi/ginkgo/v2/internal/testingtproxy
 github.com/onsi/ginkgo/v2/reporters
 github.com/onsi/ginkgo/v2/types
-# github.com/onsi/gomega v1.31.1
+# github.com/onsi/gomega v1.32.0
 ## explicit; go 1.20
 github.com/onsi/gomega
 github.com/onsi/gomega/format
@@ -225,12 +225,12 @@ github.com/prometheus/client_golang/prometheus/internal
 # github.com/prometheus/client_model v0.6.0
 ## explicit; go 1.19
 github.com/prometheus/client_model/go
-# github.com/prometheus/common v0.49.0
+# github.com/prometheus/common v0.51.1
 ## explicit; go 1.21
 github.com/prometheus/common/expfmt
 github.com/prometheus/common/internal/bitbucket.org/ww/goautoneg
 github.com/prometheus/common/model
-# github.com/prometheus/procfs v0.12.0
+# github.com/prometheus/procfs v0.13.0
 ## explicit; go 1.19
 github.com/prometheus/procfs
 github.com/prometheus/procfs/internal/fs

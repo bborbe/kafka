@@ -9,18 +9,18 @@ require (
 	github.com/bborbe/http v1.0.0
 	github.com/bborbe/kv v1.4.2
 	github.com/bborbe/log v1.0.0
-	github.com/bborbe/parse v1.0.1
-	github.com/bborbe/run v1.4.0
+	github.com/bborbe/parse v1.1.0
+	github.com/bborbe/run v1.5.0
 	github.com/bborbe/validation v1.0.0
 	github.com/golang/glog v1.2.0
-	github.com/onsi/ginkgo/v2 v2.16.0
-	github.com/onsi/gomega v1.31.1
+	github.com/onsi/ginkgo/v2 v2.17.0
+	github.com/onsi/gomega v1.32.0
 )
 
 require (
 	github.com/bborbe/collection v1.2.0 // indirect
 	github.com/bborbe/math v1.0.0 // indirect
-	github.com/bborbe/time v1.0.0 // indirect
+	github.com/bborbe/time v1.1.1 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/bmatcuk/doublestar/v4 v4.6.1 // indirect
 	github.com/certifi/gocertifi v0.0.0-20210507211836-431795d63e8d // indirect
@@ -35,9 +35,9 @@ require (
 	github.com/golang/snappy v0.0.4 // indirect
 	github.com/google/addlicense v1.1.1 // indirect
 	github.com/google/go-cmp v0.6.0 // indirect
-	github.com/google/pprof v0.0.0-20240207164012-fb44976bdcd5 // indirect
+	github.com/google/pprof v0.0.0-20240320155624-b11c3daa6f07 // indirect
 	github.com/gorilla/mux v1.8.1 // indirect
-	github.com/hashicorp/errwrap v1.0.0 // indirect
+	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
 	github.com/hashicorp/go-uuid v1.0.3 // indirect
 	github.com/incu6us/goimports-reviser v0.1.6 // indirect
@@ -53,8 +53,8 @@ require (
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/prometheus/client_golang v1.19.0 // indirect
 	github.com/prometheus/client_model v0.6.0 // indirect
-	github.com/prometheus/common v0.49.0 // indirect
-	github.com/prometheus/procfs v0.12.0 // indirect
+	github.com/prometheus/common v0.51.1 // indirect
+	github.com/prometheus/procfs v0.13.0 // indirect
 	github.com/rcrowley/go-metrics v0.0.0-20201227073835-cf1acfcdf475 // indirect
 	go.etcd.io/bbolt v1.3.8 // indirect
 	golang.org/x/crypto v0.21.0 // indirect

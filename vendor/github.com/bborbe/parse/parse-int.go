@@ -6,6 +6,7 @@ package parse
 
 import (
 	"context"
+	"fmt"
 	"strconv"
 
 	"github.com/bborbe/errors"
@@ -26,6 +27,8 @@ func ParseInt(ctx context.Context, value interface{}) (int, error) {
 		return int(math.Round(v)), nil
 	case string:
 		return strconv.Atoi(v)
+	case fmt.Stringer:
+		return strconv.Atoi(v.String())
 	default:
 		return 0, errors.Errorf(ctx, "invalid type")
 	}
