@@ -12,8 +12,8 @@ import (
 	libkv "github.com/bborbe/kv"
 )
 
-// NewMetricsMessageHandlerTx is a MessageHandler adapter that create Prometheus metrics for started, completed and failed.
-func NewMetricsMessageHandlerTx(
+// NewMessageHandlerTxMetrics is a MessageHandler adapter that create Prometheus metrics for started, completed and failed.
+func NewMessageHandlerTxMetrics(
 	messageHandler MessageHandlerTx,
 	metrics MetricsMessageHandler,
 ) MessageHandlerTx {

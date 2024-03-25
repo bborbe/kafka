@@ -11,8 +11,8 @@ import (
 	"github.com/IBM/sarama"
 )
 
-// NewMetricsMessageHandler is a MessageHandler adapter that create Prometheus metrics for started, completed and failed.
-func NewMetricsMessageHandler(
+// NewMessageHandlerMetrics is a MessageHandler adapter that create Prometheus metrics for started, completed and failed.
+func NewMessageHandlerMetrics(
 	messageHandler MessageHandler,
 	metrics MetricsMessageHandler,
 ) MessageHandler {

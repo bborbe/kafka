@@ -21,7 +21,7 @@ var _ = Describe("MetricsMessageHandler", func() {
 	BeforeEach(func() {
 		ctx := context.Background()
 		subMessageHandler = &mocks.KafkaMessageHandler{}
-		messageHandler := kafka.NewMetricsMessageHandler(
+		messageHandler := kafka.NewMessageHandlerMetrics(
 			subMessageHandler,
 			kafka.NewMetrics(),
 		)
