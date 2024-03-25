@@ -27,6 +27,7 @@ func NewSimpleConsumer(
 		initalOffset:   initalOffset,
 		messageHandler: messageHandler,
 		logSampler:     logSamplerFactory.Sampler(),
+		metrics:        NewConsumerMetrics(),
 	}
 }
 
@@ -36,6 +37,7 @@ type simpleConsumer struct {
 	initalOffset   Offset
 	messageHandler MessageHandler
 	logSampler     log.Sampler
+	metrics        ConsumerMetrics
 }
 
 func (c *simpleConsumer) Consume(ctx context.Context) error {
@@ -70,6 +72,8 @@ func (c *simpleConsumer) Consume(ctx context.Context) error {
 					return errors.Wrapf(ctx, err, "parition consumer returns error")
 				case msg := <-consumePartition.Messages():
 					glog.V(4).Infof("consume message in topic %s with offset %d partition %d started", msg.Topic, msg.Offset, msg.Partition)
+					c.metrics.CurrentOffset(c.topic, Partition(partition), Offset(msg.Offset))
+					c.metrics.HighWaterMarkOffset(c.topic, Partition(partition), Offset(consumePartition.HighWaterMarkOffset()))
 					if err := c.messageHandler.ConsumeMessage(ctx, msg); err != nil {
 						return errors.Wrapf(ctx, err, "consume message failed")
 					}

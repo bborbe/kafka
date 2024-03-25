@@ -15,6 +15,7 @@ require (
 	github.com/golang/glog v1.2.0
 	github.com/onsi/ginkgo/v2 v2.17.0
 	github.com/onsi/gomega v1.32.0
+	github.com/prometheus/client_golang v1.19.0
 )
 
 require (
@@ -51,7 +52,6 @@ require (
 	github.com/maxbrunsfeld/counterfeiter/v6 v6.8.1 // indirect
 	github.com/pierrec/lz4/v4 v4.1.21 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
-	github.com/prometheus/client_golang v1.19.0 // indirect
 	github.com/prometheus/client_model v0.6.0 // indirect
 	github.com/prometheus/common v0.51.1 // indirect
 	github.com/prometheus/procfs v0.13.0 // indirect

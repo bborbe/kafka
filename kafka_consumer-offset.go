@@ -47,6 +47,7 @@ func NewOffsetConsumerBatch(
 		messageHandlerBatch: messageHandlerBatch,
 		topic:               topic,
 		logSampler:          logSamplerFactory.Sampler(),
+		metrics:             NewConsumerMetrics(),
 	}
 }
 
@@ -57,6 +58,7 @@ type offsetConsumer struct {
 	messageHandlerBatch MessageHandlerBatch
 	batchSize           BatchSize
 	logSampler          log.Sampler
+	metrics             ConsumerMetrics
 }
 
 func (c *offsetConsumer) Consume(ctx context.Context) error {
@@ -95,6 +97,8 @@ func (c *offsetConsumer) Consume(ctx context.Context) error {
 				}
 				msg := messages[len(messages)-1]
 				glog.V(4).Infof("consume %d messages in topic %s with offset %d partition %d started", len(messages), msg.Topic, msg.Offset, msg.Partition)
+				c.metrics.CurrentOffset(c.topic, Partition(partition), Offset(msg.Offset))
+				c.metrics.HighWaterMarkOffset(c.topic, Partition(partition), Offset(consumePartition.HighWaterMarkOffset()))
 				if err := c.messageHandlerBatch.ConsumeMessages(ctx, messages); err != nil {
 					return errors.Wrapf(ctx, err, "consume message failed")
 				}
