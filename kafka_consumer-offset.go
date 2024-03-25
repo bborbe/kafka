@@ -47,7 +47,7 @@ func NewOffsetConsumerBatch(
 		messageHandlerBatch: messageHandlerBatch,
 		topic:               topic,
 		logSampler:          logSamplerFactory.Sampler(),
-		metrics:             NewConsumerMetrics(),
+		metrics:             NewMetrics(),
 	}
 }
 
@@ -58,7 +58,7 @@ type offsetConsumer struct {
 	messageHandlerBatch MessageHandlerBatch
 	batchSize           BatchSize
 	logSampler          log.Sampler
-	metrics             ConsumerMetrics
+	metrics             MetricsConsumer
 }
 
 func (c *offsetConsumer) Consume(ctx context.Context) error {

@@ -16,6 +16,7 @@ github.com/bborbe/http
 # github.com/bborbe/kv v1.4.2
 ## explicit; go 1.21.7
 github.com/bborbe/kv
+github.com/bborbe/kv/mocks
 # github.com/bborbe/log v1.0.0
 ## explicit; go 1.21.8
 github.com/bborbe/log

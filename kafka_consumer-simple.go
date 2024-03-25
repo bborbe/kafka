@@ -27,7 +27,7 @@ func NewSimpleConsumer(
 		initalOffset:   initalOffset,
 		messageHandler: messageHandler,
 		logSampler:     logSamplerFactory.Sampler(),
-		metrics:        NewConsumerMetrics(),
+		metrics:        NewMetrics(),
 	}
 }
 
@@ -37,7 +37,7 @@ type simpleConsumer struct {
 	initalOffset   Offset
 	messageHandler MessageHandler
 	logSampler     log.Sampler
-	metrics        ConsumerMetrics
+	metrics        MetricsConsumer
 }
 
 func (c *simpleConsumer) Consume(ctx context.Context) error {
