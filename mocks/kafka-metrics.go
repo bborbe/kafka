@@ -16,19 +16,6 @@ type KafkaMetrics struct {
 		arg2 kafka.Partition
 		arg3 kafka.Offset
 	}
-	DurationMeasureStub        func(kafka.Topic, kafka.Partition, time.Duration)
-	durationMeasureMutex       sync.RWMutex
-	durationMeasureArgsForCall []struct {
-		arg1 kafka.Topic
-		arg2 kafka.Partition
-		arg3 time.Duration
-	}
-	FailureCounterIncStub        func(kafka.Topic, kafka.Partition)
-	failureCounterIncMutex       sync.RWMutex
-	failureCounterIncArgsForCall []struct {
-		arg1 kafka.Topic
-		arg2 kafka.Partition
-	}
 	HighWaterMarkOffsetStub        func(kafka.Topic, kafka.Partition, kafka.Offset)
 	highWaterMarkOffsetMutex       sync.RWMutex
 	highWaterMarkOffsetArgsForCall []struct {
@@ -36,15 +23,28 @@ type KafkaMetrics struct {
 		arg2 kafka.Partition
 		arg3 kafka.Offset
 	}
-	SuccessCounterIncStub        func(kafka.Topic, kafka.Partition)
-	successCounterIncMutex       sync.RWMutex
-	successCounterIncArgsForCall []struct {
+	MessageHandlerDurationMeasureStub        func(kafka.Topic, kafka.Partition, time.Duration)
+	messageHandlerDurationMeasureMutex       sync.RWMutex
+	messageHandlerDurationMeasureArgsForCall []struct {
+		arg1 kafka.Topic
+		arg2 kafka.Partition
+		arg3 time.Duration
+	}
+	MessageHandlerFailureCounterIncStub        func(kafka.Topic, kafka.Partition)
+	messageHandlerFailureCounterIncMutex       sync.RWMutex
+	messageHandlerFailureCounterIncArgsForCall []struct {
 		arg1 kafka.Topic
 		arg2 kafka.Partition
 	}
-	TotalCounterIncStub        func(kafka.Topic, kafka.Partition)
-	totalCounterIncMutex       sync.RWMutex
-	totalCounterIncArgsForCall []struct {
+	MessageHandlerSuccessCounterIncStub        func(kafka.Topic, kafka.Partition)
+	messageHandlerSuccessCounterIncMutex       sync.RWMutex
+	messageHandlerSuccessCounterIncArgsForCall []struct {
+		arg1 kafka.Topic
+		arg2 kafka.Partition
+	}
+	MessageHandlerTotalCounterIncStub        func(kafka.Topic, kafka.Partition)
+	messageHandlerTotalCounterIncMutex       sync.RWMutex
+	messageHandlerTotalCounterIncArgsForCall []struct {
 		arg1 kafka.Topic
 		arg2 kafka.Partition
 	}
@@ -86,73 +86,6 @@ func (fake *KafkaMetrics) CurrentOffsetArgsForCall(i int) (kafka.Topic, kafka.Pa
 	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
 }
 
-func (fake *KafkaMetrics) DurationMeasure(arg1 kafka.Topic, arg2 kafka.Partition, arg3 time.Duration) {
-	fake.durationMeasureMutex.Lock()
-	fake.durationMeasureArgsForCall = append(fake.durationMeasureArgsForCall, struct {
-		arg1 kafka.Topic
-		arg2 kafka.Partition
-		arg3 time.Duration
-	}{arg1, arg2, arg3})
-	stub := fake.DurationMeasureStub
-	fake.recordInvocation("DurationMeasure", []interface{}{arg1, arg2, arg3})
-	fake.durationMeasureMutex.Unlock()
-	if stub != nil {
-		fake.DurationMeasureStub(arg1, arg2, arg3)
-	}
-}
-
-func (fake *KafkaMetrics) DurationMeasureCallCount() int {
-	fake.durationMeasureMutex.RLock()
-	defer fake.durationMeasureMutex.RUnlock()
-	return len(fake.durationMeasureArgsForCall)
-}
-
-func (fake *KafkaMetrics) DurationMeasureCalls(stub func(kafka.Topic, kafka.Partition, time.Duration)) {
-	fake.durationMeasureMutex.Lock()
-	defer fake.durationMeasureMutex.Unlock()
-	fake.DurationMeasureStub = stub
-}
-
-func (fake *KafkaMetrics) DurationMeasureArgsForCall(i int) (kafka.Topic, kafka.Partition, time.Duration) {
-	fake.durationMeasureMutex.RLock()
-	defer fake.durationMeasureMutex.RUnlock()
-	argsForCall := fake.durationMeasureArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
-}
-
-func (fake *KafkaMetrics) FailureCounterInc(arg1 kafka.Topic, arg2 kafka.Partition) {
-	fake.failureCounterIncMutex.Lock()
-	fake.failureCounterIncArgsForCall = append(fake.failureCounterIncArgsForCall, struct {
-		arg1 kafka.Topic
-		arg2 kafka.Partition
-	}{arg1, arg2})
-	stub := fake.FailureCounterIncStub
-	fake.recordInvocation("FailureCounterInc", []interface{}{arg1, arg2})
-	fake.failureCounterIncMutex.Unlock()
-	if stub != nil {
-		fake.FailureCounterIncStub(arg1, arg2)
-	}
-}
-
-func (fake *KafkaMetrics) FailureCounterIncCallCount() int {
-	fake.failureCounterIncMutex.RLock()
-	defer fake.failureCounterIncMutex.RUnlock()
-	return len(fake.failureCounterIncArgsForCall)
-}
-
-func (fake *KafkaMetrics) FailureCounterIncCalls(stub func(kafka.Topic, kafka.Partition)) {
-	fake.failureCounterIncMutex.Lock()
-	defer fake.failureCounterIncMutex.Unlock()
-	fake.FailureCounterIncStub = stub
-}
-
-func (fake *KafkaMetrics) FailureCounterIncArgsForCall(i int) (kafka.Topic, kafka.Partition) {
-	fake.failureCounterIncMutex.RLock()
-	defer fake.failureCounterIncMutex.RUnlock()
-	argsForCall := fake.failureCounterIncArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2
-}
-
 func (fake *KafkaMetrics) HighWaterMarkOffset(arg1 kafka.Topic, arg2 kafka.Partition, arg3 kafka.Offset) {
 	fake.highWaterMarkOffsetMutex.Lock()
 	fake.highWaterMarkOffsetArgsForCall = append(fake.highWaterMarkOffsetArgsForCall, struct {
@@ -187,69 +120,136 @@ func (fake *KafkaMetrics) HighWaterMarkOffsetArgsForCall(i int) (kafka.Topic, ka
 	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
 }
 
-func (fake *KafkaMetrics) SuccessCounterInc(arg1 kafka.Topic, arg2 kafka.Partition) {
-	fake.successCounterIncMutex.Lock()
-	fake.successCounterIncArgsForCall = append(fake.successCounterIncArgsForCall, struct {
+func (fake *KafkaMetrics) MessageHandlerDurationMeasure(arg1 kafka.Topic, arg2 kafka.Partition, arg3 time.Duration) {
+	fake.messageHandlerDurationMeasureMutex.Lock()
+	fake.messageHandlerDurationMeasureArgsForCall = append(fake.messageHandlerDurationMeasureArgsForCall, struct {
 		arg1 kafka.Topic
 		arg2 kafka.Partition
-	}{arg1, arg2})
-	stub := fake.SuccessCounterIncStub
-	fake.recordInvocation("SuccessCounterInc", []interface{}{arg1, arg2})
-	fake.successCounterIncMutex.Unlock()
+		arg3 time.Duration
+	}{arg1, arg2, arg3})
+	stub := fake.MessageHandlerDurationMeasureStub
+	fake.recordInvocation("MessageHandlerDurationMeasure", []interface{}{arg1, arg2, arg3})
+	fake.messageHandlerDurationMeasureMutex.Unlock()
 	if stub != nil {
-		fake.SuccessCounterIncStub(arg1, arg2)
+		fake.MessageHandlerDurationMeasureStub(arg1, arg2, arg3)
 	}
 }
 
-func (fake *KafkaMetrics) SuccessCounterIncCallCount() int {
-	fake.successCounterIncMutex.RLock()
-	defer fake.successCounterIncMutex.RUnlock()
-	return len(fake.successCounterIncArgsForCall)
+func (fake *KafkaMetrics) MessageHandlerDurationMeasureCallCount() int {
+	fake.messageHandlerDurationMeasureMutex.RLock()
+	defer fake.messageHandlerDurationMeasureMutex.RUnlock()
+	return len(fake.messageHandlerDurationMeasureArgsForCall)
 }
 
-func (fake *KafkaMetrics) SuccessCounterIncCalls(stub func(kafka.Topic, kafka.Partition)) {
-	fake.successCounterIncMutex.Lock()
-	defer fake.successCounterIncMutex.Unlock()
-	fake.SuccessCounterIncStub = stub
+func (fake *KafkaMetrics) MessageHandlerDurationMeasureCalls(stub func(kafka.Topic, kafka.Partition, time.Duration)) {
+	fake.messageHandlerDurationMeasureMutex.Lock()
+	defer fake.messageHandlerDurationMeasureMutex.Unlock()
+	fake.MessageHandlerDurationMeasureStub = stub
 }
 
-func (fake *KafkaMetrics) SuccessCounterIncArgsForCall(i int) (kafka.Topic, kafka.Partition) {
-	fake.successCounterIncMutex.RLock()
-	defer fake.successCounterIncMutex.RUnlock()
-	argsForCall := fake.successCounterIncArgsForCall[i]
+func (fake *KafkaMetrics) MessageHandlerDurationMeasureArgsForCall(i int) (kafka.Topic, kafka.Partition, time.Duration) {
+	fake.messageHandlerDurationMeasureMutex.RLock()
+	defer fake.messageHandlerDurationMeasureMutex.RUnlock()
+	argsForCall := fake.messageHandlerDurationMeasureArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
+}
+
+func (fake *KafkaMetrics) MessageHandlerFailureCounterInc(arg1 kafka.Topic, arg2 kafka.Partition) {
+	fake.messageHandlerFailureCounterIncMutex.Lock()
+	fake.messageHandlerFailureCounterIncArgsForCall = append(fake.messageHandlerFailureCounterIncArgsForCall, struct {
+		arg1 kafka.Topic
+		arg2 kafka.Partition
+	}{arg1, arg2})
+	stub := fake.MessageHandlerFailureCounterIncStub
+	fake.recordInvocation("MessageHandlerFailureCounterInc", []interface{}{arg1, arg2})
+	fake.messageHandlerFailureCounterIncMutex.Unlock()
+	if stub != nil {
+		fake.MessageHandlerFailureCounterIncStub(arg1, arg2)
+	}
+}
+
+func (fake *KafkaMetrics) MessageHandlerFailureCounterIncCallCount() int {
+	fake.messageHandlerFailureCounterIncMutex.RLock()
+	defer fake.messageHandlerFailureCounterIncMutex.RUnlock()
+	return len(fake.messageHandlerFailureCounterIncArgsForCall)
+}
+
+func (fake *KafkaMetrics) MessageHandlerFailureCounterIncCalls(stub func(kafka.Topic, kafka.Partition)) {
+	fake.messageHandlerFailureCounterIncMutex.Lock()
+	defer fake.messageHandlerFailureCounterIncMutex.Unlock()
+	fake.MessageHandlerFailureCounterIncStub = stub
+}
+
+func (fake *KafkaMetrics) MessageHandlerFailureCounterIncArgsForCall(i int) (kafka.Topic, kafka.Partition) {
+	fake.messageHandlerFailureCounterIncMutex.RLock()
+	defer fake.messageHandlerFailureCounterIncMutex.RUnlock()
+	argsForCall := fake.messageHandlerFailureCounterIncArgsForCall[i]
 	return argsForCall.arg1, argsForCall.arg2
 }
 
-func (fake *KafkaMetrics) TotalCounterInc(arg1 kafka.Topic, arg2 kafka.Partition) {
-	fake.totalCounterIncMutex.Lock()
-	fake.totalCounterIncArgsForCall = append(fake.totalCounterIncArgsForCall, struct {
+func (fake *KafkaMetrics) MessageHandlerSuccessCounterInc(arg1 kafka.Topic, arg2 kafka.Partition) {
+	fake.messageHandlerSuccessCounterIncMutex.Lock()
+	fake.messageHandlerSuccessCounterIncArgsForCall = append(fake.messageHandlerSuccessCounterIncArgsForCall, struct {
 		arg1 kafka.Topic
 		arg2 kafka.Partition
 	}{arg1, arg2})
-	stub := fake.TotalCounterIncStub
-	fake.recordInvocation("TotalCounterInc", []interface{}{arg1, arg2})
-	fake.totalCounterIncMutex.Unlock()
+	stub := fake.MessageHandlerSuccessCounterIncStub
+	fake.recordInvocation("MessageHandlerSuccessCounterInc", []interface{}{arg1, arg2})
+	fake.messageHandlerSuccessCounterIncMutex.Unlock()
 	if stub != nil {
-		fake.TotalCounterIncStub(arg1, arg2)
+		fake.MessageHandlerSuccessCounterIncStub(arg1, arg2)
 	}
 }
 
-func (fake *KafkaMetrics) TotalCounterIncCallCount() int {
-	fake.totalCounterIncMutex.RLock()
-	defer fake.totalCounterIncMutex.RUnlock()
-	return len(fake.totalCounterIncArgsForCall)
+func (fake *KafkaMetrics) MessageHandlerSuccessCounterIncCallCount() int {
+	fake.messageHandlerSuccessCounterIncMutex.RLock()
+	defer fake.messageHandlerSuccessCounterIncMutex.RUnlock()
+	return len(fake.messageHandlerSuccessCounterIncArgsForCall)
 }
 
-func (fake *KafkaMetrics) TotalCounterIncCalls(stub func(kafka.Topic, kafka.Partition)) {
-	fake.totalCounterIncMutex.Lock()
-	defer fake.totalCounterIncMutex.Unlock()
-	fake.TotalCounterIncStub = stub
+func (fake *KafkaMetrics) MessageHandlerSuccessCounterIncCalls(stub func(kafka.Topic, kafka.Partition)) {
+	fake.messageHandlerSuccessCounterIncMutex.Lock()
+	defer fake.messageHandlerSuccessCounterIncMutex.Unlock()
+	fake.MessageHandlerSuccessCounterIncStub = stub
 }
 
-func (fake *KafkaMetrics) TotalCounterIncArgsForCall(i int) (kafka.Topic, kafka.Partition) {
-	fake.totalCounterIncMutex.RLock()
-	defer fake.totalCounterIncMutex.RUnlock()
-	argsForCall := fake.totalCounterIncArgsForCall[i]
+func (fake *KafkaMetrics) MessageHandlerSuccessCounterIncArgsForCall(i int) (kafka.Topic, kafka.Partition) {
+	fake.messageHandlerSuccessCounterIncMutex.RLock()
+	defer fake.messageHandlerSuccessCounterIncMutex.RUnlock()
+	argsForCall := fake.messageHandlerSuccessCounterIncArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2
+}
+
+func (fake *KafkaMetrics) MessageHandlerTotalCounterInc(arg1 kafka.Topic, arg2 kafka.Partition) {
+	fake.messageHandlerTotalCounterIncMutex.Lock()
+	fake.messageHandlerTotalCounterIncArgsForCall = append(fake.messageHandlerTotalCounterIncArgsForCall, struct {
+		arg1 kafka.Topic
+		arg2 kafka.Partition
+	}{arg1, arg2})
+	stub := fake.MessageHandlerTotalCounterIncStub
+	fake.recordInvocation("MessageHandlerTotalCounterInc", []interface{}{arg1, arg2})
+	fake.messageHandlerTotalCounterIncMutex.Unlock()
+	if stub != nil {
+		fake.MessageHandlerTotalCounterIncStub(arg1, arg2)
+	}
+}
+
+func (fake *KafkaMetrics) MessageHandlerTotalCounterIncCallCount() int {
+	fake.messageHandlerTotalCounterIncMutex.RLock()
+	defer fake.messageHandlerTotalCounterIncMutex.RUnlock()
+	return len(fake.messageHandlerTotalCounterIncArgsForCall)
+}
+
+func (fake *KafkaMetrics) MessageHandlerTotalCounterIncCalls(stub func(kafka.Topic, kafka.Partition)) {
+	fake.messageHandlerTotalCounterIncMutex.Lock()
+	defer fake.messageHandlerTotalCounterIncMutex.Unlock()
+	fake.MessageHandlerTotalCounterIncStub = stub
+}
+
+func (fake *KafkaMetrics) MessageHandlerTotalCounterIncArgsForCall(i int) (kafka.Topic, kafka.Partition) {
+	fake.messageHandlerTotalCounterIncMutex.RLock()
+	defer fake.messageHandlerTotalCounterIncMutex.RUnlock()
+	argsForCall := fake.messageHandlerTotalCounterIncArgsForCall[i]
 	return argsForCall.arg1, argsForCall.arg2
 }
 
@@ -258,16 +258,16 @@ func (fake *KafkaMetrics) Invocations() map[string][][]interface{} {
 	defer fake.invocationsMutex.RUnlock()
 	fake.currentOffsetMutex.RLock()
 	defer fake.currentOffsetMutex.RUnlock()
-	fake.durationMeasureMutex.RLock()
-	defer fake.durationMeasureMutex.RUnlock()
-	fake.failureCounterIncMutex.RLock()
-	defer fake.failureCounterIncMutex.RUnlock()
 	fake.highWaterMarkOffsetMutex.RLock()
 	defer fake.highWaterMarkOffsetMutex.RUnlock()
-	fake.successCounterIncMutex.RLock()
-	defer fake.successCounterIncMutex.RUnlock()
-	fake.totalCounterIncMutex.RLock()
-	defer fake.totalCounterIncMutex.RUnlock()
+	fake.messageHandlerDurationMeasureMutex.RLock()
+	defer fake.messageHandlerDurationMeasureMutex.RUnlock()
+	fake.messageHandlerFailureCounterIncMutex.RLock()
+	defer fake.messageHandlerFailureCounterIncMutex.RUnlock()
+	fake.messageHandlerSuccessCounterIncMutex.RLock()
+	defer fake.messageHandlerSuccessCounterIncMutex.RUnlock()
+	fake.messageHandlerTotalCounterIncMutex.RLock()
+	defer fake.messageHandlerTotalCounterIncMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

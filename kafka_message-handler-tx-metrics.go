@@ -19,13 +19,13 @@ func NewMessageHandlerTxMetrics(
 ) MessageHandlerTx {
 	return MessageHandlerTxFunc(func(ctx context.Context, tx libkv.Tx, msg *sarama.ConsumerMessage) error {
 		start := time.Now()
-		metrics.TotalCounterInc(Topic(msg.Topic), Partition(msg.Partition))
+		metrics.MessageHandlerTotalCounterInc(Topic(msg.Topic), Partition(msg.Partition))
 		if err := messageHandler.ConsumeMessage(ctx, tx, msg); err != nil {
-			metrics.FailureCounterInc(Topic(msg.Topic), Partition(msg.Partition))
+			metrics.MessageHandlerFailureCounterInc(Topic(msg.Topic), Partition(msg.Partition))
 			return err
 		}
-		metrics.SuccessCounterInc(Topic(msg.Topic), Partition(msg.Partition))
-		metrics.DurationMeasure(Topic(msg.Topic), Partition(msg.Partition), time.Since(start))
+		metrics.MessageHandlerSuccessCounterInc(Topic(msg.Topic), Partition(msg.Partition))
+		metrics.MessageHandlerDurationMeasure(Topic(msg.Topic), Partition(msg.Partition), time.Since(start))
 		return nil
 	})
 }
