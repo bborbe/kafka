@@ -11,9 +11,16 @@ import (
 )
 
 func ParseBool(ctx context.Context, value interface{}) (bool, error) {
-	v, ok := value.(bool)
-	if !ok {
-		return false, errors.Errorf(ctx, "invalid type")
+	switch v := value.(type) {
+	case bool:
+		return v, nil
+	case string:
+		switch v {
+		case "true":
+			return true, nil
+		case "false":
+			return false, nil
+		}
 	}
-	return v, nil
+	return false, errors.Errorf(ctx, "invalid type")
 }

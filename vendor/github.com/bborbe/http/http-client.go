@@ -16,7 +16,11 @@ func CreateDefaultHttpClient(ctx context.Context, logSamplerFactory log.SamplerF
 	return CreateHttpClient(ctx, logSamplerFactory, 30*time.Second)
 }
 
-func CreateHttpClient(ctx context.Context, logSamplerFactory log.SamplerFactory, timeout time.Duration) *http.Client {
+func CreateHttpClient(
+	ctx context.Context,
+	logSamplerFactory log.SamplerFactory,
+	timeout time.Duration,
+) *http.Client {
 	return &http.Client{
 		Transport: CreateDefaultTroundTripper(ctx, logSamplerFactory),
 		CheckRedirect: func(req *http.Request, via []*http.Request) error {

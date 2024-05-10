@@ -10,6 +10,7 @@ Please choose versions by [Semantic Versioning](http://semver.org/).
 
 ## v1.4.0
 
+- go mod update
 - add metrics batch message handler
 
 ## v1.3.0
