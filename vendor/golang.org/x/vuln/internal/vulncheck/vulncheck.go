@@ -16,6 +16,12 @@ import (
 	"golang.org/x/vuln/internal/semver"
 )
 
+const (
+	fetchingVulnsMessage    = "Fetching vulnerabilities from the database..."
+	checkingSrcVulnsMessage = "Checking the code against the vulnerabilities..."
+	checkingBinVulnsMessage = "Checking the binary against the vulnerabilities..."
+)
+
 // Result contains information on detected vulnerabilities.
 // For call graph analysis, it provides information on reachability
 // of vulnerable symbols through entry points of the program.

@@ -49,6 +49,10 @@ func binary(ctx context.Context, handler govulncheck.Handler, bin *Bin, cfg *gov
 	graph.AddModules(bin.Modules...)
 	mods := append(bin.Modules, graph.GetModule(internal.GoStdModulePath))
 
+	if err := handler.Progress(&govulncheck.Progress{Message: fetchingVulnsMessage}); err != nil {
+		return nil, err
+	}
+
 	mv, err := FetchVulnerabilities(ctx, client, mods)
 	if err != nil {
 		return nil, err
@@ -59,8 +63,15 @@ func binary(ctx context.Context, handler govulncheck.Handler, bin *Bin, cfg *gov
 		return nil, err
 	}
 
+	if err := handler.Progress(&govulncheck.Progress{Message: checkingBinVulnsMessage}); err != nil {
+		return nil, err
+	}
+
 	if bin.GOOS == "" || bin.GOARCH == "" {
-		fmt.Printf("warning: failed to extract build system specification GOOS: %s GOARCH: %s\n", bin.GOOS, bin.GOARCH)
+		p := &govulncheck.Progress{Message: fmt.Sprintf("warning: failed to extract build system specification GOOS: %s GOARCH: %s\n", bin.GOOS, bin.GOARCH)}
+		if err := handler.Progress(p); err != nil {
+			return nil, err
+		}
 	}
 	affVulns := affectingVulnerabilities(mv, bin.GOOS, bin.GOARCH)
 	if err := emitModuleFindings(handler, affVulns); err != nil {

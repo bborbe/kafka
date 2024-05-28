@@ -12,6 +12,7 @@ Please choose versions by [Semantic Versioning](http://semver.org/).
 
 - add context to SyncProducer send
 - add SyncProducerModify
+- go mod update
 
 ## v1.4.0
 

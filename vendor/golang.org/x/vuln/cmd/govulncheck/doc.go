@@ -9,10 +9,10 @@ only those that could affect the application.
 
 By default, govulncheck makes requests to the Go vulnerability database at
 https://vuln.go.dev. Requests to the vulnerability database contain only module
-paths, not code or other properties of your program. See
-https://vuln.go.dev/privacy.html for more. Use the -db flag to specify a
-different database, which must implement the specification at
-https://go.dev/security/vuln/database.
+paths with vulnerabilities already known to the database, not code or other
+properties of your program. See https://vuln.go.dev/privacy.html for more.
+Use the -db flag to specify a different database, which must implement the
+specification at https://go.dev/security/vuln/database.
 
 Govulncheck looks for vulnerabilities in Go programs using a specific build
 configuration. For analyzing source code, that configuration is the Go version
@@ -41,27 +41,38 @@ To control which files are processed, use the -tags flag to provide a
 comma-separated list of build tags, and the -test flag to indicate that test
 files should be included.
 
-To include more detailed stack traces, pass -show=traces, this will cause it to
+To include more detailed stack traces, pass '-show traces', this will cause it to
 print the full call stack for each entry.
 
-To run govulncheck on a compiled binary, pass it the path to the binary file
-with the -mode=binary flag:
+To include progress messages and more details on findings, pass '-show verbose'.
 
-	$ govulncheck -mode=binary $HOME/go/bin/my-go-program
+To run govulncheck on a compiled binary, pass it the path to the binary file
+with the '-mode binary' flag:
+
+	$ govulncheck -mode binary $HOME/go/bin/my-go-program
 
 Govulncheck uses the binary's symbol information to find mentions of vulnerable
 functions. Its output omits call stacks, which require source code analysis.
 
-Govulncheck also supports -mode=extract on a Go binary for extraction of minimal
+Govulncheck also supports '-mode extract' on a Go binary for extraction of minimal
 information needed to analyze the binary. This will produce a blob, typically much
 smaller than the binary, that can also be passed to govulncheck as an argument with
--mode=binary. The users should not rely on the contents or representation of the blob.
+'-mode binary'. The users should not rely on the contents or representation of the blob.
 
-Govulncheck exits successfully (exit code 0) if there are no vulnerabilities,
-and exits unsuccessfully if there are. It also exits successfully if the -json flag
-is provided, regardless of the number of detected vulnerabilities.
+# Integrations
 
 Govulncheck supports streaming JSON. For more details, please see [golang.org/x/vuln/internal/govulncheck].
+
+Govulncheck also supports Static Analysis Results Interchange Format (SARIF) output
+format, following the specification at https://www.oasis-open.org/committees/tc_home.php?wg_abbrev=sarif.
+For more details, please see [golang.org/x/vuln/internal/sarif].
+
+# Exit codes
+
+Govulncheck exits successfully (exit code 0) if there are no vulnerabilities,
+and exits unsuccessfully if there are. It also exits successfully if the
+'format -json' ('-json') or '-format sarif' is provided, regardless of the number
+of detected vulnerabilities.
 
 # Limitations
 

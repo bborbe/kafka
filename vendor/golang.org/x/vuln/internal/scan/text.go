@@ -38,13 +38,14 @@ type TextHandler struct {
 	osvs      []*osv.Entry
 	findings  []*findingSummary
 	scanLevel govulncheck.ScanLevel
+	scanMode  govulncheck.ScanMode
 
 	err error
 
-	showColor    bool
-	showTraces   bool
-	showVersion  bool
-	showAllVulns bool
+	showColor   bool
+	showTraces  bool
+	showVersion bool
+	showVerbose bool
 }
 
 const (
@@ -60,21 +61,6 @@ const (
 
 	symbolMessage = `'-scan symbol' for more fine grained vulnerability detection`
 )
-
-func (h *TextHandler) Show(show []string) {
-	for _, show := range show {
-		switch show {
-		case "traces":
-			h.showTraces = true
-		case "color":
-			h.showColor = true
-		case "version":
-			h.showVersion = true
-		case "verbose":
-			h.showAllVulns = true
-		}
-	}
-}
 
 func (h *TextHandler) Flush() error {
 	if len(h.findings) == 0 {
@@ -99,9 +85,9 @@ func (h *TextHandler) Flush() error {
 
 // Config writes version information only if --version was set.
 func (h *TextHandler) Config(config *govulncheck.Config) error {
-	if config.ScanLevel != "" {
-		h.scanLevel = config.ScanLevel
-	}
+	h.scanLevel = config.ScanLevel
+	h.scanMode = config.ScanMode
+
 	if !h.showVersion {
 		return nil
 	}
@@ -131,7 +117,9 @@ func (h *TextHandler) Config(config *govulncheck.Config) error {
 
 // Progress writes progress updates during govulncheck execution.
 func (h *TextHandler) Progress(progress *govulncheck.Progress) error {
-	h.print(progress.Message, "\n\n")
+	if h.showVerbose {
+		h.print(progress.Message, "\n\n")
+	}
 	return h.err
 }
 
@@ -181,7 +169,7 @@ func (h *TextHandler) allVulns(findings []*findingSummary) summaryCounters {
 		}
 	}
 
-	if h.scanLevel == govulncheck.ScanLevelPackage || (h.scanLevel.WantPackages() && h.showAllVulns) {
+	if h.scanLevel == govulncheck.ScanLevelPackage || (h.scanLevel.WantPackages() && h.showVerbose) {
 		h.style(sectionStyle, "=== Package Results ===\n\n")
 		if len(imported) == 0 {
 			h.print(choose(!h.scanLevel.WantSymbols(), noVulnsMessage, noOtherVulnsMessage), "\n\n")
@@ -191,7 +179,7 @@ func (h *TextHandler) allVulns(findings []*findingSummary) summaryCounters {
 		}
 	}
 
-	if h.showAllVulns || h.scanLevel == govulncheck.ScanLevelModule {
+	if h.showVerbose || h.scanLevel == govulncheck.ScanLevelModule {
 		h.style(sectionStyle, "=== Module Results ===\n\n")
 		if len(required) == 0 {
 			h.print(choose(!h.scanLevel.WantPackages(), noVulnsMessage, noOtherVulnsMessage), "\n\n")
@@ -313,10 +301,14 @@ func (h *TextHandler) traces(traces []*findingSummary) {
 	count := 1
 	for _, entry := range traces {
 		if entry.Compact == "" {
-			continue
+			continue // skip package and module level traces
 		}
 		if first {
-			h.style(keyStyle, "    Example traces found:\n")
+			if h.scanMode == govulncheck.ScanModeBinary {
+				h.style(keyStyle, "    Vulnerable symbols found:\n")
+			} else {
+				h.style(keyStyle, "    Example traces found:\n")
+			}
 		}
 		first = false
 
@@ -409,12 +401,12 @@ func (h *TextHandler) summarySuggestion() string {
 	var sugg strings.Builder
 	switch h.scanLevel {
 	case govulncheck.ScanLevelSymbol:
-		if !h.showAllVulns {
+		if !h.showVerbose {
 			sugg.WriteString("Use " + verboseMessage + ".")
 		}
 	case govulncheck.ScanLevelPackage:
 		sugg.WriteString("Use " + symbolMessage)
-		if !h.showAllVulns {
+		if !h.showVerbose {
 			sugg.WriteString(" and " + verboseMessage)
 		}
 		sugg.WriteString(".")
