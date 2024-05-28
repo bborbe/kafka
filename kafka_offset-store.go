@@ -11,6 +11,7 @@ import (
 	libkv "github.com/bborbe/kv"
 )
 
+//counterfeiter:generate -o mocks/offset-store.go --fake-name OffsetStore . OffsetStore
 type OffsetStore interface {
 	Get(ctx context.Context, topic Topic, partition Partition) (Offset, error)
 	Set(ctx context.Context, topic Topic, partition Partition, offset Offset) error
@@ -57,7 +58,7 @@ func (o *offsetStore) Get(ctx context.Context, topic Topic, partition Partition)
 		}
 		err = item.Value(func(val []byte) error {
 			if len(val) == 0 {
-				return libkv.BucketNotFoundError
+				return libkv.KeyNotFoundError
 			}
 			result = OffsetFromBytes(val)
 			return nil

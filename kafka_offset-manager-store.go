@@ -8,6 +8,7 @@ import (
 	"context"
 
 	"github.com/bborbe/errors"
+	libkv "github.com/bborbe/kv"
 )
 
 func NewStoreOffsetManager(
@@ -32,7 +33,10 @@ func (s *storeOffsetManager) InitialOffset() Offset {
 func (s *storeOffsetManager) NextOffset(ctx context.Context, topic Topic, partition Partition) (Offset, error) {
 	offset, err := s.offsetStore.Get(ctx, topic, partition)
 	if err != nil {
-		return s.initalOffset, nil
+		if errors.Is(err, libkv.KeyNotFoundError) || errors.Is(err, libkv.BucketNotFoundError) {
+			return s.initalOffset, nil
+		}
+		return 0, errors.Wrapf(ctx, err, "get offest failed")
 	}
 	return offset, nil
 }

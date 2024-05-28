@@ -6,12 +6,15 @@ package kafka_test
 
 import (
 	"context"
+	stderrors "errors"
 
 	libboltkv "github.com/bborbe/boltkv"
+	libkv "github.com/bborbe/kv"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
 	libkafka "github.com/bborbe/kafka"
+	"github.com/bborbe/kafka/mocks"
 )
 
 var _ = Describe("StoreOffsetManager", func() {
@@ -97,6 +100,54 @@ var _ = Describe("StoreOffsetManager", func() {
 			})
 			It("returns correct offset", func() {
 				Expect(offset).To(Equal(libkafka.Offset(1337)))
+			})
+		})
+		Context("BucketNotFoundError => initial number", func() {
+			BeforeEach(func() {
+				offsetStore := &mocks.OffsetStore{}
+				offsetStore.GetReturns(0, libkv.BucketNotFoundError)
+				storeOffsetManager = libkafka.NewStoreOffsetManager(
+					1337,
+					offsetStore,
+				)
+			})
+			It("returns no error", func() {
+				Expect(err).To(BeNil())
+			})
+			It("returns correct offset", func() {
+				Expect(offset).To(Equal(libkafka.Offset(1337)))
+			})
+		})
+		Context("KeyNotFoundError => initial number", func() {
+			BeforeEach(func() {
+				offsetStore := &mocks.OffsetStore{}
+				offsetStore.GetReturns(0, libkv.KeyNotFoundError)
+				storeOffsetManager = libkafka.NewStoreOffsetManager(
+					1337,
+					offsetStore,
+				)
+			})
+			It("returns no error", func() {
+				Expect(err).To(BeNil())
+			})
+			It("returns correct offset", func() {
+				Expect(offset).To(Equal(libkafka.Offset(1337)))
+			})
+		})
+		Context("any error => initial number", func() {
+			BeforeEach(func() {
+				offsetStore := &mocks.OffsetStore{}
+				offsetStore.GetReturns(0, stderrors.New("banana"))
+				storeOffsetManager = libkafka.NewStoreOffsetManager(
+					1337,
+					offsetStore,
+				)
+			})
+			It("returns error", func() {
+				Expect(err).NotTo(BeNil())
+			})
+			It("returns no offset", func() {
+				Expect(offset).To(Equal(libkafka.Offset(0)))
 			})
 		})
 	})
