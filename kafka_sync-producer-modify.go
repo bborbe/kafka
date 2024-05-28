@@ -11,7 +11,10 @@ import (
 	"github.com/bborbe/errors"
 )
 
-func NewSyncProducerModify(syncProducer SyncProducer, fn func(message *sarama.ProducerMessage) error) SyncProducer {
+func NewSyncProducerModify(
+	syncProducer SyncProducer,
+	fn func(ctx context.Context, message *sarama.ProducerMessage) error,
+) SyncProducer {
 	return &syncProducerModify{
 		syncProducer: syncProducer,
 		fn:           fn,
@@ -20,11 +23,11 @@ func NewSyncProducerModify(syncProducer SyncProducer, fn func(message *sarama.Pr
 
 type syncProducerModify struct {
 	syncProducer SyncProducer
-	fn           func(message *sarama.ProducerMessage) error
+	fn           func(ctx context.Context, message *sarama.ProducerMessage) error
 }
 
 func (s *syncProducerModify) SendMessage(ctx context.Context, msg *sarama.ProducerMessage) (partition int32, offset int64, err error) {
-	if err := s.fn(msg); err != nil {
+	if err := s.fn(ctx, msg); err != nil {
 		return 0, 0, err
 	}
 	return s.syncProducer.SendMessage(ctx, msg)
@@ -36,7 +39,7 @@ func (s *syncProducerModify) SendMessages(ctx context.Context, msgs []*sarama.Pr
 		case <-ctx.Done():
 			return ctx.Err()
 		default:
-			if err := s.fn(msg); err != nil {
+			if err := s.fn(ctx, msg); err != nil {
 				return errors.Wrapf(ctx, err, "modify message failed")
 			}
 		}
