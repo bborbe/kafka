@@ -107,7 +107,7 @@ func (j *jsonSender) SendUpdate(ctx context.Context, topic Topic, key Key, value
 		return errors.Wrapf(ctx, err, "create update message failed")
 	}
 
-	partition, offset, err := j.producer.SendMessage(msg)
+	partition, offset, err := j.producer.SendMessage(ctx, msg)
 	if err != nil {
 		return errors.Wrapf(ctx, err, "send update message failed")
 	}
@@ -128,7 +128,7 @@ func (j *jsonSender) SendUpdates(ctx context.Context, topic Topic, entries Entri
 			return errors.Wrapf(ctx, err, "create update message failed")
 		}
 	}
-	if err := j.producer.SendMessages(msgs); err != nil {
+	if err := j.producer.SendMessages(ctx, msgs); err != nil {
 		return errors.Wrapf(ctx, err, "send update message failed")
 	}
 	if j.logSamplerDelete.IsSample() {
@@ -170,7 +170,7 @@ func (j *jsonSender) SendDelete(ctx context.Context, topic Topic, key Key, heade
 		glog.Infof("send delete message to %s key %s", topic, string(key.Bytes()))
 	}
 
-	partition, offset, err := j.producer.SendMessage(j.createDeleteMessage(topic, key, headers))
+	partition, offset, err := j.producer.SendMessage(ctx, j.createDeleteMessage(topic, key, headers))
 	if err != nil {
 		return errors.Wrapf(ctx, err, "send delete message failed")
 	}
@@ -187,7 +187,7 @@ func (j *jsonSender) SendDeletes(ctx context.Context, topic Topic, entries Entri
 	for i, entry := range entries {
 		msgs[i] = j.createDeleteMessage(topic, entry.Key, entry.Headers)
 	}
-	if err := j.producer.SendMessages(msgs); err != nil {
+	if err := j.producer.SendMessages(ctx, msgs); err != nil {
 		return errors.Wrapf(ctx, err, "send delete messages failed")
 	}
 	if j.logSamplerDelete.IsSample() {

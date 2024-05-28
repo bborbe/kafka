@@ -2,6 +2,7 @@
 package mocks
 
 import (
+	"context"
 	"sync"
 
 	"github.com/IBM/sarama"
@@ -19,10 +20,11 @@ type KafkaSyncProducer struct {
 	closeReturnsOnCall map[int]struct {
 		result1 error
 	}
-	SendMessageStub        func(*sarama.ProducerMessage) (int32, int64, error)
+	SendMessageStub        func(context.Context, *sarama.ProducerMessage) (int32, int64, error)
 	sendMessageMutex       sync.RWMutex
 	sendMessageArgsForCall []struct {
-		arg1 *sarama.ProducerMessage
+		arg1 context.Context
+		arg2 *sarama.ProducerMessage
 	}
 	sendMessageReturns struct {
 		result1 int32
@@ -34,10 +36,11 @@ type KafkaSyncProducer struct {
 		result2 int64
 		result3 error
 	}
-	SendMessagesStub        func([]*sarama.ProducerMessage) error
+	SendMessagesStub        func(context.Context, []*sarama.ProducerMessage) error
 	sendMessagesMutex       sync.RWMutex
 	sendMessagesArgsForCall []struct {
-		arg1 []*sarama.ProducerMessage
+		arg1 context.Context
+		arg2 []*sarama.ProducerMessage
 	}
 	sendMessagesReturns struct {
 		result1 error
@@ -102,18 +105,19 @@ func (fake *KafkaSyncProducer) CloseReturnsOnCall(i int, result1 error) {
 	}{result1}
 }
 
-func (fake *KafkaSyncProducer) SendMessage(arg1 *sarama.ProducerMessage) (int32, int64, error) {
+func (fake *KafkaSyncProducer) SendMessage(arg1 context.Context, arg2 *sarama.ProducerMessage) (int32, int64, error) {
 	fake.sendMessageMutex.Lock()
 	ret, specificReturn := fake.sendMessageReturnsOnCall[len(fake.sendMessageArgsForCall)]
 	fake.sendMessageArgsForCall = append(fake.sendMessageArgsForCall, struct {
-		arg1 *sarama.ProducerMessage
-	}{arg1})
+		arg1 context.Context
+		arg2 *sarama.ProducerMessage
+	}{arg1, arg2})
 	stub := fake.SendMessageStub
 	fakeReturns := fake.sendMessageReturns
-	fake.recordInvocation("SendMessage", []interface{}{arg1})
+	fake.recordInvocation("SendMessage", []interface{}{arg1, arg2})
 	fake.sendMessageMutex.Unlock()
 	if stub != nil {
-		return stub(arg1)
+		return stub(arg1, arg2)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2, ret.result3
@@ -127,17 +131,17 @@ func (fake *KafkaSyncProducer) SendMessageCallCount() int {
 	return len(fake.sendMessageArgsForCall)
 }
 
-func (fake *KafkaSyncProducer) SendMessageCalls(stub func(*sarama.ProducerMessage) (int32, int64, error)) {
+func (fake *KafkaSyncProducer) SendMessageCalls(stub func(context.Context, *sarama.ProducerMessage) (int32, int64, error)) {
 	fake.sendMessageMutex.Lock()
 	defer fake.sendMessageMutex.Unlock()
 	fake.SendMessageStub = stub
 }
 
-func (fake *KafkaSyncProducer) SendMessageArgsForCall(i int) *sarama.ProducerMessage {
+func (fake *KafkaSyncProducer) SendMessageArgsForCall(i int) (context.Context, *sarama.ProducerMessage) {
 	fake.sendMessageMutex.RLock()
 	defer fake.sendMessageMutex.RUnlock()
 	argsForCall := fake.sendMessageArgsForCall[i]
-	return argsForCall.arg1
+	return argsForCall.arg1, argsForCall.arg2
 }
 
 func (fake *KafkaSyncProducer) SendMessageReturns(result1 int32, result2 int64, result3 error) {
@@ -169,23 +173,24 @@ func (fake *KafkaSyncProducer) SendMessageReturnsOnCall(i int, result1 int32, re
 	}{result1, result2, result3}
 }
 
-func (fake *KafkaSyncProducer) SendMessages(arg1 []*sarama.ProducerMessage) error {
-	var arg1Copy []*sarama.ProducerMessage
-	if arg1 != nil {
-		arg1Copy = make([]*sarama.ProducerMessage, len(arg1))
-		copy(arg1Copy, arg1)
+func (fake *KafkaSyncProducer) SendMessages(arg1 context.Context, arg2 []*sarama.ProducerMessage) error {
+	var arg2Copy []*sarama.ProducerMessage
+	if arg2 != nil {
+		arg2Copy = make([]*sarama.ProducerMessage, len(arg2))
+		copy(arg2Copy, arg2)
 	}
 	fake.sendMessagesMutex.Lock()
 	ret, specificReturn := fake.sendMessagesReturnsOnCall[len(fake.sendMessagesArgsForCall)]
 	fake.sendMessagesArgsForCall = append(fake.sendMessagesArgsForCall, struct {
-		arg1 []*sarama.ProducerMessage
-	}{arg1Copy})
+		arg1 context.Context
+		arg2 []*sarama.ProducerMessage
+	}{arg1, arg2Copy})
 	stub := fake.SendMessagesStub
 	fakeReturns := fake.sendMessagesReturns
-	fake.recordInvocation("SendMessages", []interface{}{arg1Copy})
+	fake.recordInvocation("SendMessages", []interface{}{arg1, arg2Copy})
 	fake.sendMessagesMutex.Unlock()
 	if stub != nil {
-		return stub(arg1)
+		return stub(arg1, arg2)
 	}
 	if specificReturn {
 		return ret.result1
@@ -199,17 +204,17 @@ func (fake *KafkaSyncProducer) SendMessagesCallCount() int {
 	return len(fake.sendMessagesArgsForCall)
 }
 
-func (fake *KafkaSyncProducer) SendMessagesCalls(stub func([]*sarama.ProducerMessage) error) {
+func (fake *KafkaSyncProducer) SendMessagesCalls(stub func(context.Context, []*sarama.ProducerMessage) error) {
 	fake.sendMessagesMutex.Lock()
 	defer fake.sendMessagesMutex.Unlock()
 	fake.SendMessagesStub = stub
 }
 
-func (fake *KafkaSyncProducer) SendMessagesArgsForCall(i int) []*sarama.ProducerMessage {
+func (fake *KafkaSyncProducer) SendMessagesArgsForCall(i int) (context.Context, []*sarama.ProducerMessage) {
 	fake.sendMessagesMutex.RLock()
 	defer fake.sendMessagesMutex.RUnlock()
 	argsForCall := fake.sendMessagesArgsForCall[i]
-	return argsForCall.arg1
+	return argsForCall.arg1, argsForCall.arg2
 }
 
 func (fake *KafkaSyncProducer) SendMessagesReturns(result1 error) {

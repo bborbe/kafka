@@ -13,8 +13,8 @@ import (
 
 //counterfeiter:generate -o mocks/kafka-sync-producer.go --fake-name KafkaSyncProducer . SyncProducer
 type SyncProducer interface {
-	SendMessage(msg *sarama.ProducerMessage) (partition int32, offset int64, err error)
-	SendMessages(msgs []*sarama.ProducerMessage) error
+	SendMessage(ctx context.Context, msg *sarama.ProducerMessage) (partition int32, offset int64, err error)
+	SendMessages(ctx context.Context, msgs []*sarama.ProducerMessage) error
 	Close() error
 }
 
@@ -24,9 +24,34 @@ func NewSyncProducer(
 	opts ...SaramaConfigOptions,
 ) (SyncProducer, error) {
 	saramaConfig := CreateSaramaConfig(opts...)
-	syncProducer, err := sarama.NewSyncProducer(brokers.Strings(), saramaConfig)
+	saramaSyncProducer, err := sarama.NewSyncProducer(brokers.Strings(), saramaConfig)
 	if err != nil {
 		return nil, errors.Wrapf(ctx, err, "create sync producer failed")
 	}
-	return syncProducer, nil
+	return &syncProducer{
+		saramaSyncProducer: saramaSyncProducer,
+	}, nil
+}
+
+type syncProducer struct {
+	saramaSyncProducer sarama.SyncProducer
+}
+
+func (s *syncProducer) SendMessage(ctx context.Context, msg *sarama.ProducerMessage) (int32, int64, error) {
+	partition, offset, err := s.saramaSyncProducer.SendMessage(msg)
+	if err != nil {
+		return -1, -1, errors.Wrapf(ctx, err, "send message failed")
+	}
+	return partition, offset, nil
+}
+
+func (s *syncProducer) SendMessages(ctx context.Context, msgs []*sarama.ProducerMessage) error {
+	if err := s.saramaSyncProducer.SendMessages(msgs); err != nil {
+		return errors.Wrapf(ctx, err, "send %d messages failed", len(msgs))
+	}
+	return nil
+}
+
+func (s *syncProducer) Close() error {
+	return s.Close()
 }

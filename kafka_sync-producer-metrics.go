@@ -5,6 +5,7 @@
 package kafka
 
 import (
+	"context"
 	"time"
 
 	"github.com/IBM/sarama"
@@ -25,10 +26,10 @@ type syncProducerMetrics struct {
 	metricsSyncProducer MetricsSyncProducer
 }
 
-func (s *syncProducerMetrics) SendMessage(msg *sarama.ProducerMessage) (int32, int64, error) {
+func (s *syncProducerMetrics) SendMessage(ctx context.Context, msg *sarama.ProducerMessage) (int32, int64, error) {
 	start := time.Now()
 	s.metricsSyncProducer.SyncProducerTotalCounterInc(Topic(msg.Topic))
-	partition, offset, err := s.syncProducer.SendMessage(msg)
+	partition, offset, err := s.syncProducer.SendMessage(ctx, msg)
 	if err != nil {
 		s.metricsSyncProducer.SyncProducerFailureCounterInc(Topic(msg.Topic))
 		return 0, 0, err
@@ -38,12 +39,12 @@ func (s *syncProducerMetrics) SendMessage(msg *sarama.ProducerMessage) (int32, i
 	return partition, offset, nil
 }
 
-func (s *syncProducerMetrics) SendMessages(msgs []*sarama.ProducerMessage) error {
+func (s *syncProducerMetrics) SendMessages(ctx context.Context, msgs []*sarama.ProducerMessage) error {
 	start := time.Now()
 	for _, msg := range msgs {
 		s.metricsSyncProducer.SyncProducerTotalCounterInc(Topic(msg.Topic))
 	}
-	if err := s.syncProducer.SendMessages(msgs); err != nil {
+	if err := s.syncProducer.SendMessages(ctx, msgs); err != nil {
 		for _, msg := range msgs {
 			s.metricsSyncProducer.SyncProducerFailureCounterInc(Topic(msg.Topic))
 		}
