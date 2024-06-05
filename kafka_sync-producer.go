@@ -28,9 +28,13 @@ func NewSyncProducer(
 	if err != nil {
 		return nil, errors.Wrapf(ctx, err, "create sync producer failed")
 	}
+	return NewSyncProducerFromSaramaSyncProducer(saramaSyncProducer), nil
+}
+
+func NewSyncProducerFromSaramaSyncProducer(saramaSyncProducer sarama.SyncProducer) SyncProducer {
 	return &syncProducer{
 		saramaSyncProducer: saramaSyncProducer,
-	}, nil
+	}
 }
 
 type syncProducer struct {
@@ -53,5 +57,5 @@ func (s *syncProducer) SendMessages(ctx context.Context, msgs []*sarama.Producer
 }
 
 func (s *syncProducer) Close() error {
-	return s.Close()
+	return s.saramaSyncProducer.Close()
 }
