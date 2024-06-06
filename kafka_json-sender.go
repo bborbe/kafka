@@ -29,6 +29,7 @@ type Keys []Key
 
 type Key interface {
 	Bytes() []byte
+	String() string
 }
 
 type key []byte
