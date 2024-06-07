@@ -12,7 +12,7 @@ import (
 	"github.com/bborbe/errors"
 )
 
-func NewMessageHandlerUpdate[OBJECT any, KEY ~[]byte | ~string](updateHandler UpdaterHandler[OBJECT, KEY]) MessageHandler {
+func NewMessageHandlerUpdate[KEY ~[]byte | ~string, OBJECT any](updateHandler UpdaterHandler[KEY, OBJECT]) MessageHandler {
 	return MessageHandlerFunc(func(ctx context.Context, msg *sarama.ConsumerMessage) error {
 		var objectID = KEY(msg.Key)
 		if len(msg.Value) == 0 {

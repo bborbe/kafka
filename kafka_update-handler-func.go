@@ -10,22 +10,22 @@ import (
 	"github.com/bborbe/errors"
 )
 
-func UpdaterHandlerFunc[OBJECT any, KEY ~[]byte | ~string](
+func UpdaterHandlerFunc[KEY ~[]byte | ~string, OBJECT any](
 	update func(ctx context.Context, key KEY, object OBJECT) error,
 	delete func(ctx context.Context, key KEY) error,
-) UpdaterHandler[OBJECT, KEY] {
-	return &updaterHandlerFunc[OBJECT, KEY]{
+) UpdaterHandler[KEY, OBJECT] {
+	return &updaterHandlerFunc[KEY, OBJECT]{
 		update: update,
 		delete: delete,
 	}
 }
 
-type updaterHandlerFunc[OBJECT any, KEY ~[]byte | ~string] struct {
+type updaterHandlerFunc[KEY ~[]byte | ~string, OBJECT any] struct {
 	update func(ctx context.Context, key KEY, object OBJECT) error
 	delete func(ctx context.Context, OBJECT KEY) error
 }
 
-func (e *updaterHandlerFunc[OBJECT, KEY]) Update(ctx context.Context, key KEY, object OBJECT) error {
+func (e *updaterHandlerFunc[KEY, OBJECT]) Update(ctx context.Context, key KEY, object OBJECT) error {
 	if e.update == nil {
 		return nil
 	}
@@ -35,7 +35,7 @@ func (e *updaterHandlerFunc[OBJECT, KEY]) Update(ctx context.Context, key KEY, o
 	return nil
 }
 
-func (e *updaterHandlerFunc[OBJECT, KEY]) Delete(ctx context.Context, key KEY) error {
+func (e *updaterHandlerFunc[KEY, OBJECT]) Delete(ctx context.Context, key KEY) error {
 	if e.delete == nil {
 		return nil
 	}

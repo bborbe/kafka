@@ -25,14 +25,14 @@ var _ = Describe("MessageHandlerTxUpdate", func() {
 	var err error
 	var updateCounter int
 	var deleteCounter int
-	var updaterHandlerTx kafka.UpdaterHandlerTx[MyStruct, MyKey]
+	var updaterHandlerTx kafka.UpdaterHandlerTx[MyKey, MyStruct]
 	var messageHandlerTxUpdate kafka.MessageHandlerTx
 	var msg *sarama.ConsumerMessage
 	BeforeEach(func() {
 		ctx = context.Background()
 		updateCounter = 0
 		deleteCounter = 0
-		updaterHandlerTx = kafka.UpdaterHandlerTxFunc[MyStruct, MyKey](
+		updaterHandlerTx = kafka.UpdaterHandlerTxFunc[MyKey, MyStruct](
 			func(ctx context.Context, tx libkv.Tx, key MyKey, object MyStruct) error {
 				updateCounter++
 				return nil
@@ -42,7 +42,7 @@ var _ = Describe("MessageHandlerTxUpdate", func() {
 				return nil
 			},
 		)
-		messageHandlerTxUpdate = kafka.NewMessageHandlerTxUpdate[MyStruct, MyKey](updaterHandlerTx)
+		messageHandlerTxUpdate = kafka.NewMessageHandlerTxUpdate[MyKey, MyStruct](updaterHandlerTx)
 		msg = &sarama.ConsumerMessage{}
 	})
 	Context("ConsumeMessage", func() {

@@ -13,12 +13,12 @@ import (
 	"github.com/golang/glog"
 )
 
-func NewUpdaterHandlerTxSkipErrors[OBJECT any, KEY ~[]byte | ~string](
-	handler UpdaterHandlerTx[OBJECT, KEY],
+func NewUpdaterHandlerTxSkipErrors[KEY ~[]byte | ~string, OBJECT any](
+	handler UpdaterHandlerTx[KEY, OBJECT],
 	logSamplerFactory log.SamplerFactory,
-) UpdaterHandlerTx[OBJECT, KEY] {
+) UpdaterHandlerTx[KEY, OBJECT] {
 	logSampler := logSamplerFactory.Sampler()
-	return UpdaterHandlerTxFunc[OBJECT, KEY](
+	return UpdaterHandlerTxFunc[KEY, OBJECT](
 		func(ctx context.Context, tx libkv.Tx, key KEY, object OBJECT) error {
 			if err := handler.Update(ctx, tx, key, object); err != nil {
 				if logSampler.IsSample() {

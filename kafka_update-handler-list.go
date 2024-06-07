@@ -10,9 +10,9 @@ import (
 	"github.com/bborbe/errors"
 )
 
-type UpdaterHandlerList[OBJECT any, KEY ~[]byte | ~string] []UpdaterHandler[OBJECT, KEY]
+type UpdaterHandlerList[KEY ~[]byte | ~string, OBJECT any] []UpdaterHandler[KEY, OBJECT]
 
-func (e UpdaterHandlerList[OBJECT, KEY]) Update(ctx context.Context, key KEY, object OBJECT) error {
+func (e UpdaterHandlerList[KEY, OBJECT]) Update(ctx context.Context, key KEY, object OBJECT) error {
 	for _, ee := range e {
 		if err := ee.Update(ctx, key, object); err != nil {
 			return errors.Wrapf(ctx, err, "update failed")
@@ -21,7 +21,7 @@ func (e UpdaterHandlerList[OBJECT, KEY]) Update(ctx context.Context, key KEY, ob
 	return nil
 }
 
-func (e UpdaterHandlerList[OBJECT, KEY]) Delete(ctx context.Context, key KEY) error {
+func (e UpdaterHandlerList[KEY, OBJECT]) Delete(ctx context.Context, key KEY) error {
 	for _, ee := range e {
 		if err := ee.Delete(ctx, key); err != nil {
 			return errors.Wrapf(ctx, err, "update failed")

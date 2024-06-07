@@ -13,7 +13,7 @@ import (
 	libkv "github.com/bborbe/kv"
 )
 
-func NewMessageHandlerTxUpdate[OBJECT any, KEY ~[]byte | ~string](updateHandlerTx UpdaterHandlerTx[OBJECT, KEY]) MessageHandlerTx {
+func NewMessageHandlerTxUpdate[KEY ~[]byte | ~string, OBJECT any](updateHandlerTx UpdaterHandlerTx[KEY, OBJECT]) MessageHandlerTx {
 	return MessageHandlerTxFunc(func(ctx context.Context, tx libkv.Tx, msg *sarama.ConsumerMessage) error {
 		var objectID = KEY(msg.Key)
 		if len(msg.Value) == 0 {

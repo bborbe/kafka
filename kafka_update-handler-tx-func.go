@@ -11,22 +11,22 @@ import (
 	libkv "github.com/bborbe/kv"
 )
 
-func UpdaterHandlerTxFunc[OBJECT any, KEY ~[]byte | ~string](
+func UpdaterHandlerTxFunc[KEY ~[]byte | ~string, OBJECT any](
 	update func(ctx context.Context, tx libkv.Tx, key KEY, object OBJECT) error,
 	delete func(ctx context.Context, tx libkv.Tx, key KEY) error,
-) UpdaterHandlerTx[OBJECT, KEY] {
-	return &updaterHandlerTxFunc[OBJECT, KEY]{
+) UpdaterHandlerTx[KEY, OBJECT] {
+	return &updaterHandlerTxFunc[KEY, OBJECT]{
 		update: update,
 		delete: delete,
 	}
 }
 
-type updaterHandlerTxFunc[OBJECT any, KEY ~[]byte | ~string] struct {
+type updaterHandlerTxFunc[KEY ~[]byte | ~string, OBJECT any] struct {
 	update func(ctx context.Context, tx libkv.Tx, key KEY, object OBJECT) error
 	delete func(ctx context.Context, tx libkv.Tx, OBJECT KEY) error
 }
 
-func (e *updaterHandlerTxFunc[OBJECT, KEY]) Update(ctx context.Context, tx libkv.Tx, key KEY, object OBJECT) error {
+func (e *updaterHandlerTxFunc[KEY, OBJECT]) Update(ctx context.Context, tx libkv.Tx, key KEY, object OBJECT) error {
 	if e.update == nil {
 		return nil
 	}
@@ -36,7 +36,7 @@ func (e *updaterHandlerTxFunc[OBJECT, KEY]) Update(ctx context.Context, tx libkv
 	return nil
 }
 
-func (e *updaterHandlerTxFunc[OBJECT, KEY]) Delete(ctx context.Context, tx libkv.Tx, key KEY) error {
+func (e *updaterHandlerTxFunc[KEY, OBJECT]) Delete(ctx context.Context, tx libkv.Tx, key KEY) error {
 	if e.delete == nil {
 		return nil
 	}
