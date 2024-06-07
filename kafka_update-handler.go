@@ -8,7 +8,7 @@ import (
 	"context"
 )
 
-type UpdaterHandler[OBJECT any, KEY Key] interface {
+type UpdaterHandler[OBJECT any, KEY ~[]byte | ~string] interface {
 	Update(ctx context.Context, key KEY, object OBJECT) error
 	Delete(ctx context.Context, key KEY) error
 }

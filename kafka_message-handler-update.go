@@ -12,21 +12,21 @@ import (
 	"github.com/bborbe/errors"
 )
 
-func NewMessageHandlerUpdate[OBJECT any](updateHandler UpdaterHandler[OBJECT, Key]) MessageHandler {
+func NewMessageHandlerUpdate[OBJECT any, KEY ~[]byte | ~string](updateHandler UpdaterHandler[OBJECT, KEY]) MessageHandler {
 	return MessageHandlerFunc(func(ctx context.Context, msg *sarama.ConsumerMessage) error {
-		key := NewKey(msg.Key)
+		var objectID = KEY(msg.Key)
 		if len(msg.Value) == 0 {
-			if err := updateHandler.Delete(ctx, key); err != nil {
-				return errors.Wrapf(ctx, err, "delete %s failed", key)
+			if err := updateHandler.Delete(ctx, objectID); err != nil {
+				return errors.Wrapf(ctx, err, "delete %s failed", objectID)
 			}
 			return nil
 		}
 		var object OBJECT
 		if err := json.Unmarshal(msg.Value, &object); err != nil {
-			return errors.Wrapf(ctx, err, "unmarshal value of %s failed", key)
+			return errors.Wrapf(ctx, err, "unmarshal value of %s failed", objectID)
 		}
-		if err := updateHandler.Update(ctx, key, object); err != nil {
-			return errors.Wrapf(ctx, err, "update %s failed", key)
+		if err := updateHandler.Update(ctx, objectID, object); err != nil {
+			return errors.Wrapf(ctx, err, "update %s failed", objectID)
 		}
 		return nil
 	})

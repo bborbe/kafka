@@ -11,7 +11,7 @@ import (
 	libkv "github.com/bborbe/kv"
 )
 
-//counterfeiter:generate -o mocks/offset-store.go --fake-name OffsetStore . OffsetStore
+//counterfeiter:generate -o mocks/kafka-offset-store.go --fake-name KafkaOffsetStore . OffsetStore
 type OffsetStore interface {
 	Get(ctx context.Context, topic Topic, partition Partition) (Offset, error)
 	Set(ctx context.Context, topic Topic, partition Partition, offset Offset) error

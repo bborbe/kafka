@@ -8,7 +8,7 @@ import (
 	"github.com/bborbe/kafka"
 )
 
-type OffsetStore struct {
+type KafkaOffsetStore struct {
 	GetStub        func(context.Context, kafka.Topic, kafka.Partition) (kafka.Offset, error)
 	getMutex       sync.RWMutex
 	getArgsForCall []struct {
@@ -42,7 +42,7 @@ type OffsetStore struct {
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *OffsetStore) Get(arg1 context.Context, arg2 kafka.Topic, arg3 kafka.Partition) (kafka.Offset, error) {
+func (fake *KafkaOffsetStore) Get(arg1 context.Context, arg2 kafka.Topic, arg3 kafka.Partition) (kafka.Offset, error) {
 	fake.getMutex.Lock()
 	ret, specificReturn := fake.getReturnsOnCall[len(fake.getArgsForCall)]
 	fake.getArgsForCall = append(fake.getArgsForCall, struct {
@@ -63,26 +63,26 @@ func (fake *OffsetStore) Get(arg1 context.Context, arg2 kafka.Topic, arg3 kafka.
 	return fakeReturns.result1, fakeReturns.result2
 }
 
-func (fake *OffsetStore) GetCallCount() int {
+func (fake *KafkaOffsetStore) GetCallCount() int {
 	fake.getMutex.RLock()
 	defer fake.getMutex.RUnlock()
 	return len(fake.getArgsForCall)
 }
 
-func (fake *OffsetStore) GetCalls(stub func(context.Context, kafka.Topic, kafka.Partition) (kafka.Offset, error)) {
+func (fake *KafkaOffsetStore) GetCalls(stub func(context.Context, kafka.Topic, kafka.Partition) (kafka.Offset, error)) {
 	fake.getMutex.Lock()
 	defer fake.getMutex.Unlock()
 	fake.GetStub = stub
 }
 
-func (fake *OffsetStore) GetArgsForCall(i int) (context.Context, kafka.Topic, kafka.Partition) {
+func (fake *KafkaOffsetStore) GetArgsForCall(i int) (context.Context, kafka.Topic, kafka.Partition) {
 	fake.getMutex.RLock()
 	defer fake.getMutex.RUnlock()
 	argsForCall := fake.getArgsForCall[i]
 	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
 }
 
-func (fake *OffsetStore) GetReturns(result1 kafka.Offset, result2 error) {
+func (fake *KafkaOffsetStore) GetReturns(result1 kafka.Offset, result2 error) {
 	fake.getMutex.Lock()
 	defer fake.getMutex.Unlock()
 	fake.GetStub = nil
@@ -92,7 +92,7 @@ func (fake *OffsetStore) GetReturns(result1 kafka.Offset, result2 error) {
 	}{result1, result2}
 }
 
-func (fake *OffsetStore) GetReturnsOnCall(i int, result1 kafka.Offset, result2 error) {
+func (fake *KafkaOffsetStore) GetReturnsOnCall(i int, result1 kafka.Offset, result2 error) {
 	fake.getMutex.Lock()
 	defer fake.getMutex.Unlock()
 	fake.GetStub = nil
@@ -108,7 +108,7 @@ func (fake *OffsetStore) GetReturnsOnCall(i int, result1 kafka.Offset, result2 e
 	}{result1, result2}
 }
 
-func (fake *OffsetStore) Set(arg1 context.Context, arg2 kafka.Topic, arg3 kafka.Partition, arg4 kafka.Offset) error {
+func (fake *KafkaOffsetStore) Set(arg1 context.Context, arg2 kafka.Topic, arg3 kafka.Partition, arg4 kafka.Offset) error {
 	fake.setMutex.Lock()
 	ret, specificReturn := fake.setReturnsOnCall[len(fake.setArgsForCall)]
 	fake.setArgsForCall = append(fake.setArgsForCall, struct {
@@ -130,26 +130,26 @@ func (fake *OffsetStore) Set(arg1 context.Context, arg2 kafka.Topic, arg3 kafka.
 	return fakeReturns.result1
 }
 
-func (fake *OffsetStore) SetCallCount() int {
+func (fake *KafkaOffsetStore) SetCallCount() int {
 	fake.setMutex.RLock()
 	defer fake.setMutex.RUnlock()
 	return len(fake.setArgsForCall)
 }
 
-func (fake *OffsetStore) SetCalls(stub func(context.Context, kafka.Topic, kafka.Partition, kafka.Offset) error) {
+func (fake *KafkaOffsetStore) SetCalls(stub func(context.Context, kafka.Topic, kafka.Partition, kafka.Offset) error) {
 	fake.setMutex.Lock()
 	defer fake.setMutex.Unlock()
 	fake.SetStub = stub
 }
 
-func (fake *OffsetStore) SetArgsForCall(i int) (context.Context, kafka.Topic, kafka.Partition, kafka.Offset) {
+func (fake *KafkaOffsetStore) SetArgsForCall(i int) (context.Context, kafka.Topic, kafka.Partition, kafka.Offset) {
 	fake.setMutex.RLock()
 	defer fake.setMutex.RUnlock()
 	argsForCall := fake.setArgsForCall[i]
 	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3, argsForCall.arg4
 }
 
-func (fake *OffsetStore) SetReturns(result1 error) {
+func (fake *KafkaOffsetStore) SetReturns(result1 error) {
 	fake.setMutex.Lock()
 	defer fake.setMutex.Unlock()
 	fake.SetStub = nil
@@ -158,7 +158,7 @@ func (fake *OffsetStore) SetReturns(result1 error) {
 	}{result1}
 }
 
-func (fake *OffsetStore) SetReturnsOnCall(i int, result1 error) {
+func (fake *KafkaOffsetStore) SetReturnsOnCall(i int, result1 error) {
 	fake.setMutex.Lock()
 	defer fake.setMutex.Unlock()
 	fake.SetStub = nil
@@ -172,7 +172,7 @@ func (fake *OffsetStore) SetReturnsOnCall(i int, result1 error) {
 	}{result1}
 }
 
-func (fake *OffsetStore) Invocations() map[string][][]interface{} {
+func (fake *KafkaOffsetStore) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
 	fake.getMutex.RLock()
@@ -186,7 +186,7 @@ func (fake *OffsetStore) Invocations() map[string][][]interface{} {
 	return copiedInvocations
 }
 
-func (fake *OffsetStore) recordInvocation(key string, args []interface{}) {
+func (fake *KafkaOffsetStore) recordInvocation(key string, args []interface{}) {
 	fake.invocationsMutex.Lock()
 	defer fake.invocationsMutex.Unlock()
 	if fake.invocations == nil {
@@ -198,4 +198,4 @@ func (fake *OffsetStore) recordInvocation(key string, args []interface{}) {
 	fake.invocations[key] = append(fake.invocations[key], args)
 }
 
-var _ kafka.OffsetStore = new(OffsetStore)
+var _ kafka.OffsetStore = new(KafkaOffsetStore)

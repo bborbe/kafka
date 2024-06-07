@@ -104,7 +104,7 @@ var _ = Describe("StoreOffsetManager", func() {
 		})
 		Context("BucketNotFoundError => initial number", func() {
 			BeforeEach(func() {
-				offsetStore := &mocks.OffsetStore{}
+				offsetStore := &mocks.KafkaOffsetStore{}
 				offsetStore.GetReturns(0, libkv.BucketNotFoundError)
 				storeOffsetManager = libkafka.NewStoreOffsetManager(
 					1337,
@@ -120,7 +120,7 @@ var _ = Describe("StoreOffsetManager", func() {
 		})
 		Context("KeyNotFoundError => initial number", func() {
 			BeforeEach(func() {
-				offsetStore := &mocks.OffsetStore{}
+				offsetStore := &mocks.KafkaOffsetStore{}
 				offsetStore.GetReturns(0, libkv.KeyNotFoundError)
 				storeOffsetManager = libkafka.NewStoreOffsetManager(
 					1337,
@@ -136,7 +136,7 @@ var _ = Describe("StoreOffsetManager", func() {
 		})
 		Context("any error => initial number", func() {
 			BeforeEach(func() {
-				offsetStore := &mocks.OffsetStore{}
+				offsetStore := &mocks.KafkaOffsetStore{}
 				offsetStore.GetReturns(0, stderrors.New("banana"))
 				storeOffsetManager = libkafka.NewStoreOffsetManager(
 					1337,

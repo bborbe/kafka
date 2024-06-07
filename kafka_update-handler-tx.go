@@ -10,7 +10,7 @@ import (
 	libkv "github.com/bborbe/kv"
 )
 
-type UpdaterHandlerTx[OBJECT any, KEY Key] interface {
+type UpdaterHandlerTx[OBJECT any, KEY ~[]byte | ~string] interface {
 	Update(ctx context.Context, tx libkv.Tx, key KEY, object OBJECT) error
 	Delete(ctx context.Context, tx libkv.Tx, key KEY) error
 }

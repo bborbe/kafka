@@ -10,7 +10,7 @@ import (
 	"github.com/bborbe/errors"
 )
 
-type UpdaterHandlerList[OBJECT any, KEY Key] []UpdaterHandler[OBJECT, KEY]
+type UpdaterHandlerList[OBJECT any, KEY ~[]byte | ~string] []UpdaterHandler[OBJECT, KEY]
 
 func (e UpdaterHandlerList[OBJECT, KEY]) Update(ctx context.Context, key KEY, object OBJECT) error {
 	for _, ee := range e {

@@ -12,7 +12,7 @@ import (
 	"github.com/golang/glog"
 )
 
-func NewUpdaterHandlerSkipErrors[OBJECT any, KEY Key](
+func NewUpdaterHandlerSkipErrors[OBJECT any, KEY ~[]byte | ~string](
 	handler UpdaterHandler[OBJECT, KEY],
 	logSamplerFactory log.SamplerFactory,
 ) UpdaterHandler[OBJECT, KEY] {
@@ -25,7 +25,7 @@ func NewUpdaterHandlerSkipErrors[OBJECT any, KEY Key](
 						errors.AddDataToError(
 							err,
 							map[string]string{
-								"key": key.String(),
+								"key": string(key),
 							},
 						),
 					)
@@ -41,7 +41,7 @@ func NewUpdaterHandlerSkipErrors[OBJECT any, KEY Key](
 						errors.AddDataToError(
 							err,
 							map[string]string{
-								"key": key.String(),
+								"key": string(key),
 							},
 						),
 					)

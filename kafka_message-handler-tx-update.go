@@ -13,21 +13,21 @@ import (
 	libkv "github.com/bborbe/kv"
 )
 
-func NewMessageHandlerTxUpdate[OBJECT any](updateHandlerTx UpdaterHandlerTx[OBJECT, Key]) MessageHandlerTx {
+func NewMessageHandlerTxUpdate[OBJECT any, KEY ~[]byte | ~string](updateHandlerTx UpdaterHandlerTx[OBJECT, KEY]) MessageHandlerTx {
 	return MessageHandlerTxFunc(func(ctx context.Context, tx libkv.Tx, msg *sarama.ConsumerMessage) error {
-		key := NewKey(msg.Key)
+		var objectID = KEY(msg.Key)
 		if len(msg.Value) == 0 {
-			if err := updateHandlerTx.Delete(ctx, tx, key); err != nil {
-				return errors.Wrapf(ctx, err, "delete %s failed", key)
+			if err := updateHandlerTx.Delete(ctx, tx, objectID); err != nil {
+				return errors.Wrapf(ctx, err, "delete %s failed", objectID)
 			}
 			return nil
 		}
 		var object OBJECT
 		if err := json.Unmarshal(msg.Value, &object); err != nil {
-			return errors.Wrapf(ctx, err, "unmarshal value of %s failed", key)
+			return errors.Wrapf(ctx, err, "unmarshal value of %s failed", objectID)
 		}
-		if err := updateHandlerTx.Update(ctx, tx, key, object); err != nil {
-			return errors.Wrapf(ctx, err, "update %s failed", key)
+		if err := updateHandlerTx.Update(ctx, tx, objectID, object); err != nil {
+			return errors.Wrapf(ctx, err, "update %s failed", objectID)
 		}
 		return nil
 	})

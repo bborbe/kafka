@@ -11,7 +11,7 @@ import (
 	libkv "github.com/bborbe/kv"
 )
 
-func UpdaterHandlerTxFunc[OBJECT any, KEY Key](
+func UpdaterHandlerTxFunc[OBJECT any, KEY ~[]byte | ~string](
 	update func(ctx context.Context, tx libkv.Tx, key KEY, object OBJECT) error,
 	delete func(ctx context.Context, tx libkv.Tx, key KEY) error,
 ) UpdaterHandlerTx[OBJECT, KEY] {
@@ -21,7 +21,7 @@ func UpdaterHandlerTxFunc[OBJECT any, KEY Key](
 	}
 }
 
-type updaterHandlerTxFunc[OBJECT any, KEY Key] struct {
+type updaterHandlerTxFunc[OBJECT any, KEY ~[]byte | ~string] struct {
 	update func(ctx context.Context, tx libkv.Tx, key KEY, object OBJECT) error
 	delete func(ctx context.Context, tx libkv.Tx, OBJECT KEY) error
 }

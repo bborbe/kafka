@@ -11,7 +11,7 @@ import (
 	libkv "github.com/bborbe/kv"
 )
 
-type UpdaterHandlerTxList[OBJECT any, KEY Key] []UpdaterHandlerTx[OBJECT, KEY]
+type UpdaterHandlerTxList[OBJECT any, KEY ~[]byte | ~string] []UpdaterHandlerTx[OBJECT, KEY]
 
 func (e UpdaterHandlerTxList[OBJECT, KEY]) Update(ctx context.Context, tx libkv.Tx, key KEY, object OBJECT) error {
 	for _, ee := range e {

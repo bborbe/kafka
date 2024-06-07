@@ -10,7 +10,7 @@ import (
 	"github.com/bborbe/errors"
 )
 
-func UpdaterHandlerFunc[OBJECT any, KEY Key](
+func UpdaterHandlerFunc[OBJECT any, KEY ~[]byte | ~string](
 	update func(ctx context.Context, key KEY, object OBJECT) error,
 	delete func(ctx context.Context, key KEY) error,
 ) UpdaterHandler[OBJECT, KEY] {
@@ -20,7 +20,7 @@ func UpdaterHandlerFunc[OBJECT any, KEY Key](
 	}
 }
 
-type updaterHandlerFunc[OBJECT any, KEY Key] struct {
+type updaterHandlerFunc[OBJECT any, KEY ~[]byte | ~string] struct {
 	update func(ctx context.Context, key KEY, object OBJECT) error
 	delete func(ctx context.Context, OBJECT KEY) error
 }
