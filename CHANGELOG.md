@@ -11,6 +11,7 @@ Please choose versions by [Semantic Versioning](http://semver.org/).
 ## v1.6.3
 
 - add UpdateHandlerFilter 
+- go mod update
 
 ## v1.6.2
 

@@ -8,7 +8,7 @@ require (
 	github.com/bborbe/boltkv v1.6.2
 	github.com/bborbe/errors v1.2.0
 	github.com/bborbe/http v1.2.0
-	github.com/bborbe/kv v1.4.2
+	github.com/bborbe/kv v1.5.0
 	github.com/bborbe/log v1.0.0
 	github.com/bborbe/parse v1.2.0
 	github.com/bborbe/run v1.5.3
@@ -72,9 +72,10 @@ require (
 	golang.org/x/net v0.26.0 // indirect
 	golang.org/x/sync v0.7.0 // indirect
 	golang.org/x/sys v0.21.0 // indirect
+	golang.org/x/telemetry v0.0.0-20240607153007-32e722135073 // indirect
 	golang.org/x/text v0.16.0 // indirect
 	golang.org/x/tools v0.22.0 // indirect
-	golang.org/x/vuln v1.1.1 // indirect
+	golang.org/x/vuln v1.1.2 // indirect
 	google.golang.org/protobuf v1.34.1 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
