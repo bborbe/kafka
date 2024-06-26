@@ -33,3 +33,11 @@ func ParseInt(ctx context.Context, value interface{}) (int, error) {
 		return 0, errors.Errorf(ctx, "invalid type")
 	}
 }
+
+func ParseIntDefault(ctx context.Context, value interface{}, defaultValue int) int {
+	result, err := ParseInt(ctx, value)
+	if err != nil {
+		return defaultValue
+	}
+	return result
+}

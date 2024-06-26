@@ -16,7 +16,7 @@ func CreateSaramaConfig(
 	opts ...SaramaConfigOptions,
 ) *sarama.Config {
 	config := sarama.NewConfig()
-	config.Version = sarama.V3_3_1_0
+	config.Version = sarama.V3_6_0_0
 	config.Producer.RequiredAcks = sarama.WaitForAll
 	config.Producer.Retry.Max = 10
 	config.Producer.Return.Successes = true

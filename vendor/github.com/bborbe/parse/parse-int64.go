@@ -30,3 +30,11 @@ func ParseInt64(ctx context.Context, value interface{}) (int64, error) {
 		return 0, errors.Errorf(ctx, "invalid type")
 	}
 }
+
+func ParseInt64Default(ctx context.Context, value interface{}, defaultValue int64) int64 {
+	result, err := ParseInt64(ctx, value)
+	if err != nil {
+		return defaultValue
+	}
+	return result
+}

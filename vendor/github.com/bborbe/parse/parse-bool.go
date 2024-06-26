@@ -24,3 +24,11 @@ func ParseBool(ctx context.Context, value interface{}) (bool, error) {
 	}
 	return false, errors.Errorf(ctx, "invalid type")
 }
+
+func ParseBoolDefault(ctx context.Context, value interface{}, defaultValue bool) bool {
+	result, err := ParseBool(ctx, value)
+	if err != nil {
+		return defaultValue
+	}
+	return result
+}

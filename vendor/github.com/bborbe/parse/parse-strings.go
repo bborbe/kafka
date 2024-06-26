@@ -36,3 +36,11 @@ func ParseStrings(ctx context.Context, value interface{}) ([]string, error) {
 		return nil, errors.Errorf(ctx, "unsupported type %T", value)
 	}
 }
+
+func ParseStringsDefault(ctx context.Context, value interface{}, defaultValue []string) []string {
+	result, err := ParseStrings(ctx, value)
+	if err != nil {
+		return defaultValue
+	}
+	return result
+}

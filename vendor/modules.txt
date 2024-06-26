@@ -10,13 +10,13 @@ github.com/bborbe/boltkv
 # github.com/bborbe/collection v1.4.0
 ## explicit; go 1.22.2
 github.com/bborbe/collection
-# github.com/bborbe/errors v1.2.0
-## explicit; go 1.20
+# github.com/bborbe/errors v1.3.0
+## explicit; go 1.22.4
 github.com/bborbe/errors
 # github.com/bborbe/http v1.2.0
 ## explicit; go 1.22.3
 github.com/bborbe/http
-# github.com/bborbe/kv v1.5.0
+# github.com/bborbe/kv v1.6.0
 ## explicit; go 1.22.4
 github.com/bborbe/kv
 github.com/bborbe/kv/mocks
@@ -26,8 +26,8 @@ github.com/bborbe/log
 # github.com/bborbe/math v1.0.0
 ## explicit; go 1.21.8
 github.com/bborbe/math
-# github.com/bborbe/parse v1.2.0
-## explicit; go 1.22.2
+# github.com/bborbe/parse v1.3.0
+## explicit; go 1.22.4
 github.com/bborbe/parse
 # github.com/bborbe/run v1.5.3
 ## explicit; go 1.22.2
@@ -120,7 +120,7 @@ github.com/google/go-cmp/cmp/internal/diff
 github.com/google/go-cmp/cmp/internal/flags
 github.com/google/go-cmp/cmp/internal/function
 github.com/google/go-cmp/cmp/internal/value
-# github.com/google/pprof v0.0.0-20240528025155-186aa0362fba
+# github.com/google/pprof v0.0.0-20240625030939-27f56978b8b0
 ## explicit; go 1.19
 github.com/google/pprof/profile
 # github.com/gorilla/mux v1.8.1
@@ -191,7 +191,7 @@ github.com/jcmturner/rpc/v2/ndr
 ## explicit; go 1.18
 github.com/kisielk/errcheck
 github.com/kisielk/errcheck/errcheck
-# github.com/klauspost/compress v1.17.8
+# github.com/klauspost/compress v1.17.9
 ## explicit; go 1.20
 github.com/klauspost/compress
 github.com/klauspost/compress/flate
@@ -208,6 +208,9 @@ github.com/maxbrunsfeld/counterfeiter/v6
 github.com/maxbrunsfeld/counterfeiter/v6/arguments
 github.com/maxbrunsfeld/counterfeiter/v6/command
 github.com/maxbrunsfeld/counterfeiter/v6/generator
+# github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822
+## explicit
+github.com/munnerz/goautoneg
 # github.com/onsi/ginkgo/v2 v2.19.0
 ## explicit; go 1.20
 github.com/onsi/ginkgo/v2
@@ -259,10 +262,9 @@ github.com/prometheus/client_golang/prometheus/internal
 # github.com/prometheus/client_model v0.6.1
 ## explicit; go 1.19
 github.com/prometheus/client_model/go
-# github.com/prometheus/common v0.54.0
+# github.com/prometheus/common v0.55.0
 ## explicit; go 1.20
 github.com/prometheus/common/expfmt
-github.com/prometheus/common/internal/bitbucket.org/ww/goautoneg
 github.com/prometheus/common/model
 # github.com/prometheus/procfs v0.15.1
 ## explicit; go 1.20
@@ -313,7 +315,7 @@ golang.org/x/sync/errgroup
 ## explicit; go 1.18
 golang.org/x/sys/unix
 golang.org/x/sys/windows
-# golang.org/x/telemetry v0.0.0-20240607153007-32e722135073
+# golang.org/x/telemetry v0.0.0-20240625154800-2e7d7fd037b9
 ## explicit; go 1.20
 golang.org/x/telemetry
 golang.org/x/telemetry/counter
@@ -401,8 +403,8 @@ golang.org/x/vuln/internal/traces
 golang.org/x/vuln/internal/vulncheck
 golang.org/x/vuln/internal/web
 golang.org/x/vuln/scan
-# google.golang.org/protobuf v1.34.1
-## explicit; go 1.17
+# google.golang.org/protobuf v1.34.2
+## explicit; go 1.20
 google.golang.org/protobuf/encoding/protodelim
 google.golang.org/protobuf/encoding/prototext
 google.golang.org/protobuf/encoding/protowire

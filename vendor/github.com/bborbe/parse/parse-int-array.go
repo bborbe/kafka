@@ -31,6 +31,14 @@ func ParseIntArray(ctx context.Context, value interface{}) ([]int, error) {
 	}
 }
 
+func ParseIntArrayDefault(ctx context.Context, value interface{}, defaultValue []int) []int {
+	result, err := ParseIntArray(ctx, value)
+	if err != nil {
+		return defaultValue
+	}
+	return result
+}
+
 func ParseIntArrayFromInterfaces(ctx context.Context, values []interface{}) ([]int, error) {
 	result := make([]int, len(values))
 	for i, vv := range values {

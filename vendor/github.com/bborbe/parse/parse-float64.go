@@ -29,3 +29,11 @@ func ParseFloat64(ctx context.Context, value interface{}) (float64, error) {
 		return 0, errors.Errorf(ctx, "invalid type")
 	}
 }
+
+func ParseFloat64Default(ctx context.Context, value interface{}, defaultValue float64) float64 {
+	result, err := ParseFloat64(ctx, value)
+	if err != nil {
+		return defaultValue
+	}
+	return result
+}

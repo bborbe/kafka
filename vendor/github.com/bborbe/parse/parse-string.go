@@ -17,3 +17,11 @@ func ParseString(ctx context.Context, value interface{}) (string, error) {
 	}
 	return v, nil
 }
+
+func ParseStringDefault(ctx context.Context, value interface{}, defaultValue string) string {
+	result, err := ParseString(ctx, value)
+	if err != nil {
+		return defaultValue
+	}
+	return result
+}

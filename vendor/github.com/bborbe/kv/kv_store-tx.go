@@ -27,11 +27,21 @@ type StoreGetterTx[KEY ~[]byte | ~string, OBJECT any] interface {
 	Get(ctx context.Context, tx Tx, key KEY) (*OBJECT, error)
 }
 
+type StoreExistsTx[KEY ~[]byte | ~string, OBJECT any] interface {
+	Exists(ctx context.Context, tx Tx, key KEY) (bool, error)
+}
+
+type StoreStreamTx[KEY ~[]byte | ~string, OBJECT any] interface {
+	Stream(ctx context.Context, tx Tx, ch chan<- OBJECT) error
+}
+
 type StoreTx[KEY ~[]byte | ~string, OBJECT any] interface {
 	StoreAdderTx[KEY, OBJECT]
 	StoreRemoverTx[KEY]
 	StoreGetterTx[KEY, OBJECT]
 	StoreMapperTx[KEY, OBJECT]
+	StoreExistsTx[KEY, OBJECT]
+	StoreStreamTx[KEY, OBJECT]
 }
 
 func NewStoreTx[KEY ~[]byte | ~string, OBJECT any](bucketName BucketName) StoreTx[KEY, OBJECT] {
@@ -92,6 +102,18 @@ func (s storeTx[KEY, OBJECT]) Get(ctx context.Context, tx Tx, key KEY) (*OBJECT,
 	return &object, nil
 }
 
+func (s storeTx[KEY, OBJECT]) Exists(ctx context.Context, tx Tx, key KEY) (bool, error) {
+	bucket, err := tx.Bucket(ctx, s.bucketName)
+	if err != nil {
+		return false, errors.Wrapf(ctx, err, "get bucket failed")
+	}
+	item, err := bucket.Get(ctx, []byte(key))
+	if err != nil {
+		return false, errors.Wrapf(ctx, err, "get %s failed", string(key))
+	}
+	return item.Exists(), nil
+}
+
 func (s storeTx[KEY, OBJECT]) Map(ctx context.Context, tx Tx, fn func(ctx context.Context, key KEY, object OBJECT) error) error {
 	bucket, err := tx.Bucket(ctx, s.bucketName)
 	if err != nil {
@@ -122,4 +144,15 @@ func (s storeTx[KEY, OBJECT]) Map(ctx context.Context, tx Tx, fn func(ctx contex
 		}
 	}
 	return nil
+}
+
+func (s storeTx[KEY, OBJECT]) Stream(ctx context.Context, tx Tx, ch chan<- OBJECT) error {
+	return s.Map(ctx, tx, func(ctx context.Context, key KEY, object OBJECT) error {
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		case ch <- object:
+			return nil
+		}
+	})
 }
