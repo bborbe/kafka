@@ -5,6 +5,8 @@
 package badgerkv
 
 import (
+	"bytes"
+
 	libkv "github.com/bborbe/kv"
 )
 
@@ -16,7 +18,11 @@ func BucketToPrefix(bucket libkv.BucketName) []byte {
 }
 
 func BucketAddKey(bucket libkv.BucketName, key []byte) []byte {
-	return append(BucketToPrefix(bucket), key...)
+	buf := &bytes.Buffer{}
+	buf.Write(bucket.Bytes())
+	buf.WriteByte(bucketKeySeperator)
+	buf.Write(key)
+	return buf.Bytes()
 }
 
 func BucketRemoveKey(bucket libkv.BucketName, key []byte) []byte {

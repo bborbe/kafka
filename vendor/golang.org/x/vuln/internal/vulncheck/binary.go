@@ -2,9 +2,6 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-//go:build go1.18
-// +build go1.18
-
 package vulncheck
 
 import (
@@ -16,6 +13,7 @@ import (
 	"golang.org/x/vuln/internal/buildinfo"
 	"golang.org/x/vuln/internal/client"
 	"golang.org/x/vuln/internal/govulncheck"
+	"golang.org/x/vuln/internal/semver"
 )
 
 // Bin is an abstraction of Go binary containing
@@ -67,6 +65,15 @@ func binary(ctx context.Context, handler govulncheck.Handler, bin *Bin, cfg *gov
 		return nil, err
 	}
 
+	// Emit warning message for ancient Go binaries, defined as binaries
+	// built with Go version without support for debug.BuildInfo (< go1.18).
+	if semver.Less(bin.GoVersion, "go1.18") {
+		p := &govulncheck.Progress{Message: fmt.Sprintf("warning: binary built with Go version %s, only standard library vulnerabilities will be checked", bin.GoVersion)}
+		if err := handler.Progress(p); err != nil {
+			return nil, err
+		}
+	}
+
 	if bin.GOOS == "" || bin.GOARCH == "" {
 		p := &govulncheck.Progress{Message: fmt.Sprintf("warning: failed to extract build system specification GOOS: %s GOARCH: %s\n", bin.GOOS, bin.GOARCH)}
 		if err := handler.Progress(p); err != nil {
@@ -116,7 +123,7 @@ func binary(ctx context.Context, handler govulncheck.Handler, bin *Bin, cfg *gov
 func binImportedVulnPackages(graph *PackageGraph, pkgSymbols map[string][]string, affVulns affectingVulns) []*Vuln {
 	var vulns []*Vuln
 	for pkg := range pkgSymbols {
-		for _, osv := range affVulns.ForPackage(pkg) {
+		for _, osv := range affVulns.ForPackage(internal.UnknownModulePath, pkg) {
 			vuln := &Vuln{
 				OSV:     osv,
 				Package: graph.GetPackage(pkg),
@@ -131,7 +138,7 @@ func binVulnSymbols(graph *PackageGraph, pkgSymbols map[string][]string, affVuln
 	var vulns []*Vuln
 	for pkg, symbols := range pkgSymbols {
 		for _, symbol := range symbols {
-			for _, osv := range affVulns.ForSymbol(pkg, symbol) {
+			for _, osv := range affVulns.ForSymbol(internal.UnknownModulePath, pkg, symbol) {
 				vuln := &Vuln{
 					OSV:     osv,
 					Symbol:  symbol,

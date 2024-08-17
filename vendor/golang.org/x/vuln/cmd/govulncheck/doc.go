@@ -20,8 +20,6 @@ specified by the “go” command found on the PATH. For binaries, the build
 configuration is the one used to build the binary. Note that different build
 configurations may have different known vulnerabilities.
 
-Govulncheck must be built with Go version 1.18 or later.
-
 # Usage
 
 To analyze source code, run govulncheck from the module directory, using the
@@ -86,13 +84,15 @@ Govulncheck has these limitations:
     which may result in false positives or inaccurate call stacks in some cases.
   - Calls to functions made using package reflect are not visible to static
     analysis. Vulnerable code reachable only through those calls will not be
-    reported. Use of the unsafe package may result in false negatives.
+    reported in source scan mode. Similarly, use of the unsafe package may
+    result in false negatives.
   - Because Go binaries do not contain detailed call information, govulncheck
     cannot show the call graphs for detected vulnerabilities. It may also
     report false positives for code that is in the binary but unreachable.
   - There is no support for silencing vulnerability findings. See https://go.dev/issue/61211 for
     updates.
-  - Govulncheck only reads binaries compiled with Go 1.18 and later.
+  - Govulncheck reports only standard library vulnerabilities for binaries
+    built with Go versions prior to Go 1.18.
   - For binaries where the symbol information cannot be extracted, govulncheck
     reports vulnerabilities for all modules on which the binary depends.
 

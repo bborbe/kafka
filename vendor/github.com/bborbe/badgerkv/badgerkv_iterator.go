@@ -57,7 +57,7 @@ func (i iterator) Next() {
 }
 
 func (i iterator) Valid() bool {
-	return i.badgerIterator.ValidForPrefix(i.bucketName)
+	return i.badgerIterator.ValidForPrefix(append(i.bucketName, bucketKeySeperator))
 }
 
 func (i iterator) Rewind() {
