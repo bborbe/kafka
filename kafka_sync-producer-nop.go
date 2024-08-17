@@ -11,7 +11,7 @@ import (
 	"github.com/golang/glog"
 )
 
-func NewSyncProducerNo() SyncProducer {
+func NewSyncProducerNop() SyncProducer {
 	return &syncProducerNo{}
 }
 

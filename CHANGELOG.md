@@ -10,6 +10,10 @@ Please choose versions by [Semantic Versioning](http://semver.org/).
 
 ## v1.6.5
 
+- fix NewSyncProducerNop
+
+## v1.6.5
+
 - add SyncProducerNop
 - go mod update
 
