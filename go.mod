@@ -4,33 +4,33 @@ go 1.23.0
 
 require (
 	github.com/IBM/sarama v1.43.3
-	github.com/bborbe/badgerkv v1.4.2
-	github.com/bborbe/boltkv v1.6.2
+	github.com/bborbe/badgerkv v1.5.0
+	github.com/bborbe/boltkv v1.7.0
 	github.com/bborbe/errors v1.3.0
 	github.com/bborbe/http v1.4.0
-	github.com/bborbe/kv v1.6.0
+	github.com/bborbe/kv v1.7.0
 	github.com/bborbe/log v1.0.0
-	github.com/bborbe/parse v1.3.0
+	github.com/bborbe/parse v1.3.1
 	github.com/bborbe/run v1.5.3
 	github.com/bborbe/validation v1.1.0
 	github.com/golang/glog v1.2.2
-	github.com/onsi/ginkgo/v2 v2.20.0
-	github.com/onsi/gomega v1.34.1
-	github.com/prometheus/client_golang v1.20.0
+	github.com/onsi/ginkgo/v2 v2.20.2
+	github.com/onsi/gomega v1.34.2
+	github.com/prometheus/client_golang v1.20.2
 )
 
 require (
 	github.com/bborbe/collection v1.6.0 // indirect
 	github.com/bborbe/math v1.1.0 // indirect
 	github.com/bborbe/sentry v1.7.0 // indirect
-	github.com/bborbe/time v1.3.0 // indirect
+	github.com/bborbe/time v1.4.2 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/bmatcuk/doublestar/v4 v4.6.1 // indirect
 	github.com/certifi/gocertifi v0.0.0-20210507211836-431795d63e8d // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
-	github.com/dgraph-io/badger/v4 v4.2.0 // indirect
-	github.com/dgraph-io/ristretto v0.1.1 // indirect
+	github.com/dgraph-io/badger/v4 v4.3.0 // indirect
+	github.com/dgraph-io/ristretto v0.1.2-0.20240116140435-c67e07994f91 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
 	github.com/eapache/go-resiliency v1.7.0 // indirect
 	github.com/eapache/go-xerial-snappy v0.0.0-20230731223053-c322873962e3 // indirect
@@ -46,7 +46,7 @@ require (
 	github.com/google/addlicense v1.1.1 // indirect
 	github.com/google/flatbuffers v24.3.25+incompatible // indirect
 	github.com/google/go-cmp v0.6.0 // indirect
-	github.com/google/pprof v0.0.0-20240727154555-813a5fbdbec8 // indirect
+	github.com/google/pprof v0.0.0-20240903155634-a8630aee4ab9 // indirect
 	github.com/gorilla/mux v1.8.1 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
@@ -64,19 +64,18 @@ require (
 	github.com/pierrec/lz4/v4 v4.1.21 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/prometheus/client_model v0.6.1 // indirect
-	github.com/prometheus/common v0.55.0 // indirect
+	github.com/prometheus/common v0.58.0 // indirect
 	github.com/prometheus/procfs v0.15.1 // indirect
 	github.com/rcrowley/go-metrics v0.0.0-20201227073835-cf1acfcdf475 // indirect
-	go.etcd.io/bbolt v1.3.10 // indirect
+	go.etcd.io/bbolt v1.3.11 // indirect
 	go.opencensus.io v0.24.0 // indirect
 	golang.org/x/crypto v0.26.0 // indirect
-	golang.org/x/exp v0.0.0-20240808152545-0cdaa3abc0fa // indirect
 	golang.org/x/lint v0.0.0-20210508222113-6edffad5e616 // indirect
 	golang.org/x/mod v0.20.0 // indirect
 	golang.org/x/net v0.28.0 // indirect
 	golang.org/x/sync v0.8.0 // indirect
 	golang.org/x/sys v0.24.0 // indirect
-	golang.org/x/telemetry v0.0.0-20240815150606-0693e6240b9b // indirect
+	golang.org/x/telemetry v0.0.0-20240830212034-a0ccdf0ac735 // indirect
 	golang.org/x/text v0.17.0 // indirect
 	golang.org/x/tools v0.24.0 // indirect
 	golang.org/x/vuln v1.1.3 // indirect

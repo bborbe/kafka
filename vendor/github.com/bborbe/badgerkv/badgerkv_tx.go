@@ -7,6 +7,7 @@ package badgerkv
 import (
 	"bytes"
 	"context"
+	"sync"
 
 	"github.com/bborbe/errors"
 	libkv "github.com/bborbe/kv"
@@ -23,12 +24,17 @@ func NewTx(badgerTx *badger.Txn) Tx {
 	return &tx{
 		badgerTx:   badgerTx,
 		bucketName: libkv.NewBucketName("__bucket"),
+
+		cache: make(map[string]libkv.Bucket),
 	}
 }
 
 type tx struct {
 	badgerTx   *badger.Txn
 	bucketName libkv.BucketName
+
+	mux   sync.Mutex
+	cache map[string]libkv.Bucket
 }
 
 func (t *tx) Tx() *badger.Txn {
@@ -36,6 +42,14 @@ func (t *tx) Tx() *badger.Txn {
 }
 
 func (t *tx) Bucket(ctx context.Context, name libkv.BucketName) (libkv.Bucket, error) {
+	t.mux.Lock()
+	defer t.mux.Unlock()
+
+	bucket, ok := t.cache[name.String()]
+	if ok {
+		return bucket, nil
+	}
+
 	exists, err := t.existsBucket(ctx, name)
 	if err != nil {
 		return nil, errors.Wrapf(ctx, err, "check exists failed")
@@ -43,10 +57,15 @@ func (t *tx) Bucket(ctx context.Context, name libkv.BucketName) (libkv.Bucket, e
 	if exists == false {
 		return nil, errors.Wrapf(ctx, libkv.BucketNotFoundError, "bucket %s not found", name)
 	}
-	return NewBucket(t.badgerTx, name), nil
+	bucket = NewBucket(t.badgerTx, name)
+	t.cache[name.String()] = bucket
+	return bucket, nil
 }
 
 func (t *tx) CreateBucket(ctx context.Context, name libkv.BucketName) (libkv.Bucket, error) {
+	t.mux.Lock()
+	defer t.mux.Unlock()
+
 	exists, err := t.existsBucket(ctx, name)
 	if err != nil {
 		return nil, errors.Wrapf(ctx, err, "check exists failed")
@@ -57,10 +76,20 @@ func (t *tx) CreateBucket(ctx context.Context, name libkv.BucketName) (libkv.Buc
 	if err := t.createBucket(ctx, name); err != nil {
 		return nil, errors.Wrapf(ctx, err, "create bucket failed")
 	}
-	return NewBucket(t.badgerTx, name), nil
+	bucket := NewBucket(t.badgerTx, name)
+	t.cache[name.String()] = bucket
+	return bucket, nil
 }
 
 func (t *tx) CreateBucketIfNotExists(ctx context.Context, name libkv.BucketName) (libkv.Bucket, error) {
+	t.mux.Lock()
+	defer t.mux.Unlock()
+
+	bucket, ok := t.cache[name.String()]
+	if ok {
+		return bucket, nil
+	}
+
 	exists, err := t.existsBucket(ctx, name)
 	if err != nil {
 		return nil, errors.Wrapf(ctx, err, "check exists failed")
@@ -70,10 +99,15 @@ func (t *tx) CreateBucketIfNotExists(ctx context.Context, name libkv.BucketName)
 			return nil, errors.Wrapf(ctx, err, "create bucket failed")
 		}
 	}
-	return NewBucket(t.badgerTx, name), nil
+	bucket = NewBucket(t.badgerTx, name)
+	t.cache[name.String()] = bucket
+	return bucket, nil
 }
 
 func (t *tx) DeleteBucket(ctx context.Context, name libkv.BucketName) error {
+	t.mux.Lock()
+	defer t.mux.Unlock()
+
 	exists, err := t.existsBucket(ctx, name)
 	if err != nil {
 		return errors.Wrapf(ctx, err, "check exists failed")
@@ -98,6 +132,8 @@ func (t *tx) DeleteBucket(ctx context.Context, name libkv.BucketName) error {
 			return errors.Wrapf(ctx, err, "delete bucket failed")
 		}
 	}
+
+	delete(t.cache, name.String())
 	return nil
 }
 

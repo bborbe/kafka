@@ -8,9 +8,14 @@ Please choose versions by [Semantic Versioning](http://semver.org/).
 * MINOR version when you add functionality in a backwards-compatible manner, and
 * PATCH version when you make backwards-compatible bug fixes.
 
+## v1.6.7
+
+- add MessageHandlerBatchMetrics
+
 ## v1.6.6
 
 - fix NewSyncProducerNop
+- go mod update
 
 ## v1.6.5
 
@@ -24,7 +29,7 @@ Please choose versions by [Semantic Versioning](http://semver.org/).
 
 ## v1.6.3
 
-- add UpdateHandlerFilter 
+- add UpdateHandlerFilter
 - go mod update
 
 ## v1.6.2
@@ -74,7 +79,7 @@ Please choose versions by [Semantic Versioning](http://semver.org/).
 - rename metrics messageHandler
 
 ## v1.2.1
- 
+
 - add messageHandler metrics
 
 ## v1.2.0

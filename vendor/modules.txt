@@ -1,11 +1,11 @@
 # github.com/IBM/sarama v1.43.3
 ## explicit; go 1.19
 github.com/IBM/sarama
-# github.com/bborbe/badgerkv v1.4.2
-## explicit; go 1.22.4
+# github.com/bborbe/badgerkv v1.5.0
+## explicit; go 1.23.0
 github.com/bborbe/badgerkv
-# github.com/bborbe/boltkv v1.6.2
-## explicit; go 1.21.8
+# github.com/bborbe/boltkv v1.7.0
+## explicit; go 1.23.0
 github.com/bborbe/boltkv
 # github.com/bborbe/collection v1.6.0
 ## explicit; go 1.22.5
@@ -16,8 +16,8 @@ github.com/bborbe/errors
 # github.com/bborbe/http v1.4.0
 ## explicit; go 1.22.5
 github.com/bborbe/http
-# github.com/bborbe/kv v1.6.0
-## explicit; go 1.22.4
+# github.com/bborbe/kv v1.7.0
+## explicit; go 1.23.0
 github.com/bborbe/kv
 github.com/bborbe/kv/mocks
 # github.com/bborbe/log v1.0.0
@@ -26,8 +26,8 @@ github.com/bborbe/log
 # github.com/bborbe/math v1.1.0
 ## explicit; go 1.22.5
 github.com/bborbe/math
-# github.com/bborbe/parse v1.3.0
-## explicit; go 1.22.4
+# github.com/bborbe/parse v1.3.1
+## explicit; go 1.23.0
 github.com/bborbe/parse
 # github.com/bborbe/run v1.5.3
 ## explicit; go 1.22.2
@@ -35,8 +35,8 @@ github.com/bborbe/run
 # github.com/bborbe/sentry v1.7.0
 ## explicit; go 1.22.3
 github.com/bborbe/sentry
-# github.com/bborbe/time v1.3.0
-## explicit; go 1.22.5
+# github.com/bborbe/time v1.4.2
+## explicit; go 1.23.0
 github.com/bborbe/time
 # github.com/bborbe/validation v1.1.0
 ## explicit; go 1.22.5
@@ -56,7 +56,7 @@ github.com/cespare/xxhash/v2
 # github.com/davecgh/go-spew v1.1.1
 ## explicit
 github.com/davecgh/go-spew/spew
-# github.com/dgraph-io/badger/v4 v4.2.0
+# github.com/dgraph-io/badger/v4 v4.3.0
 ## explicit; go 1.19
 github.com/dgraph-io/badger/v4
 github.com/dgraph-io/badger/v4/fb
@@ -66,8 +66,8 @@ github.com/dgraph-io/badger/v4/skl
 github.com/dgraph-io/badger/v4/table
 github.com/dgraph-io/badger/v4/trie
 github.com/dgraph-io/badger/v4/y
-# github.com/dgraph-io/ristretto v0.1.1
-## explicit; go 1.12
+# github.com/dgraph-io/ristretto v0.1.2-0.20240116140435-c67e07994f91
+## explicit; go 1.19
 github.com/dgraph-io/ristretto
 github.com/dgraph-io/ristretto/z
 github.com/dgraph-io/ristretto/z/simd
@@ -131,8 +131,8 @@ github.com/google/go-cmp/cmp/internal/diff
 github.com/google/go-cmp/cmp/internal/flags
 github.com/google/go-cmp/cmp/internal/function
 github.com/google/go-cmp/cmp/internal/value
-# github.com/google/pprof v0.0.0-20240727154555-813a5fbdbec8
-## explicit; go 1.19
+# github.com/google/pprof v0.0.0-20240903155634-a8630aee4ab9
+## explicit; go 1.22
 github.com/google/pprof/profile
 # github.com/gorilla/mux v1.8.1
 ## explicit; go 1.20
@@ -210,7 +210,10 @@ github.com/klauspost/compress/fse
 github.com/klauspost/compress/gzip
 github.com/klauspost/compress/huff0
 github.com/klauspost/compress/internal/cpuinfo
+github.com/klauspost/compress/internal/race
 github.com/klauspost/compress/internal/snapref
+github.com/klauspost/compress/s2
+github.com/klauspost/compress/snappy
 github.com/klauspost/compress/zstd
 github.com/klauspost/compress/zstd/internal/xxhash
 # github.com/maxbrunsfeld/counterfeiter/v6 v6.8.1
@@ -222,8 +225,8 @@ github.com/maxbrunsfeld/counterfeiter/v6/generator
 # github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822
 ## explicit
 github.com/munnerz/goautoneg
-# github.com/onsi/ginkgo/v2 v2.20.0
-## explicit; go 1.20
+# github.com/onsi/ginkgo/v2 v2.20.2
+## explicit; go 1.22
 github.com/onsi/ginkgo/v2
 github.com/onsi/ginkgo/v2/config
 github.com/onsi/ginkgo/v2/formatter
@@ -244,8 +247,8 @@ github.com/onsi/ginkgo/v2/internal/parallel_support
 github.com/onsi/ginkgo/v2/internal/testingtproxy
 github.com/onsi/ginkgo/v2/reporters
 github.com/onsi/ginkgo/v2/types
-# github.com/onsi/gomega v1.34.1
-## explicit; go 1.20
+# github.com/onsi/gomega v1.34.2
+## explicit; go 1.22
 github.com/onsi/gomega
 github.com/onsi/gomega/format
 github.com/onsi/gomega/internal
@@ -266,14 +269,14 @@ github.com/pierrec/lz4/v4/internal/xxh32
 # github.com/pkg/errors v0.9.1
 ## explicit
 github.com/pkg/errors
-# github.com/prometheus/client_golang v1.20.0
+# github.com/prometheus/client_golang v1.20.2
 ## explicit; go 1.20
 github.com/prometheus/client_golang/prometheus
 github.com/prometheus/client_golang/prometheus/internal
 # github.com/prometheus/client_model v0.6.1
 ## explicit; go 1.19
 github.com/prometheus/client_model/go
-# github.com/prometheus/common v0.55.0
+# github.com/prometheus/common v0.58.0
 ## explicit; go 1.20
 github.com/prometheus/common/expfmt
 github.com/prometheus/common/model
@@ -285,8 +288,8 @@ github.com/prometheus/procfs/internal/util
 # github.com/rcrowley/go-metrics v0.0.0-20201227073835-cf1acfcdf475
 ## explicit
 github.com/rcrowley/go-metrics
-# go.etcd.io/bbolt v1.3.10
-## explicit; go 1.21
+# go.etcd.io/bbolt v1.3.11
+## explicit; go 1.22
 go.etcd.io/bbolt
 # go.opencensus.io v0.24.0
 ## explicit; go 1.13
@@ -299,10 +302,6 @@ go.opencensus.io/trace/tracestate
 ## explicit; go 1.20
 golang.org/x/crypto/md4
 golang.org/x/crypto/pbkdf2
-# golang.org/x/exp v0.0.0-20240808152545-0cdaa3abc0fa
-## explicit; go 1.20
-golang.org/x/exp/constraints
-golang.org/x/exp/slices
 # golang.org/x/lint v0.0.0-20210508222113-6edffad5e616
 ## explicit; go 1.11
 golang.org/x/lint
@@ -331,7 +330,7 @@ golang.org/x/sync/errgroup
 golang.org/x/sys/execabs
 golang.org/x/sys/unix
 golang.org/x/sys/windows
-# golang.org/x/telemetry v0.0.0-20240815150606-0693e6240b9b
+# golang.org/x/telemetry v0.0.0-20240830212034-a0ccdf0ac735
 ## explicit; go 1.20
 golang.org/x/telemetry
 golang.org/x/telemetry/counter
