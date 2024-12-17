@@ -31,9 +31,9 @@ var _ = DescribeTable("CreateCandlePartitionTopic",
 	Entry("with invalid char", libkafka.Topic("hello\\world"), true),
 )
 
-var _ = DescribeTable("TopicBucketFromStrings",
+var _ = DescribeTable("TopicFromStrings",
 	func(strings []string, expectedTopic libkafka.Topic) {
-		Expect(libkafka.TopicBucketFromStrings(strings...)).To(Equal(expectedTopic))
+		Expect(libkafka.TopicFromStrings(strings...)).To(Equal(expectedTopic))
 	},
 	Entry("simple", []string{"test"}, libkafka.Topic("test")),
 	Entry("upper", []string{"TEST"}, libkafka.Topic("test")),

@@ -17,7 +17,7 @@ var invalidTopicCharRegexp = regexp.MustCompile(`[^a-zA-Z0-9\._-]+`)
 var dashRegexp = regexp.MustCompile(`-+`)
 var validateTopic = regexp.MustCompile(`^[a-zA-Z0-9\._-]*$`)
 
-func TopicBucketFromStrings(values ...string) Topic {
+func TopicFromStrings(values ...string) Topic {
 	str := strings.ToLower(strings.Join(values, "-"))
 	str = invalidTopicCharRegexp.ReplaceAllString(str, "-")
 	str = dashRegexp.ReplaceAllString(str, "-")
