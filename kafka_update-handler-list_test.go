@@ -1,10 +1,16 @@
+// Copyright (c) 2024 Benjamin Borbe All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+
 package kafka_test
 
 import (
 	"context"
-	"github.com/bborbe/kafka"
+
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+
+	"github.com/bborbe/kafka"
 )
 
 var _ = Describe("UpdaterHandlerList", func() {

@@ -37,6 +37,19 @@ type tx struct {
 	cache map[string]libkv.Bucket
 }
 
+func (t *tx) ListBucketNames(ctx context.Context) (libkv.BucketNames, error) {
+	result := libkv.BucketNames{}
+	bucket := NewBucket(t.badgerTx, t.bucketName)
+	err := libkv.ForEach(ctx, bucket, func(item libkv.Item) error {
+		result = append(result, item.Key())
+		return nil
+	})
+	if err != nil {
+		return nil, errors.Wrapf(ctx, err, "foreach failed")
+	}
+	return result, nil
+}
+
 func (t *tx) Tx() *badger.Txn {
 	return t.badgerTx
 }

@@ -6,7 +6,9 @@ package badgerkv
 
 import (
 	"context"
+	"os"
 
+	"github.com/bborbe/collection"
 	"github.com/bborbe/errors"
 	libkv "github.com/bborbe/kv"
 	"github.com/dgraph-io/badger/v4"
@@ -65,6 +67,24 @@ func NewDB(db *badger.DB) DB {
 
 type badgerdb struct {
 	db *badger.DB
+}
+
+func (b *badgerdb) Remove() error {
+	opts := b.db.Opts()
+	paths := collection.Unique([]string{opts.Dir, opts.ValueDir})
+	for _, path := range paths {
+		if path == "" {
+			continue
+		}
+		if _, err := os.Stat(path); err != nil {
+			continue
+		}
+		if err := os.RemoveAll(path); err != nil {
+			return err
+		}
+		glog.V(4).Infof("remove files from %s", path)
+	}
+	return nil
 }
 
 func (b *badgerdb) Sync() error {

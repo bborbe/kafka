@@ -8,6 +8,28 @@ Please choose versions by [Semantic Versioning](http://semver.org/).
 * MINOR version when you add functionality in a backwards-compatible manner, and
 * PATCH version when you make backwards-compatible bug fixes.
 
+## v1.7.1
+
+- fix ListBucketNames
+
+## v1.7.0
+
+- implement ListBucketNames
+- go mod update
+
+## v1.6.0
+
+- add remove db files
+- go mod update
+
+## v1.5.2
+
+- go mod update
+
+## v1.5.1
+
+- go mod update
+
 ## v1.5.0
 
 - cache buckets per tx

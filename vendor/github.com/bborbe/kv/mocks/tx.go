@@ -63,6 +63,19 @@ type Tx struct {
 	deleteBucketReturnsOnCall map[int]struct {
 		result1 error
 	}
+	ListBucketNamesStub        func(context.Context) (kv.BucketNames, error)
+	listBucketNamesMutex       sync.RWMutex
+	listBucketNamesArgsForCall []struct {
+		arg1 context.Context
+	}
+	listBucketNamesReturns struct {
+		result1 kv.BucketNames
+		result2 error
+	}
+	listBucketNamesReturnsOnCall map[int]struct {
+		result1 kv.BucketNames
+		result2 error
+	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
 }
@@ -324,6 +337,70 @@ func (fake *Tx) DeleteBucketReturnsOnCall(i int, result1 error) {
 	}{result1}
 }
 
+func (fake *Tx) ListBucketNames(arg1 context.Context) (kv.BucketNames, error) {
+	fake.listBucketNamesMutex.Lock()
+	ret, specificReturn := fake.listBucketNamesReturnsOnCall[len(fake.listBucketNamesArgsForCall)]
+	fake.listBucketNamesArgsForCall = append(fake.listBucketNamesArgsForCall, struct {
+		arg1 context.Context
+	}{arg1})
+	stub := fake.ListBucketNamesStub
+	fakeReturns := fake.listBucketNamesReturns
+	fake.recordInvocation("ListBucketNames", []interface{}{arg1})
+	fake.listBucketNamesMutex.Unlock()
+	if stub != nil {
+		return stub(arg1)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *Tx) ListBucketNamesCallCount() int {
+	fake.listBucketNamesMutex.RLock()
+	defer fake.listBucketNamesMutex.RUnlock()
+	return len(fake.listBucketNamesArgsForCall)
+}
+
+func (fake *Tx) ListBucketNamesCalls(stub func(context.Context) (kv.BucketNames, error)) {
+	fake.listBucketNamesMutex.Lock()
+	defer fake.listBucketNamesMutex.Unlock()
+	fake.ListBucketNamesStub = stub
+}
+
+func (fake *Tx) ListBucketNamesArgsForCall(i int) context.Context {
+	fake.listBucketNamesMutex.RLock()
+	defer fake.listBucketNamesMutex.RUnlock()
+	argsForCall := fake.listBucketNamesArgsForCall[i]
+	return argsForCall.arg1
+}
+
+func (fake *Tx) ListBucketNamesReturns(result1 kv.BucketNames, result2 error) {
+	fake.listBucketNamesMutex.Lock()
+	defer fake.listBucketNamesMutex.Unlock()
+	fake.ListBucketNamesStub = nil
+	fake.listBucketNamesReturns = struct {
+		result1 kv.BucketNames
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *Tx) ListBucketNamesReturnsOnCall(i int, result1 kv.BucketNames, result2 error) {
+	fake.listBucketNamesMutex.Lock()
+	defer fake.listBucketNamesMutex.Unlock()
+	fake.ListBucketNamesStub = nil
+	if fake.listBucketNamesReturnsOnCall == nil {
+		fake.listBucketNamesReturnsOnCall = make(map[int]struct {
+			result1 kv.BucketNames
+			result2 error
+		})
+	}
+	fake.listBucketNamesReturnsOnCall[i] = struct {
+		result1 kv.BucketNames
+		result2 error
+	}{result1, result2}
+}
+
 func (fake *Tx) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
@@ -335,6 +412,8 @@ func (fake *Tx) Invocations() map[string][][]interface{} {
 	defer fake.createBucketIfNotExistsMutex.RUnlock()
 	fake.deleteBucketMutex.RLock()
 	defer fake.deleteBucketMutex.RUnlock()
+	fake.listBucketNamesMutex.RLock()
+	defer fake.listBucketNamesMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

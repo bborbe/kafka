@@ -23,11 +23,12 @@ import (
 
 	humanize "github.com/dustin/go-humanize"
 	"github.com/pkg/errors"
+	"google.golang.org/protobuf/proto"
 
 	"github.com/dgraph-io/badger/v4/pb"
 	"github.com/dgraph-io/badger/v4/table"
 	"github.com/dgraph-io/badger/v4/y"
-	"github.com/dgraph-io/ristretto/z"
+	"github.com/dgraph-io/ristretto/v2/z"
 )
 
 // StreamWriter is used to write data coming from multiple streams. The streams must not have any
@@ -152,7 +153,7 @@ func (sw *StreamWriter) Write(buf *z.Buffer) error {
 
 	err := buf.SliceIterate(func(s []byte) error {
 		var kv pb.KV
-		if err := kv.Unmarshal(s); err != nil {
+		if err := proto.Unmarshal(s, &kv); err != nil {
 			return err
 		}
 		if kv.StreamDone {

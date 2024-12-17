@@ -8,6 +8,45 @@ Please choose versions by [Semantic Versioning](http://semver.org/).
 * MINOR version when you add functionality in a backwards-compatible manner, and
 * PATCH version when you make backwards-compatible bug fixes.
 
+## v1.11.1
+
+- rename NewUpdateHandlerViewTx -> NewJsonHandlerUpdateTx
+
+## v1.11.0
+
+- add JsonHandlerTx
+- go mod update
+
+## v1.10.0
+
+- add ListBucketNames
+- go mod update
+
+## v1.9.1
+
+- ignore BucketNotFoundError on Map, Remove and Exists
+- go mod update
+
+## v1.9.0
+
+- add remove to DB to delete the complete database
+- add handler for reset bucket and complete database
+- go mod update
+
+## v1.8.2
+
+- fix replace in relationStore
+- go mod update
+
+## v1.8.1
+
+- add simple benchmark
+
+## v1.8.0
+
+- add relation store
+- go mod update
+
 ## v1.7.0
 
 - expect same tx returns same bucket

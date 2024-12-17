@@ -4,8 +4,28 @@
 
 package kafka
 
+import (
+	"context"
+	"regexp"
+
+	"github.com/bborbe/errors"
+	"github.com/bborbe/validation"
+)
+
+var validateTopic = regexp.MustCompile(`^[a-zA-Z0-9\\._-]*$`)
+
 type Topic string
 
 func (t Topic) String() string {
 	return string(t)
+}
+
+func (t Topic) Validate(ctx context.Context) error {
+	if len(t) == 0 {
+		return errors.Wrapf(ctx, validation.Error, "Topic empty")
+	}
+	if !validateTopic.MatchString(t.String()) {
+		return errors.Wrap(ctx, validation.Error, "topic has invalid character")
+	}
+	return nil
 }

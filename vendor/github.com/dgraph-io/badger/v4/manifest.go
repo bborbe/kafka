@@ -20,6 +20,7 @@ import (
 	"bufio"
 	"bytes"
 	"encoding/binary"
+	stderrors "errors"
 	"fmt"
 	"hash/crc32"
 	"io"
@@ -28,8 +29,8 @@ import (
 	"path/filepath"
 	"sync"
 
-	"github.com/golang/protobuf/proto"
 	"github.com/pkg/errors"
+	"google.golang.org/protobuf/proto"
 
 	"github.com/dgraph-io/badger/v4/options"
 	"github.com/dgraph-io/badger/v4/pb"
@@ -352,8 +353,8 @@ func (r *countingReader) ReadByte() (b byte, err error) {
 }
 
 var (
-	errBadMagic    = errors.New("manifest has bad magic")
-	errBadChecksum = errors.New("manifest has checksum mismatch")
+	errBadMagic    = stderrors.New("manifest has bad magic")
+	errBadChecksum = stderrors.New("manifest has checksum mismatch")
 )
 
 // ReplayManifestFile reads the manifest file and constructs two manifest objects.  (We need one

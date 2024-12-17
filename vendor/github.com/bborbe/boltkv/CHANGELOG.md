@@ -8,6 +8,39 @@ Please choose versions by [Semantic Versioning](http://semver.org/).
 * MINOR version when you add functionality in a backwards-compatible manner, and
 * PATCH version when you make backwards-compatible bug fixes.
 
+## v1.9.3
+
+- add cmd bolt-value-delete
+
+## v1.9.2
+
+- add cmd bolt-bucket-delete, bolt-bucket-list, bolt-value-get, bolt-value-list and bolt-value-set
+
+## v1.9.1
+
+- fix ListBucketNames
+
+## v1.9.0
+
+- implement ListBucketNames
+- go mod update
+
+## v1.8.0
+
+- add bolt cmds
+
+## v1.7.3
+
+- go mod update
+
+## v1.7.2
+
+- go mod update
+
+## v1.7.1
+
+- go mod update
+
 ## v1.7.0
 
 - cache buckets per tx
