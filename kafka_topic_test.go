@@ -28,4 +28,19 @@ var _ = DescribeTable("CreateCandlePartitionTopic",
 	Entry("with dot", libkafka.Topic("hello.world"), false),
 	Entry("with numbers", libkafka.Topic("helloworld1337"), false),
 	Entry("with invalid char", libkafka.Topic("helloworld!"), true),
+	Entry("with invalid char", libkafka.Topic("hello\\world"), true),
+)
+
+var _ = DescribeTable("TopicBucketFromStrings",
+	func(strings []string, expectedTopic libkafka.Topic) {
+		Expect(libkafka.TopicBucketFromStrings(strings...)).To(Equal(expectedTopic))
+	},
+	Entry("simple", []string{"test"}, libkafka.Topic("test")),
+	Entry("upper", []string{"TEST"}, libkafka.Topic("test")),
+	Entry("with underscore", []string{"hello_world"}, libkafka.Topic("hello_world")),
+	Entry("with dash", []string{"hello-world"}, libkafka.Topic("hello-world")),
+	Entry("with dot", []string{"hello.world"}, libkafka.Topic("hello.world")),
+	Entry("with numbers", []string{"helloworld1337"}, libkafka.Topic("helloworld1337")),
+	Entry("with invalid char", []string{"hello\\world"}, libkafka.Topic("hello-world")),
+	Entry("with invalid char end", []string{"helloworld!"}, libkafka.Topic("helloworld")),
 )

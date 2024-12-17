@@ -7,12 +7,23 @@ package kafka
 import (
 	"context"
 	"regexp"
+	"strings"
 
 	"github.com/bborbe/errors"
 	"github.com/bborbe/validation"
 )
 
-var validateTopic = regexp.MustCompile(`^[a-zA-Z0-9\\._-]*$`)
+var invalidTopicCharRegexp = regexp.MustCompile(`[^a-zA-Z0-9\._-]+`)
+var dashRegexp = regexp.MustCompile(`-+`)
+var validateTopic = regexp.MustCompile(`^[a-zA-Z0-9\._-]*$`)
+
+func TopicBucketFromStrings(values ...string) Topic {
+	str := strings.ToLower(strings.Join(values, "-"))
+	str = invalidTopicCharRegexp.ReplaceAllString(str, "-")
+	str = dashRegexp.ReplaceAllString(str, "-")
+	str = strings.TrimSuffix(str, "-")
+	return Topic(str)
+}
 
 type Topic string
 
