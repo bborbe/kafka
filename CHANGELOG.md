@@ -8,6 +8,10 @@ Please choose versions by [Semantic Versioning](http://semver.org/).
 * MINOR version when you add functionality in a backwards-compatible manner, and
 * PATCH version when you make backwards-compatible bug fixes.
 
+## v1.9.1
+
+- connect to host without schema
+
 ## v1.9.0
 
 - allow JsonSender send to multi topic in one batch

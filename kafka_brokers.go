@@ -32,6 +32,14 @@ func (b Brokers) Schemas() BrokerSchemas {
 	return result
 }
 
+func (b Brokers) Hosts() []string {
+	result := make([]string, len(b))
+	for i, value := range b {
+		result[i] = value.Host()
+	}
+	return result
+}
+
 func (b Brokers) String() string {
 	return strings.Join(b.Strings(), ",")
 }

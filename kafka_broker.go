@@ -29,3 +29,11 @@ func (b Broker) Schema() BrokerSchema {
 	}
 	return BrokerSchema(parts[0])
 }
+
+func (b Broker) Host() string {
+	parts := strings.Split(b.String(), "://")
+	if len(parts) != 2 {
+		return ""
+	}
+	return parts[1]
+}
