@@ -20,9 +20,10 @@ import (
 type Entries []Entry
 
 type Entry struct {
+	Topic   Topic                 `json:"topic"`
+	Headers []sarama.RecordHeader `json:"headers"`
 	Key     Key                   `json:"key"`
 	Value   Value                 `json:"value"`
-	Headers []sarama.RecordHeader `json:"headers"`
 }
 
 type Keys []Key
@@ -66,9 +67,9 @@ type JsonSenderOptions struct {
 //counterfeiter:generate -o mocks/kafka-json-sender.go --fake-name KafkaJsonSender . JsonSender
 type JsonSender interface {
 	SendUpdate(ctx context.Context, topic Topic, key Key, value Value, headers ...sarama.RecordHeader) error
-	SendUpdates(ctx context.Context, topic Topic, entries Entries) error
+	SendUpdates(ctx context.Context, entries Entries) error
 	SendDelete(ctx context.Context, topic Topic, key Key, headers ...sarama.RecordHeader) error
-	SendDeletes(ctx context.Context, topic Topic, entries Entries) error
+	SendDeletes(ctx context.Context, entries Entries) error
 }
 
 func NewJsonSender(
@@ -119,12 +120,12 @@ func (j *jsonSender) SendUpdate(ctx context.Context, topic Topic, key Key, value
 	return nil
 }
 
-func (j *jsonSender) SendUpdates(ctx context.Context, topic Topic, entries Entries) error {
-	glog.V(4).Infof("sendUpdates %d to %s started", len(entries), topic)
+func (j *jsonSender) SendUpdates(ctx context.Context, entries Entries) error {
+	glog.V(4).Infof("send %d updates started", len(entries))
 	msgs := make([]*sarama.ProducerMessage, len(entries))
 	var err error
 	for i, entry := range entries {
-		msgs[i], err = j.createUpdateMessage(ctx, topic, entry.Key, entry.Value, entry.Headers...)
+		msgs[i], err = j.createUpdateMessage(ctx, entry.Topic, entry.Key, entry.Value, entry.Headers...)
 		if err != nil {
 			return errors.Wrapf(ctx, err, "create update message failed")
 		}
@@ -133,9 +134,9 @@ func (j *jsonSender) SendUpdates(ctx context.Context, topic Topic, entries Entri
 		return errors.Wrapf(ctx, err, "send update message failed")
 	}
 	if j.logSamplerDelete.IsSample() {
-		glog.V(3).Infof("send %d update messages to %s successful (sample)", len(entries), topic)
+		glog.V(3).Infof("send %d update messages successful (sample)", len(entries))
 	}
-	glog.V(4).Infof("sendUpdates %d to %s completed", len(entries), topic)
+	glog.V(4).Infof("send %d updates completed", len(entries))
 	return nil
 }
 
@@ -181,18 +182,18 @@ func (j *jsonSender) SendDelete(ctx context.Context, topic Topic, key Key, heade
 	return nil
 }
 
-func (j *jsonSender) SendDeletes(ctx context.Context, topic Topic, entries Entries) error {
-	glog.V(3).Infof("send %d delete to %s started", len(entries), topic)
+func (j *jsonSender) SendDeletes(ctx context.Context, entries Entries) error {
+	glog.V(3).Infof("send %d deletes started", len(entries))
 
 	msgs := make([]*sarama.ProducerMessage, len(entries))
 	for i, entry := range entries {
-		msgs[i] = j.createDeleteMessage(topic, entry.Key, entry.Headers)
+		msgs[i] = j.createDeleteMessage(entry.Topic, entry.Key, entry.Headers)
 	}
 	if err := j.producer.SendMessages(ctx, msgs); err != nil {
 		return errors.Wrapf(ctx, err, "send delete messages failed")
 	}
 	if j.logSamplerDelete.IsSample() {
-		glog.V(3).Infof("send %d delete messages to %s successful (sample)", len(entries), topic)
+		glog.V(3).Infof("send %d deletes messages successful (sample)", len(entries))
 	}
 	return nil
 }

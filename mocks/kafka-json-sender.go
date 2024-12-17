@@ -24,12 +24,11 @@ type KafkaJsonSender struct {
 	sendDeleteReturnsOnCall map[int]struct {
 		result1 error
 	}
-	SendDeletesStub        func(context.Context, kafka.Topic, kafka.Entries) error
+	SendDeletesStub        func(context.Context, kafka.Entries) error
 	sendDeletesMutex       sync.RWMutex
 	sendDeletesArgsForCall []struct {
 		arg1 context.Context
-		arg2 kafka.Topic
-		arg3 kafka.Entries
+		arg2 kafka.Entries
 	}
 	sendDeletesReturns struct {
 		result1 error
@@ -52,12 +51,11 @@ type KafkaJsonSender struct {
 	sendUpdateReturnsOnCall map[int]struct {
 		result1 error
 	}
-	SendUpdatesStub        func(context.Context, kafka.Topic, kafka.Entries) error
+	SendUpdatesStub        func(context.Context, kafka.Entries) error
 	sendUpdatesMutex       sync.RWMutex
 	sendUpdatesArgsForCall []struct {
 		arg1 context.Context
-		arg2 kafka.Topic
-		arg3 kafka.Entries
+		arg2 kafka.Entries
 	}
 	sendUpdatesReturns struct {
 		result1 error
@@ -133,20 +131,19 @@ func (fake *KafkaJsonSender) SendDeleteReturnsOnCall(i int, result1 error) {
 	}{result1}
 }
 
-func (fake *KafkaJsonSender) SendDeletes(arg1 context.Context, arg2 kafka.Topic, arg3 kafka.Entries) error {
+func (fake *KafkaJsonSender) SendDeletes(arg1 context.Context, arg2 kafka.Entries) error {
 	fake.sendDeletesMutex.Lock()
 	ret, specificReturn := fake.sendDeletesReturnsOnCall[len(fake.sendDeletesArgsForCall)]
 	fake.sendDeletesArgsForCall = append(fake.sendDeletesArgsForCall, struct {
 		arg1 context.Context
-		arg2 kafka.Topic
-		arg3 kafka.Entries
-	}{arg1, arg2, arg3})
+		arg2 kafka.Entries
+	}{arg1, arg2})
 	stub := fake.SendDeletesStub
 	fakeReturns := fake.sendDeletesReturns
-	fake.recordInvocation("SendDeletes", []interface{}{arg1, arg2, arg3})
+	fake.recordInvocation("SendDeletes", []interface{}{arg1, arg2})
 	fake.sendDeletesMutex.Unlock()
 	if stub != nil {
-		return stub(arg1, arg2, arg3)
+		return stub(arg1, arg2)
 	}
 	if specificReturn {
 		return ret.result1
@@ -160,17 +157,17 @@ func (fake *KafkaJsonSender) SendDeletesCallCount() int {
 	return len(fake.sendDeletesArgsForCall)
 }
 
-func (fake *KafkaJsonSender) SendDeletesCalls(stub func(context.Context, kafka.Topic, kafka.Entries) error) {
+func (fake *KafkaJsonSender) SendDeletesCalls(stub func(context.Context, kafka.Entries) error) {
 	fake.sendDeletesMutex.Lock()
 	defer fake.sendDeletesMutex.Unlock()
 	fake.SendDeletesStub = stub
 }
 
-func (fake *KafkaJsonSender) SendDeletesArgsForCall(i int) (context.Context, kafka.Topic, kafka.Entries) {
+func (fake *KafkaJsonSender) SendDeletesArgsForCall(i int) (context.Context, kafka.Entries) {
 	fake.sendDeletesMutex.RLock()
 	defer fake.sendDeletesMutex.RUnlock()
 	argsForCall := fake.sendDeletesArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
+	return argsForCall.arg1, argsForCall.arg2
 }
 
 func (fake *KafkaJsonSender) SendDeletesReturns(result1 error) {
@@ -261,20 +258,19 @@ func (fake *KafkaJsonSender) SendUpdateReturnsOnCall(i int, result1 error) {
 	}{result1}
 }
 
-func (fake *KafkaJsonSender) SendUpdates(arg1 context.Context, arg2 kafka.Topic, arg3 kafka.Entries) error {
+func (fake *KafkaJsonSender) SendUpdates(arg1 context.Context, arg2 kafka.Entries) error {
 	fake.sendUpdatesMutex.Lock()
 	ret, specificReturn := fake.sendUpdatesReturnsOnCall[len(fake.sendUpdatesArgsForCall)]
 	fake.sendUpdatesArgsForCall = append(fake.sendUpdatesArgsForCall, struct {
 		arg1 context.Context
-		arg2 kafka.Topic
-		arg3 kafka.Entries
-	}{arg1, arg2, arg3})
+		arg2 kafka.Entries
+	}{arg1, arg2})
 	stub := fake.SendUpdatesStub
 	fakeReturns := fake.sendUpdatesReturns
-	fake.recordInvocation("SendUpdates", []interface{}{arg1, arg2, arg3})
+	fake.recordInvocation("SendUpdates", []interface{}{arg1, arg2})
 	fake.sendUpdatesMutex.Unlock()
 	if stub != nil {
-		return stub(arg1, arg2, arg3)
+		return stub(arg1, arg2)
 	}
 	if specificReturn {
 		return ret.result1
@@ -288,17 +284,17 @@ func (fake *KafkaJsonSender) SendUpdatesCallCount() int {
 	return len(fake.sendUpdatesArgsForCall)
 }
 
-func (fake *KafkaJsonSender) SendUpdatesCalls(stub func(context.Context, kafka.Topic, kafka.Entries) error) {
+func (fake *KafkaJsonSender) SendUpdatesCalls(stub func(context.Context, kafka.Entries) error) {
 	fake.sendUpdatesMutex.Lock()
 	defer fake.sendUpdatesMutex.Unlock()
 	fake.SendUpdatesStub = stub
 }
 
-func (fake *KafkaJsonSender) SendUpdatesArgsForCall(i int) (context.Context, kafka.Topic, kafka.Entries) {
+func (fake *KafkaJsonSender) SendUpdatesArgsForCall(i int) (context.Context, kafka.Entries) {
 	fake.sendUpdatesMutex.RLock()
 	defer fake.sendUpdatesMutex.RUnlock()
 	argsForCall := fake.sendUpdatesArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
+	return argsForCall.arg1, argsForCall.arg2
 }
 
 func (fake *KafkaJsonSender) SendUpdatesReturns(result1 error) {
