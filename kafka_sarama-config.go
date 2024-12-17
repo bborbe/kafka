@@ -5,16 +5,20 @@
 package kafka
 
 import (
+	"context"
 	"time"
 
 	"github.com/IBM/sarama"
+	"github.com/bborbe/errors"
 )
 
 type SaramaConfigOptions func(config *sarama.Config)
 
 func CreateSaramaConfig(
+	ctx context.Context,
+	brokers Brokers,
 	opts ...SaramaConfigOptions,
-) *sarama.Config {
+) (*sarama.Config, error) {
 	config := sarama.NewConfig()
 	config.Version = sarama.V3_6_0_0
 	config.Producer.RequiredAcks = sarama.WaitForAll
@@ -27,9 +31,24 @@ func CreateSaramaConfig(
 	config.Admin.Retry.Max = 10
 	config.Admin.Retry.Backoff = time.Second
 
+	if brokers.Schemas().Contains(TLSSchema) {
+		tlsConfig, err := NewTLSConfig(
+			ctx,
+			"/client-cert/file",
+			"/client-key/file",
+			"/server-cert/file",
+		)
+		if err != nil {
+			return nil, errors.Wrapf(ctx, err, "read tls files failed")
+		}
+		config.Net.TLS.Enable = true
+		config.Net.TLS.Config = tlsConfig
+		config.ClientID = "sarama-client-ssl"
+	}
+
 	for _, opt := range opts {
 		opt(config)
 	}
 
-	return config
+	return config, nil
 }

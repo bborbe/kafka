@@ -23,7 +23,10 @@ func NewSyncProducer(
 	brokers Brokers,
 	opts ...SaramaConfigOptions,
 ) (SyncProducer, error) {
-	saramaConfig := CreateSaramaConfig(opts...)
+	saramaConfig, err := CreateSaramaConfig(ctx, brokers, opts...)
+	if err != nil {
+		return nil, errors.Wrapf(ctx, err, "create sarama config failed")
+	}
 	saramaSyncProducer, err := sarama.NewSyncProducer(brokers.Strings(), saramaConfig)
 	if err != nil {
 		return nil, errors.Wrapf(ctx, err, "create sync producer failed")

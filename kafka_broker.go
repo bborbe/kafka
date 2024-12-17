@@ -8,36 +8,24 @@ import (
 	"strings"
 )
 
-type Brokers []Broker
-
-func ParseBrokersFromString(value string) Brokers {
-	return ParseBrokers(strings.FieldsFunc(value, func(r rune) bool {
-		return r == ','
-	}))
-}
-
-func ParseBrokers(values []string) Brokers {
-	result := make(Brokers, len(values))
-	for i, value := range values {
-		result[i] = Broker(value)
-	}
-	return result
-}
-
-func (f Brokers) String() string {
-	return strings.Join(f.Strings(), ",")
-}
-
-func (f Brokers) Strings() []string {
-	result := make([]string, len(f))
-	for i, b := range f {
-		result[i] = b.String()
+func ParseBroker(value string) Broker {
+	result := Broker(value)
+	if result.Schema() == "" {
+		return ParseBroker(strings.Join([]string{PlainSchema.String(), value}, "://"))
 	}
 	return result
 }
 
 type Broker string
 
-func (f Broker) String() string {
-	return string(f)
+func (b Broker) String() string {
+	return string(b)
+}
+
+func (b Broker) Schema() BrokerSchema {
+	parts := strings.Split(b.String(), "://")
+	if len(parts) != 2 {
+		return ""
+	}
+	return BrokerSchema(parts[0])
 }

@@ -21,7 +21,10 @@ func CreateSaramaClient(
 	brokers Brokers,
 	opts ...SaramaConfigOptions,
 ) (SaramaClient, error) {
-	saramaConfig := CreateSaramaConfig(opts...)
+	saramaConfig, err := CreateSaramaConfig(ctx, brokers, opts...)
+	if err != nil {
+		return nil, errors.Wrapf(ctx, err, "create sarama config failed")
+	}
 	saramaClient, err := sarama.NewClient(brokers.Strings(), saramaConfig)
 	if err != nil {
 		return nil, errors.Wrapf(ctx, err, "create client failed")

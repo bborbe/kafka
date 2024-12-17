@@ -8,6 +8,11 @@ Please choose versions by [Semantic Versioning](http://semver.org/).
 * MINOR version when you add functionality in a backwards-compatible manner, and
 * PATCH version when you make backwards-compatible bug fixes.
 
+## v1.8.0
+
+- add Schema to Broker (plain + tls)  
+- add tls support to SaramaClient
+
 ## v1.7.2
 
 - add TopicBucketFromStrings -> TopicFromStrings
