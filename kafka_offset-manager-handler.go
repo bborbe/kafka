@@ -10,9 +10,13 @@ import (
 
 	"github.com/bborbe/errors"
 	libhttp "github.com/bborbe/http"
+	"github.com/golang/glog"
 )
 
-func NewOffsetManagerHandler(offsetManager OffsetManager, cancel context.CancelFunc) libhttp.WithError {
+func NewOffsetManagerHandler(
+	offsetManager OffsetManager,
+	cancel context.CancelFunc,
+) libhttp.WithError {
 	return libhttp.WithErrorFunc(func(ctx context.Context, resp http.ResponseWriter, req *http.Request) error {
 		partition, err := ParsePartition(ctx, req.FormValue("partition"))
 		if err != nil {
@@ -31,11 +35,20 @@ func NewOffsetManagerHandler(offsetManager OffsetManager, cancel context.CancelF
 			libhttp.WriteAndGlog(resp, "next offset is %s", offset)
 			return nil
 		}
+		if offset.Int64() < 0 {
+			highWaterMark, err := offsetManager.NextOffset(ctx, topic, *partition)
+			if err != nil {
+				return errors.Wrapf(ctx, err, "get offset failed")
+			}
+			newOffset := Offset(offset.Int64() + highWaterMark.Int64())
+			glog.V(2).Infof("offset(%d) < 0 => use %d", offset.Int64(), newOffset)
+			offset = newOffset.Ptr()
+		}
 		if err := offsetManager.MarkOffset(ctx, topic, *partition, *offset); err != nil {
 			return errors.Wrapf(ctx, err, "set offset failed")
 		}
-		defer cancel()
-		libhttp.WriteAndGlog(resp, "set offset completed")
+		libhttp.WriteAndGlog(resp, "set offset(%d) completed", offset.Int64())
+
 		return nil
 	})
 }
