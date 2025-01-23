@@ -4,7 +4,24 @@
 
 package kafka
 
-import "github.com/bborbe/collection"
+import (
+	"github.com/bborbe/collection"
+	"strings"
+)
+
+func ParseTopicsFromString(value string) Topics {
+	return ParseTopics(strings.FieldsFunc(value, func(r rune) bool {
+		return r == ','
+	}))
+}
+
+func ParseTopics(values []string) Topics {
+	result := make(Topics, len(values))
+	for i, value := range values {
+		result[i] = Topic(value)
+	}
+	return result
+}
 
 type Topics []Topic
 
