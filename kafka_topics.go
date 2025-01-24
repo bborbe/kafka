@@ -5,8 +5,9 @@
 package kafka
 
 import (
-	"github.com/bborbe/collection"
 	"strings"
+
+	"github.com/bborbe/collection"
 )
 
 func ParseTopicsFromString(value string) Topics {
