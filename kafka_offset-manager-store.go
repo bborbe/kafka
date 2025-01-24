@@ -6,10 +6,14 @@ package kafka
 
 import (
 	"context"
+	stderrors "errors"
+	"sync"
 
 	"github.com/bborbe/errors"
 	libkv "github.com/bborbe/kv"
 )
+
+var ClosedError = stderrors.New("closed")
 
 func NewStoreOffsetManager(
 	initalOffset Offset,
@@ -24,6 +28,16 @@ func NewStoreOffsetManager(
 type storeOffsetManager struct {
 	initalOffset Offset
 	offsetStore  OffsetStore
+
+	mux    sync.Mutex
+	closed bool
+}
+
+func (s *storeOffsetManager) Close() error {
+	s.mux.Lock()
+	defer s.mux.Unlock()
+	s.closed = true
+	return nil
 }
 
 func (s *storeOffsetManager) InitialOffset() Offset {
@@ -31,6 +45,12 @@ func (s *storeOffsetManager) InitialOffset() Offset {
 }
 
 func (s *storeOffsetManager) NextOffset(ctx context.Context, topic Topic, partition Partition) (Offset, error) {
+	s.mux.Lock()
+	defer s.mux.Unlock()
+	if s.closed {
+		return 0, errors.Wrapf(ctx, ClosedError, "offsetManager is closed")
+	}
+
 	offset, err := s.offsetStore.Get(ctx, topic, partition)
 	if err != nil {
 		if errors.Is(err, libkv.KeyNotFoundError) || errors.Is(err, libkv.BucketNotFoundError) {
@@ -42,6 +62,11 @@ func (s *storeOffsetManager) NextOffset(ctx context.Context, topic Topic, partit
 }
 
 func (s *storeOffsetManager) MarkOffset(ctx context.Context, topic Topic, partition Partition, nextOffset Offset) error {
+	s.mux.Lock()
+	defer s.mux.Unlock()
+	if s.closed {
+		return errors.Wrapf(ctx, ClosedError, "offsetManager is closed")
+	}
 	if err := s.offsetStore.Set(ctx, topic, partition, nextOffset); err != nil {
 		return errors.Wrapf(ctx, err, "set offset failed")
 	}

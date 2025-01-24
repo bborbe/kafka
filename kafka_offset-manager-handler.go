@@ -47,6 +47,7 @@ func NewOffsetManagerHandler(
 		if err := offsetManager.MarkOffset(ctx, topic, *partition, *offset); err != nil {
 			return errors.Wrapf(ctx, err, "set offset failed")
 		}
+		_ = offsetManager.Close()
 		defer cancel()
 		libhttp.WriteAndGlog(resp, "set offset(%d) completed", offset.Int64())
 

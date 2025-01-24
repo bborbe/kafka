@@ -7,6 +7,7 @@ package kafka
 import (
 	"context"
 	"fmt"
+	"io"
 )
 
 type TopicPartition struct {
@@ -22,4 +23,5 @@ type OffsetManager interface {
 	InitialOffset() Offset
 	NextOffset(ctx context.Context, topic Topic, partition Partition) (Offset, error)
 	MarkOffset(ctx context.Context, topic Topic, partition Partition, nextOffset Offset) error
+	io.Closer
 }

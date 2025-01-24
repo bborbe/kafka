@@ -8,6 +8,10 @@ Please choose versions by [Semantic Versioning](http://semver.org/).
 * MINOR version when you add functionality in a backwards-compatible manner, and
 * PATCH version when you make backwards-compatible bug fixes.
 
+## v1.9.6
+
+- allow close OffsetManager
+
 ## v1.9.5
 
 - fix OffsetManagerHandler

@@ -6,7 +6,6 @@ package kafka
 
 import (
 	"context"
-	"io"
 	"sync"
 
 	"github.com/IBM/sarama"
@@ -14,16 +13,11 @@ import (
 	"github.com/golang/glog"
 )
 
-type SaramaOffsetManager interface {
-	OffsetManager
-	io.Closer
-}
-
 func NewSaramaOffsetManager(
 	saramaClient SaramaClient,
 	group Group,
 	initalOffset Offset,
-) SaramaOffsetManager {
+) OffsetManager {
 	return &saramaOffsetManager{
 		saramaClient:            saramaClient,
 		group:                   group,
