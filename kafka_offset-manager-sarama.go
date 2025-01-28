@@ -17,19 +17,22 @@ func NewSaramaOffsetManager(
 	saramaClient SaramaClient,
 	group Group,
 	initalOffset Offset,
+	fallbackOffset Offset,
 ) OffsetManager {
 	return &saramaOffsetManager{
 		saramaClient:            saramaClient,
 		group:                   group,
 		initalOffset:            initalOffset,
+		fallbackOffset:          fallbackOffset,
 		partitionOffsetManagers: make(map[TopicPartition]sarama.PartitionOffsetManager),
 	}
 }
 
 type saramaOffsetManager struct {
-	saramaClient SaramaClient
-	initalOffset Offset
-	group        Group
+	saramaClient   SaramaClient
+	initalOffset   Offset
+	fallbackOffset Offset
+	group          Group
 
 	mux                     sync.Mutex
 	offsetManager           sarama.OffsetManager
@@ -38,6 +41,10 @@ type saramaOffsetManager struct {
 
 func (s *saramaOffsetManager) InitialOffset() Offset {
 	return s.initalOffset
+}
+
+func (s *saramaOffsetManager) FallbackOffset() Offset {
+	return s.fallbackOffset
 }
 
 func (s *saramaOffsetManager) NextOffset(ctx context.Context, topic Topic, partition Partition) (Offset, error) {

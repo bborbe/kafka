@@ -16,18 +16,21 @@ import (
 var ClosedError = stderrors.New("closed")
 
 func NewStoreOffsetManager(
-	initalOffset Offset,
 	offsetStore OffsetStore,
+	initalOffset Offset,
+	fallbackOffset Offset,
 ) OffsetManager {
 	return &storeOffsetManager{
-		initalOffset: initalOffset,
-		offsetStore:  offsetStore,
+		initalOffset:   initalOffset,
+		fallbackOffset: fallbackOffset,
+		offsetStore:    offsetStore,
 	}
 }
 
 type storeOffsetManager struct {
-	initalOffset Offset
-	offsetStore  OffsetStore
+	initalOffset   Offset
+	fallbackOffset Offset
+	offsetStore    OffsetStore
 
 	mux    sync.Mutex
 	closed bool
@@ -42,6 +45,10 @@ func (s *storeOffsetManager) Close() error {
 
 func (s *storeOffsetManager) InitialOffset() Offset {
 	return s.initalOffset
+}
+
+func (s *storeOffsetManager) FallbackOffset() Offset {
+	return s.fallbackOffset
 }
 
 func (s *storeOffsetManager) NextOffset(ctx context.Context, topic Topic, partition Partition) (Offset, error) {

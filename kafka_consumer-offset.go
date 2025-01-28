@@ -6,8 +6,6 @@ package kafka
 
 import (
 	"context"
-	"strings"
-
 	"github.com/IBM/sarama"
 	"github.com/bborbe/errors"
 	"github.com/bborbe/log"
@@ -85,7 +83,7 @@ func (c *offsetConsumer) Consume(ctx context.Context) error {
 			}
 
 			glog.V(2).Infof("consume topic(%s) with partition(%d) and offset(%s) started", c.topic, partition, nextOffset)
-			consumePartition, err := createPartitionConsumer(ctx, consumerFromClient, c.topic, Partition(partition), c.offsetManager.InitialOffset(), nextOffset)
+			consumePartition, err := CreatePartitionConsumer(ctx, consumerFromClient, c.topic, Partition(partition), c.offsetManager.FallbackOffset(), nextOffset)
 			if err != nil {
 				return errors.Wrapf(ctx, err, "create partition consumer for topic(%s) with partition(%d) and offset(%s) failed", c.topic, partition, nextOffset)
 			}
@@ -118,28 +116,6 @@ func (c *offsetConsumer) Consume(ctx context.Context) error {
 	}
 	glog.V(2).Infof("consume topic(%s) with %d partitions completed", c.topic, len(partitions))
 	return nil
-}
-
-const OutOfRangeErrorMessage = "The requested offset is outside the range of offsets maintained by the server for the given topic/partition"
-
-// createPartitionConsumer create partition consumer and use initial offset if out of range error
-func createPartitionConsumer(
-	ctx context.Context,
-	consumerFromClient sarama.Consumer,
-	topic Topic,
-	partition Partition,
-	initialOffset Offset,
-	nextOffset Offset,
-) (sarama.PartitionConsumer, error) {
-	consumePartition, err := consumerFromClient.ConsumePartition(topic.String(), partition.Int32(), nextOffset.Int64())
-	if err != nil {
-		if strings.Contains(err.Error(), OutOfRangeErrorMessage) {
-			glog.Warningf("create partition consumer for topic(%s) and partition(%s) got out of range error => fallback to initial offset(%s)", topic, partition, initialOffset)
-			return consumerFromClient.ConsumePartition(topic.String(), partition.Int32(), initialOffset.Int64())
-		}
-		return nil, errors.Wrapf(ctx, err, "create partition consumer failed")
-	}
-	return consumePartition, nil
 }
 
 // consume

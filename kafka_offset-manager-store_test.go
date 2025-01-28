@@ -48,8 +48,9 @@ var _ = Describe("StoreOffsetManager", func() {
 		Context("initial OffsetOldest", func() {
 			BeforeEach(func() {
 				storeOffsetManager = libkafka.NewStoreOffsetManager(
-					libkafka.OffsetOldest,
 					libkafka.NewOffsetStore(db),
+					libkafka.OffsetOldest,
+					libkafka.OffsetOldest,
 				)
 			})
 			It("returns no error", func() {
@@ -62,8 +63,9 @@ var _ = Describe("StoreOffsetManager", func() {
 		Context("initial OffsetOldest with mark other topic", func() {
 			BeforeEach(func() {
 				storeOffsetManager = libkafka.NewStoreOffsetManager(
-					libkafka.OffsetOldest,
 					libkafka.NewOffsetStore(db),
+					libkafka.OffsetOldest,
+					libkafka.OffsetOldest,
 				)
 				Expect(storeOffsetManager.MarkOffset(ctx, "test", 0, 42)).To(BeNil())
 			})
@@ -77,8 +79,9 @@ var _ = Describe("StoreOffsetManager", func() {
 		Context("initial OffsetNewest", func() {
 			BeforeEach(func() {
 				storeOffsetManager = libkafka.NewStoreOffsetManager(
-					libkafka.OffsetNewest,
 					libkafka.NewOffsetStore(db),
+					libkafka.OffsetNewest,
+					libkafka.OffsetNewest,
 				)
 			})
 			It("returns no error", func() {
@@ -91,8 +94,9 @@ var _ = Describe("StoreOffsetManager", func() {
 		Context("initial number", func() {
 			BeforeEach(func() {
 				storeOffsetManager = libkafka.NewStoreOffsetManager(
-					1337,
 					libkafka.NewOffsetStore(db),
+					1337,
+					1337,
 				)
 			})
 			It("returns no error", func() {
@@ -107,8 +111,9 @@ var _ = Describe("StoreOffsetManager", func() {
 				offsetStore := &mocks.KafkaOffsetStore{}
 				offsetStore.GetReturns(0, libkv.BucketNotFoundError)
 				storeOffsetManager = libkafka.NewStoreOffsetManager(
-					1337,
 					offsetStore,
+					1337,
+					1337,
 				)
 			})
 			It("returns no error", func() {
@@ -123,8 +128,9 @@ var _ = Describe("StoreOffsetManager", func() {
 				offsetStore := &mocks.KafkaOffsetStore{}
 				offsetStore.GetReturns(0, libkv.KeyNotFoundError)
 				storeOffsetManager = libkafka.NewStoreOffsetManager(
-					1337,
 					offsetStore,
+					1337,
+					1337,
 				)
 			})
 			It("returns no error", func() {
@@ -139,8 +145,9 @@ var _ = Describe("StoreOffsetManager", func() {
 				offsetStore := &mocks.KafkaOffsetStore{}
 				offsetStore.GetReturns(0, stderrors.New("banana"))
 				storeOffsetManager = libkafka.NewStoreOffsetManager(
-					1337,
 					offsetStore,
+					1337,
+					1337,
 				)
 			})
 			It("returns error", func() {

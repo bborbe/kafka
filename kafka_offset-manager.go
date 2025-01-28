@@ -21,6 +21,7 @@ func (p TopicPartition) Bytes() []byte {
 
 type OffsetManager interface {
 	InitialOffset() Offset
+	FallbackOffset() Offset
 	NextOffset(ctx context.Context, topic Topic, partition Partition) (Offset, error)
 	MarkOffset(ctx context.Context, topic Topic, partition Partition, nextOffset Offset) error
 	io.Closer
