@@ -52,15 +52,19 @@ func (c *simpleConsumer) Consume(ctx context.Context) error {
 		return errors.Wrapf(ctx, err, "get partition for topic %s failed", c.topic)
 	}
 
-	glog.V(2).Infof("consume topic %s with %d partitions started", c.topic, len(partitions))
+	glog.V(2).Infof("consume topic(%s) with %d partitions started", c.topic, len(partitions))
 
 	var runs []run.Func
 	for _, partition := range partitions {
 		runs = append(runs, func(ctx context.Context) error {
 
-			consumePartition, err := consumerFromClient.ConsumePartition(c.topic.String(), partition, c.initalOffset.Int64())
+			consumePartition, err := consumerFromClient.ConsumePartition(
+				c.topic.String(),
+				partition,
+				c.initalOffset.Int64(),
+			)
 			if err != nil {
-				return errors.Wrapf(ctx, err, "create simple partition consumer for topic %s failed", c.topic)
+				return errors.Wrapf(ctx, err, "create simple partition consumer for topic(%s), partition(%d) anf offset(%s) failed", c.topic, partition, c.initalOffset)
 			}
 			defer consumePartition.Close()
 
@@ -78,7 +82,13 @@ func (c *simpleConsumer) Consume(ctx context.Context) error {
 						return errors.Wrapf(ctx, err, "consume message failed")
 					}
 					if c.logSampler.IsSample() {
-						glog.V(3).Infof("consume message in topic %s with offset %d partition %d completed (%d highwatermark: %d lag: %d) (sample)", msg.Topic, msg.Offset, msg.Partition, consumePartition.HighWaterMarkOffset(), consumePartition.HighWaterMarkOffset()-msg.Offset)
+						glog.V(2).Infof("consume message in topic(%s), partition(%d) and offset(%d) completed (highwatermark: %d lag: %d) (sample)",
+							msg.Topic,
+							msg.Partition,
+							msg.Offset,
+							consumePartition.HighWaterMarkOffset(),
+							consumePartition.HighWaterMarkOffset()-msg.Offset,
+						)
 					}
 				}
 			}

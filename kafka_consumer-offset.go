@@ -6,6 +6,7 @@ package kafka
 
 import (
 	"context"
+
 	"github.com/IBM/sarama"
 	"github.com/bborbe/errors"
 	"github.com/bborbe/log"
@@ -105,7 +106,13 @@ func (c *offsetConsumer) Consume(ctx context.Context) error {
 					return errors.Wrapf(ctx, err, "mark offset failed")
 				}
 				if c.logSampler.IsSample() {
-					glog.V(2).Infof("consume %d messages in topic %s with offset %d partition %d completed (highwatermark: %d lag: %d) (sample)", len(messages), msg.Topic, msg.Offset, msg.Partition, consumePartition.HighWaterMarkOffset(), consumePartition.HighWaterMarkOffset()-msg.Offset)
+					glog.V(2).Infof("consume message in topic(%s), partition(%d) and offset(%d) completed (highwatermark: %d lag: %d) (sample)",
+						msg.Topic,
+						msg.Partition,
+						msg.Offset,
+						consumePartition.HighWaterMarkOffset(),
+						consumePartition.HighWaterMarkOffset()-msg.Offset,
+					)
 				}
 			}
 		})
