@@ -13,11 +13,10 @@ import (
 
 func NewSyncProducerMetrics(
 	syncProducer SyncProducer,
-	metricsSyncProducer MetricsSyncProducer,
 ) SyncProducer {
 	return &syncProducerMetrics{
 		syncProducer:        syncProducer,
-		metricsSyncProducer: metricsSyncProducer,
+		metricsSyncProducer: NewMetrics(),
 	}
 }
 

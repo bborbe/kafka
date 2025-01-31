@@ -15,6 +15,8 @@ import (
 type Metrics interface {
 	MetricsMessageHandler
 	MetricsConsumer
+	MetricsPartitionConsumer
+	MetricsSyncProducer
 }
 
 type MetricsMessageHandler interface {
@@ -27,6 +29,13 @@ type MetricsMessageHandler interface {
 type MetricsConsumer interface {
 	CurrentOffset(topic Topic, partition Partition, offset Offset)
 	HighWaterMarkOffset(topic Topic, partition Partition, offset Offset)
+}
+
+type MetricsPartitionConsumer interface {
+	ConsumePartitionCreateOutOfRangeErrorInc(topic Topic, partition Partition)
+	ConsumePartitionCreateFailureInc(topic Topic, partition Partition)
+	ConsumePartitionCreateSuccessInc(topic Topic, partition Partition)
+	ConsumePartitionCreateTotalInc(topic Topic, partition Partition)
 }
 
 type MetricsSyncProducer interface {
@@ -50,6 +59,33 @@ var (
 		Subsystem: "consumer",
 		Name:      "highwater_mark_offset",
 		Help:      "Highest offset in the current topic",
+	}, []string{"topic", "partition"})
+)
+
+var (
+	consumePartitionCreateTotalCounter = prometheus.NewGaugeVec(prometheus.GaugeOpts{
+		Namespace: metricsNamespace,
+		Subsystem: "consumer_partition_create",
+		Name:      "total_counter",
+		Help:      "Counts created partition consumer",
+	}, []string{"topic", "partition"})
+	consumePartitionCreateSuccessCounter = prometheus.NewGaugeVec(prometheus.GaugeOpts{
+		Namespace: metricsNamespace,
+		Subsystem: "consumer_partition_create",
+		Name:      "success_counter",
+		Help:      "Counts successful created partition consumer",
+	}, []string{"topic", "partition"})
+	consumePartitionCreateFailureCounter = prometheus.NewGaugeVec(prometheus.GaugeOpts{
+		Namespace: metricsNamespace,
+		Subsystem: "consumer_partition_create",
+		Name:      "failure_counter",
+		Help:      "Counts failed created partition consumer",
+	}, []string{"topic", "partition"})
+	consumePartitionCreateOutOfRangeErrorCounter = prometheus.NewGaugeVec(prometheus.GaugeOpts{
+		Namespace: metricsNamespace,
+		Subsystem: "consumer_partition_create",
+		Name:      "failure_out_of_range_counter",
+		Help:      "Counts failed with out of range created partition consumer",
 	}, []string{"topic", "partition"})
 )
 
@@ -121,6 +157,10 @@ func init() {
 		syncProducerSuccessCounter,
 		syncProducerFailureCounter,
 		syncProducerDurationMeasure,
+		consumePartitionCreateSuccessCounter,
+		consumePartitionCreateOutOfRangeErrorCounter,
+		consumePartitionCreateFailureCounter,
+		consumePartitionCreateTotalCounter,
 	)
 }
 
@@ -129,6 +169,34 @@ func NewMetrics() Metrics {
 }
 
 type metrics struct {
+}
+
+func (m *metrics) ConsumePartitionCreateOutOfRangeErrorInc(topic Topic, partition Partition) {
+	consumePartitionCreateOutOfRangeErrorCounter.With(prometheus.Labels{
+		"topic":     topic.String(),
+		"partition": fmt.Sprint(partition),
+	}).Inc()
+}
+
+func (m *metrics) ConsumePartitionCreateFailureInc(topic Topic, partition Partition) {
+	consumePartitionCreateFailureCounter.With(prometheus.Labels{
+		"topic":     topic.String(),
+		"partition": fmt.Sprint(partition),
+	}).Inc()
+}
+
+func (m *metrics) ConsumePartitionCreateSuccessInc(topic Topic, partition Partition) {
+	consumePartitionCreateSuccessCounter.With(prometheus.Labels{
+		"topic":     topic.String(),
+		"partition": fmt.Sprint(partition),
+	}).Inc()
+}
+
+func (m *metrics) ConsumePartitionCreateTotalInc(topic Topic, partition Partition) {
+	consumePartitionCreateTotalCounter.With(prometheus.Labels{
+		"topic":     topic.String(),
+		"partition": fmt.Sprint(partition),
+	}).Inc()
 }
 
 func (m *metrics) CurrentOffset(topic Topic, partition Partition, offset Offset) {
@@ -177,30 +245,26 @@ func (m *metrics) MessageHandlerDurationMeasure(topic Topic, partition Partition
 	}).Observe(float64(duration))
 }
 
-func (m *metrics) SyncProducerTotalCounterInc(topic Topic, partition Partition) {
+func (m *metrics) SyncProducerTotalCounterInc(topic Topic) {
 	syncProducerTotalCounter.With(prometheus.Labels{
-		"topic":     topic.String(),
-		"partition": fmt.Sprint(partition),
+		"topic": topic.String(),
 	}).Inc()
 }
 
-func (m *metrics) SyncProducerSuccessCounterInc(topic Topic, partition Partition) {
+func (m *metrics) SyncProducerSuccessCounterInc(topic Topic) {
 	syncProducerSuccessCounter.With(prometheus.Labels{
-		"topic":     topic.String(),
-		"partition": fmt.Sprint(partition),
+		"topic": topic.String(),
 	}).Inc()
 }
 
-func (m *metrics) SyncProducerFailureCounterInc(topic Topic, partition Partition) {
+func (m *metrics) SyncProducerFailureCounterInc(topic Topic) {
 	syncProducerFailureCounter.With(prometheus.Labels{
-		"topic":     topic.String(),
-		"partition": fmt.Sprint(partition),
+		"topic": topic.String(),
 	}).Inc()
 }
 
-func (m *metrics) SyncProducerDurationMeasure(topic Topic, partition Partition, duration time.Duration) {
+func (m *metrics) SyncProducerDurationMeasure(topic Topic, duration time.Duration) {
 	syncProducerDurationMeasure.With(prometheus.Labels{
-		"topic":     topic.String(),
-		"partition": fmt.Sprint(partition),
+		"topic": topic.String(),
 	}).Observe(float64(duration))
 }

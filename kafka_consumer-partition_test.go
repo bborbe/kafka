@@ -34,7 +34,15 @@ var _ = Describe("CreatePartitionConsumer", func() {
 		consumerFromClient = &mocks.KafkaSaramaConsumer{}
 	})
 	JustBeforeEach(func() {
-		partitionConsumer, err = libkafka.CreatePartitionConsumer(ctx, consumerFromClient, topic, partition, fallbackOffset, nextOffext)
+		partitionConsumer, err = libkafka.CreatePartitionConsumer(
+			ctx,
+			consumerFromClient,
+			&mocks.KafkaMetrics{},
+			topic,
+			partition,
+			fallbackOffset,
+			nextOffext,
+		)
 	})
 	Context("without error", func() {
 		BeforeEach(func() {

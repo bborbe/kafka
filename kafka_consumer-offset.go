@@ -57,7 +57,10 @@ type offsetConsumer struct {
 	messageHandlerBatch MessageHandlerBatch
 	batchSize           BatchSize
 	logSampler          log.Sampler
-	metrics             MetricsConsumer
+	metrics             interface {
+		MetricsConsumer
+		MetricsPartitionConsumer
+	}
 }
 
 func (c *offsetConsumer) Consume(ctx context.Context) error {
@@ -84,7 +87,7 @@ func (c *offsetConsumer) Consume(ctx context.Context) error {
 			}
 
 			glog.V(2).Infof("consume topic(%s) with partition(%d) and offset(%s) started", c.topic, partition, nextOffset)
-			consumePartition, err := CreatePartitionConsumer(ctx, consumerFromClient, c.topic, Partition(partition), c.offsetManager.FallbackOffset(), nextOffset)
+			consumePartition, err := CreatePartitionConsumer(ctx, consumerFromClient, c.metrics, c.topic, Partition(partition), c.offsetManager.FallbackOffset(), nextOffset)
 			if err != nil {
 				return errors.Wrapf(ctx, err, "create partition consumer for topic(%s) with partition(%d) and offset(%s) failed", c.topic, partition, nextOffset)
 			}

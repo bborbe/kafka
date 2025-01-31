@@ -9,6 +9,30 @@ import (
 )
 
 type KafkaMetrics struct {
+	ConsumePartitionCreateFailureIncStub        func(kafka.Topic, kafka.Partition)
+	consumePartitionCreateFailureIncMutex       sync.RWMutex
+	consumePartitionCreateFailureIncArgsForCall []struct {
+		arg1 kafka.Topic
+		arg2 kafka.Partition
+	}
+	ConsumePartitionCreateOutOfRangeErrorIncStub        func(kafka.Topic, kafka.Partition)
+	consumePartitionCreateOutOfRangeErrorIncMutex       sync.RWMutex
+	consumePartitionCreateOutOfRangeErrorIncArgsForCall []struct {
+		arg1 kafka.Topic
+		arg2 kafka.Partition
+	}
+	ConsumePartitionCreateSuccessIncStub        func(kafka.Topic, kafka.Partition)
+	consumePartitionCreateSuccessIncMutex       sync.RWMutex
+	consumePartitionCreateSuccessIncArgsForCall []struct {
+		arg1 kafka.Topic
+		arg2 kafka.Partition
+	}
+	ConsumePartitionCreateTotalIncStub        func(kafka.Topic, kafka.Partition)
+	consumePartitionCreateTotalIncMutex       sync.RWMutex
+	consumePartitionCreateTotalIncArgsForCall []struct {
+		arg1 kafka.Topic
+		arg2 kafka.Partition
+	}
 	CurrentOffsetStub        func(kafka.Topic, kafka.Partition, kafka.Offset)
 	currentOffsetMutex       sync.RWMutex
 	currentOffsetArgsForCall []struct {
@@ -48,8 +72,161 @@ type KafkaMetrics struct {
 		arg1 kafka.Topic
 		arg2 kafka.Partition
 	}
+	SyncProducerDurationMeasureStub        func(kafka.Topic, time.Duration)
+	syncProducerDurationMeasureMutex       sync.RWMutex
+	syncProducerDurationMeasureArgsForCall []struct {
+		arg1 kafka.Topic
+		arg2 time.Duration
+	}
+	SyncProducerFailureCounterIncStub        func(kafka.Topic)
+	syncProducerFailureCounterIncMutex       sync.RWMutex
+	syncProducerFailureCounterIncArgsForCall []struct {
+		arg1 kafka.Topic
+	}
+	SyncProducerSuccessCounterIncStub        func(kafka.Topic)
+	syncProducerSuccessCounterIncMutex       sync.RWMutex
+	syncProducerSuccessCounterIncArgsForCall []struct {
+		arg1 kafka.Topic
+	}
+	SyncProducerTotalCounterIncStub        func(kafka.Topic)
+	syncProducerTotalCounterIncMutex       sync.RWMutex
+	syncProducerTotalCounterIncArgsForCall []struct {
+		arg1 kafka.Topic
+	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
+}
+
+func (fake *KafkaMetrics) ConsumePartitionCreateFailureInc(arg1 kafka.Topic, arg2 kafka.Partition) {
+	fake.consumePartitionCreateFailureIncMutex.Lock()
+	fake.consumePartitionCreateFailureIncArgsForCall = append(fake.consumePartitionCreateFailureIncArgsForCall, struct {
+		arg1 kafka.Topic
+		arg2 kafka.Partition
+	}{arg1, arg2})
+	stub := fake.ConsumePartitionCreateFailureIncStub
+	fake.recordInvocation("ConsumePartitionCreateFailureInc", []interface{}{arg1, arg2})
+	fake.consumePartitionCreateFailureIncMutex.Unlock()
+	if stub != nil {
+		fake.ConsumePartitionCreateFailureIncStub(arg1, arg2)
+	}
+}
+
+func (fake *KafkaMetrics) ConsumePartitionCreateFailureIncCallCount() int {
+	fake.consumePartitionCreateFailureIncMutex.RLock()
+	defer fake.consumePartitionCreateFailureIncMutex.RUnlock()
+	return len(fake.consumePartitionCreateFailureIncArgsForCall)
+}
+
+func (fake *KafkaMetrics) ConsumePartitionCreateFailureIncCalls(stub func(kafka.Topic, kafka.Partition)) {
+	fake.consumePartitionCreateFailureIncMutex.Lock()
+	defer fake.consumePartitionCreateFailureIncMutex.Unlock()
+	fake.ConsumePartitionCreateFailureIncStub = stub
+}
+
+func (fake *KafkaMetrics) ConsumePartitionCreateFailureIncArgsForCall(i int) (kafka.Topic, kafka.Partition) {
+	fake.consumePartitionCreateFailureIncMutex.RLock()
+	defer fake.consumePartitionCreateFailureIncMutex.RUnlock()
+	argsForCall := fake.consumePartitionCreateFailureIncArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2
+}
+
+func (fake *KafkaMetrics) ConsumePartitionCreateOutOfRangeErrorInc(arg1 kafka.Topic, arg2 kafka.Partition) {
+	fake.consumePartitionCreateOutOfRangeErrorIncMutex.Lock()
+	fake.consumePartitionCreateOutOfRangeErrorIncArgsForCall = append(fake.consumePartitionCreateOutOfRangeErrorIncArgsForCall, struct {
+		arg1 kafka.Topic
+		arg2 kafka.Partition
+	}{arg1, arg2})
+	stub := fake.ConsumePartitionCreateOutOfRangeErrorIncStub
+	fake.recordInvocation("ConsumePartitionCreateOutOfRangeErrorInc", []interface{}{arg1, arg2})
+	fake.consumePartitionCreateOutOfRangeErrorIncMutex.Unlock()
+	if stub != nil {
+		fake.ConsumePartitionCreateOutOfRangeErrorIncStub(arg1, arg2)
+	}
+}
+
+func (fake *KafkaMetrics) ConsumePartitionCreateOutOfRangeErrorIncCallCount() int {
+	fake.consumePartitionCreateOutOfRangeErrorIncMutex.RLock()
+	defer fake.consumePartitionCreateOutOfRangeErrorIncMutex.RUnlock()
+	return len(fake.consumePartitionCreateOutOfRangeErrorIncArgsForCall)
+}
+
+func (fake *KafkaMetrics) ConsumePartitionCreateOutOfRangeErrorIncCalls(stub func(kafka.Topic, kafka.Partition)) {
+	fake.consumePartitionCreateOutOfRangeErrorIncMutex.Lock()
+	defer fake.consumePartitionCreateOutOfRangeErrorIncMutex.Unlock()
+	fake.ConsumePartitionCreateOutOfRangeErrorIncStub = stub
+}
+
+func (fake *KafkaMetrics) ConsumePartitionCreateOutOfRangeErrorIncArgsForCall(i int) (kafka.Topic, kafka.Partition) {
+	fake.consumePartitionCreateOutOfRangeErrorIncMutex.RLock()
+	defer fake.consumePartitionCreateOutOfRangeErrorIncMutex.RUnlock()
+	argsForCall := fake.consumePartitionCreateOutOfRangeErrorIncArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2
+}
+
+func (fake *KafkaMetrics) ConsumePartitionCreateSuccessInc(arg1 kafka.Topic, arg2 kafka.Partition) {
+	fake.consumePartitionCreateSuccessIncMutex.Lock()
+	fake.consumePartitionCreateSuccessIncArgsForCall = append(fake.consumePartitionCreateSuccessIncArgsForCall, struct {
+		arg1 kafka.Topic
+		arg2 kafka.Partition
+	}{arg1, arg2})
+	stub := fake.ConsumePartitionCreateSuccessIncStub
+	fake.recordInvocation("ConsumePartitionCreateSuccessInc", []interface{}{arg1, arg2})
+	fake.consumePartitionCreateSuccessIncMutex.Unlock()
+	if stub != nil {
+		fake.ConsumePartitionCreateSuccessIncStub(arg1, arg2)
+	}
+}
+
+func (fake *KafkaMetrics) ConsumePartitionCreateSuccessIncCallCount() int {
+	fake.consumePartitionCreateSuccessIncMutex.RLock()
+	defer fake.consumePartitionCreateSuccessIncMutex.RUnlock()
+	return len(fake.consumePartitionCreateSuccessIncArgsForCall)
+}
+
+func (fake *KafkaMetrics) ConsumePartitionCreateSuccessIncCalls(stub func(kafka.Topic, kafka.Partition)) {
+	fake.consumePartitionCreateSuccessIncMutex.Lock()
+	defer fake.consumePartitionCreateSuccessIncMutex.Unlock()
+	fake.ConsumePartitionCreateSuccessIncStub = stub
+}
+
+func (fake *KafkaMetrics) ConsumePartitionCreateSuccessIncArgsForCall(i int) (kafka.Topic, kafka.Partition) {
+	fake.consumePartitionCreateSuccessIncMutex.RLock()
+	defer fake.consumePartitionCreateSuccessIncMutex.RUnlock()
+	argsForCall := fake.consumePartitionCreateSuccessIncArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2
+}
+
+func (fake *KafkaMetrics) ConsumePartitionCreateTotalInc(arg1 kafka.Topic, arg2 kafka.Partition) {
+	fake.consumePartitionCreateTotalIncMutex.Lock()
+	fake.consumePartitionCreateTotalIncArgsForCall = append(fake.consumePartitionCreateTotalIncArgsForCall, struct {
+		arg1 kafka.Topic
+		arg2 kafka.Partition
+	}{arg1, arg2})
+	stub := fake.ConsumePartitionCreateTotalIncStub
+	fake.recordInvocation("ConsumePartitionCreateTotalInc", []interface{}{arg1, arg2})
+	fake.consumePartitionCreateTotalIncMutex.Unlock()
+	if stub != nil {
+		fake.ConsumePartitionCreateTotalIncStub(arg1, arg2)
+	}
+}
+
+func (fake *KafkaMetrics) ConsumePartitionCreateTotalIncCallCount() int {
+	fake.consumePartitionCreateTotalIncMutex.RLock()
+	defer fake.consumePartitionCreateTotalIncMutex.RUnlock()
+	return len(fake.consumePartitionCreateTotalIncArgsForCall)
+}
+
+func (fake *KafkaMetrics) ConsumePartitionCreateTotalIncCalls(stub func(kafka.Topic, kafka.Partition)) {
+	fake.consumePartitionCreateTotalIncMutex.Lock()
+	defer fake.consumePartitionCreateTotalIncMutex.Unlock()
+	fake.ConsumePartitionCreateTotalIncStub = stub
+}
+
+func (fake *KafkaMetrics) ConsumePartitionCreateTotalIncArgsForCall(i int) (kafka.Topic, kafka.Partition) {
+	fake.consumePartitionCreateTotalIncMutex.RLock()
+	defer fake.consumePartitionCreateTotalIncMutex.RUnlock()
+	argsForCall := fake.consumePartitionCreateTotalIncArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2
 }
 
 func (fake *KafkaMetrics) CurrentOffset(arg1 kafka.Topic, arg2 kafka.Partition, arg3 kafka.Offset) {
@@ -253,9 +430,146 @@ func (fake *KafkaMetrics) MessageHandlerTotalCounterIncArgsForCall(i int) (kafka
 	return argsForCall.arg1, argsForCall.arg2
 }
 
+func (fake *KafkaMetrics) SyncProducerDurationMeasure(arg1 kafka.Topic, arg2 time.Duration) {
+	fake.syncProducerDurationMeasureMutex.Lock()
+	fake.syncProducerDurationMeasureArgsForCall = append(fake.syncProducerDurationMeasureArgsForCall, struct {
+		arg1 kafka.Topic
+		arg2 time.Duration
+	}{arg1, arg2})
+	stub := fake.SyncProducerDurationMeasureStub
+	fake.recordInvocation("SyncProducerDurationMeasure", []interface{}{arg1, arg2})
+	fake.syncProducerDurationMeasureMutex.Unlock()
+	if stub != nil {
+		fake.SyncProducerDurationMeasureStub(arg1, arg2)
+	}
+}
+
+func (fake *KafkaMetrics) SyncProducerDurationMeasureCallCount() int {
+	fake.syncProducerDurationMeasureMutex.RLock()
+	defer fake.syncProducerDurationMeasureMutex.RUnlock()
+	return len(fake.syncProducerDurationMeasureArgsForCall)
+}
+
+func (fake *KafkaMetrics) SyncProducerDurationMeasureCalls(stub func(kafka.Topic, time.Duration)) {
+	fake.syncProducerDurationMeasureMutex.Lock()
+	defer fake.syncProducerDurationMeasureMutex.Unlock()
+	fake.SyncProducerDurationMeasureStub = stub
+}
+
+func (fake *KafkaMetrics) SyncProducerDurationMeasureArgsForCall(i int) (kafka.Topic, time.Duration) {
+	fake.syncProducerDurationMeasureMutex.RLock()
+	defer fake.syncProducerDurationMeasureMutex.RUnlock()
+	argsForCall := fake.syncProducerDurationMeasureArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2
+}
+
+func (fake *KafkaMetrics) SyncProducerFailureCounterInc(arg1 kafka.Topic) {
+	fake.syncProducerFailureCounterIncMutex.Lock()
+	fake.syncProducerFailureCounterIncArgsForCall = append(fake.syncProducerFailureCounterIncArgsForCall, struct {
+		arg1 kafka.Topic
+	}{arg1})
+	stub := fake.SyncProducerFailureCounterIncStub
+	fake.recordInvocation("SyncProducerFailureCounterInc", []interface{}{arg1})
+	fake.syncProducerFailureCounterIncMutex.Unlock()
+	if stub != nil {
+		fake.SyncProducerFailureCounterIncStub(arg1)
+	}
+}
+
+func (fake *KafkaMetrics) SyncProducerFailureCounterIncCallCount() int {
+	fake.syncProducerFailureCounterIncMutex.RLock()
+	defer fake.syncProducerFailureCounterIncMutex.RUnlock()
+	return len(fake.syncProducerFailureCounterIncArgsForCall)
+}
+
+func (fake *KafkaMetrics) SyncProducerFailureCounterIncCalls(stub func(kafka.Topic)) {
+	fake.syncProducerFailureCounterIncMutex.Lock()
+	defer fake.syncProducerFailureCounterIncMutex.Unlock()
+	fake.SyncProducerFailureCounterIncStub = stub
+}
+
+func (fake *KafkaMetrics) SyncProducerFailureCounterIncArgsForCall(i int) kafka.Topic {
+	fake.syncProducerFailureCounterIncMutex.RLock()
+	defer fake.syncProducerFailureCounterIncMutex.RUnlock()
+	argsForCall := fake.syncProducerFailureCounterIncArgsForCall[i]
+	return argsForCall.arg1
+}
+
+func (fake *KafkaMetrics) SyncProducerSuccessCounterInc(arg1 kafka.Topic) {
+	fake.syncProducerSuccessCounterIncMutex.Lock()
+	fake.syncProducerSuccessCounterIncArgsForCall = append(fake.syncProducerSuccessCounterIncArgsForCall, struct {
+		arg1 kafka.Topic
+	}{arg1})
+	stub := fake.SyncProducerSuccessCounterIncStub
+	fake.recordInvocation("SyncProducerSuccessCounterInc", []interface{}{arg1})
+	fake.syncProducerSuccessCounterIncMutex.Unlock()
+	if stub != nil {
+		fake.SyncProducerSuccessCounterIncStub(arg1)
+	}
+}
+
+func (fake *KafkaMetrics) SyncProducerSuccessCounterIncCallCount() int {
+	fake.syncProducerSuccessCounterIncMutex.RLock()
+	defer fake.syncProducerSuccessCounterIncMutex.RUnlock()
+	return len(fake.syncProducerSuccessCounterIncArgsForCall)
+}
+
+func (fake *KafkaMetrics) SyncProducerSuccessCounterIncCalls(stub func(kafka.Topic)) {
+	fake.syncProducerSuccessCounterIncMutex.Lock()
+	defer fake.syncProducerSuccessCounterIncMutex.Unlock()
+	fake.SyncProducerSuccessCounterIncStub = stub
+}
+
+func (fake *KafkaMetrics) SyncProducerSuccessCounterIncArgsForCall(i int) kafka.Topic {
+	fake.syncProducerSuccessCounterIncMutex.RLock()
+	defer fake.syncProducerSuccessCounterIncMutex.RUnlock()
+	argsForCall := fake.syncProducerSuccessCounterIncArgsForCall[i]
+	return argsForCall.arg1
+}
+
+func (fake *KafkaMetrics) SyncProducerTotalCounterInc(arg1 kafka.Topic) {
+	fake.syncProducerTotalCounterIncMutex.Lock()
+	fake.syncProducerTotalCounterIncArgsForCall = append(fake.syncProducerTotalCounterIncArgsForCall, struct {
+		arg1 kafka.Topic
+	}{arg1})
+	stub := fake.SyncProducerTotalCounterIncStub
+	fake.recordInvocation("SyncProducerTotalCounterInc", []interface{}{arg1})
+	fake.syncProducerTotalCounterIncMutex.Unlock()
+	if stub != nil {
+		fake.SyncProducerTotalCounterIncStub(arg1)
+	}
+}
+
+func (fake *KafkaMetrics) SyncProducerTotalCounterIncCallCount() int {
+	fake.syncProducerTotalCounterIncMutex.RLock()
+	defer fake.syncProducerTotalCounterIncMutex.RUnlock()
+	return len(fake.syncProducerTotalCounterIncArgsForCall)
+}
+
+func (fake *KafkaMetrics) SyncProducerTotalCounterIncCalls(stub func(kafka.Topic)) {
+	fake.syncProducerTotalCounterIncMutex.Lock()
+	defer fake.syncProducerTotalCounterIncMutex.Unlock()
+	fake.SyncProducerTotalCounterIncStub = stub
+}
+
+func (fake *KafkaMetrics) SyncProducerTotalCounterIncArgsForCall(i int) kafka.Topic {
+	fake.syncProducerTotalCounterIncMutex.RLock()
+	defer fake.syncProducerTotalCounterIncMutex.RUnlock()
+	argsForCall := fake.syncProducerTotalCounterIncArgsForCall[i]
+	return argsForCall.arg1
+}
+
 func (fake *KafkaMetrics) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
+	fake.consumePartitionCreateFailureIncMutex.RLock()
+	defer fake.consumePartitionCreateFailureIncMutex.RUnlock()
+	fake.consumePartitionCreateOutOfRangeErrorIncMutex.RLock()
+	defer fake.consumePartitionCreateOutOfRangeErrorIncMutex.RUnlock()
+	fake.consumePartitionCreateSuccessIncMutex.RLock()
+	defer fake.consumePartitionCreateSuccessIncMutex.RUnlock()
+	fake.consumePartitionCreateTotalIncMutex.RLock()
+	defer fake.consumePartitionCreateTotalIncMutex.RUnlock()
 	fake.currentOffsetMutex.RLock()
 	defer fake.currentOffsetMutex.RUnlock()
 	fake.highWaterMarkOffsetMutex.RLock()
@@ -268,6 +582,14 @@ func (fake *KafkaMetrics) Invocations() map[string][][]interface{} {
 	defer fake.messageHandlerSuccessCounterIncMutex.RUnlock()
 	fake.messageHandlerTotalCounterIncMutex.RLock()
 	defer fake.messageHandlerTotalCounterIncMutex.RUnlock()
+	fake.syncProducerDurationMeasureMutex.RLock()
+	defer fake.syncProducerDurationMeasureMutex.RUnlock()
+	fake.syncProducerFailureCounterIncMutex.RLock()
+	defer fake.syncProducerFailureCounterIncMutex.RUnlock()
+	fake.syncProducerSuccessCounterIncMutex.RLock()
+	defer fake.syncProducerSuccessCounterIncMutex.RUnlock()
+	fake.syncProducerTotalCounterIncMutex.RLock()
+	defer fake.syncProducerTotalCounterIncMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value
