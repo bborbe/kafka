@@ -32,7 +32,7 @@ type MetricsConsumer interface {
 }
 
 type MetricsPartitionConsumer interface {
-	ConsumePartitionCreateOutOfRangeErrorInitial(topic Topic, partition Partition)
+	ConsumePartitionCreateOutOfRangeErrorInitialize(topic Topic, partition Partition)
 	ConsumePartitionCreateOutOfRangeErrorInc(topic Topic, partition Partition)
 	ConsumePartitionCreateFailureInc(topic Topic, partition Partition)
 	ConsumePartitionCreateSuccessInc(topic Topic, partition Partition)
@@ -179,7 +179,7 @@ func (m *metrics) ConsumePartitionCreateOutOfRangeErrorInc(topic Topic, partitio
 	}).Inc()
 }
 
-func (m *metrics) ConsumePartitionCreateOutOfRangeErrorInitial(topic Topic, partition Partition) {
+func (m *metrics) ConsumePartitionCreateOutOfRangeErrorInitialize(topic Topic, partition Partition) {
 	consumePartitionCreateOutOfRangeErrorCounter.With(prometheus.Labels{
 		"topic":     topic.String(),
 		"partition": fmt.Sprint(partition),

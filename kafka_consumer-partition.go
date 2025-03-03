@@ -26,7 +26,7 @@ func CreatePartitionConsumer(
 	nextOffset Offset,
 ) (sarama.PartitionConsumer, error) {
 	metricsConsumer.ConsumePartitionCreateTotalInc(topic, partition)
-	metricsConsumer.ConsumePartitionCreateOutOfRangeErrorInitial(topic, partition)
+	metricsConsumer.ConsumePartitionCreateOutOfRangeErrorInitialize(topic, partition)
 	consumePartition, err := consumerFromClient.ConsumePartition(topic.String(), partition.Int32(), nextOffset.Int64())
 	if err != nil {
 		metricsConsumer.ConsumePartitionCreateFailureInc(topic, partition)

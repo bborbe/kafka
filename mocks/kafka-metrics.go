@@ -169,14 +169,14 @@ func (fake *KafkaMetrics) ConsumePartitionCreateOutOfRangeErrorIncArgsForCall(i 
 	return argsForCall.arg1, argsForCall.arg2
 }
 
-func (fake *KafkaMetrics) ConsumePartitionCreateOutOfRangeErrorInitial(arg1 kafka.Topic, arg2 kafka.Partition) {
+func (fake *KafkaMetrics) ConsumePartitionCreateOutOfRangeErrorInitialize(arg1 kafka.Topic, arg2 kafka.Partition) {
 	fake.consumePartitionCreateOutOfRangeErrorInitialMutex.Lock()
 	fake.consumePartitionCreateOutOfRangeErrorInitialArgsForCall = append(fake.consumePartitionCreateOutOfRangeErrorInitialArgsForCall, struct {
 		arg1 kafka.Topic
 		arg2 kafka.Partition
 	}{arg1, arg2})
 	stub := fake.ConsumePartitionCreateOutOfRangeErrorInitialStub
-	fake.recordInvocation("ConsumePartitionCreateOutOfRangeErrorInitial", []interface{}{arg1, arg2})
+	fake.recordInvocation("ConsumePartitionCreateOutOfRangeErrorInitialize", []interface{}{arg1, arg2})
 	fake.consumePartitionCreateOutOfRangeErrorInitialMutex.Unlock()
 	if stub != nil {
 		fake.ConsumePartitionCreateOutOfRangeErrorInitialStub(arg1, arg2)
