@@ -182,6 +182,18 @@ type KafkaSaramaClient struct {
 		result1 []int32
 		result2 error
 	}
+	PartitionNotReadableStub        func(string, int32) bool
+	partitionNotReadableMutex       sync.RWMutex
+	partitionNotReadableArgsForCall []struct {
+		arg1 string
+		arg2 int32
+	}
+	partitionNotReadableReturns struct {
+		result1 bool
+	}
+	partitionNotReadableReturnsOnCall map[int]struct {
+		result1 bool
+	}
 	PartitionsStub        func(string) ([]int32, error)
 	partitionsMutex       sync.RWMutex
 	partitionsArgsForCall []struct {
@@ -1141,6 +1153,68 @@ func (fake *KafkaSaramaClient) OfflineReplicasReturnsOnCall(i int, result1 []int
 	}{result1, result2}
 }
 
+func (fake *KafkaSaramaClient) PartitionNotReadable(arg1 string, arg2 int32) bool {
+	fake.partitionNotReadableMutex.Lock()
+	ret, specificReturn := fake.partitionNotReadableReturnsOnCall[len(fake.partitionNotReadableArgsForCall)]
+	fake.partitionNotReadableArgsForCall = append(fake.partitionNotReadableArgsForCall, struct {
+		arg1 string
+		arg2 int32
+	}{arg1, arg2})
+	stub := fake.PartitionNotReadableStub
+	fakeReturns := fake.partitionNotReadableReturns
+	fake.recordInvocation("PartitionNotReadable", []interface{}{arg1, arg2})
+	fake.partitionNotReadableMutex.Unlock()
+	if stub != nil {
+		return stub(arg1, arg2)
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	return fakeReturns.result1
+}
+
+func (fake *KafkaSaramaClient) PartitionNotReadableCallCount() int {
+	fake.partitionNotReadableMutex.RLock()
+	defer fake.partitionNotReadableMutex.RUnlock()
+	return len(fake.partitionNotReadableArgsForCall)
+}
+
+func (fake *KafkaSaramaClient) PartitionNotReadableCalls(stub func(string, int32) bool) {
+	fake.partitionNotReadableMutex.Lock()
+	defer fake.partitionNotReadableMutex.Unlock()
+	fake.PartitionNotReadableStub = stub
+}
+
+func (fake *KafkaSaramaClient) PartitionNotReadableArgsForCall(i int) (string, int32) {
+	fake.partitionNotReadableMutex.RLock()
+	defer fake.partitionNotReadableMutex.RUnlock()
+	argsForCall := fake.partitionNotReadableArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2
+}
+
+func (fake *KafkaSaramaClient) PartitionNotReadableReturns(result1 bool) {
+	fake.partitionNotReadableMutex.Lock()
+	defer fake.partitionNotReadableMutex.Unlock()
+	fake.PartitionNotReadableStub = nil
+	fake.partitionNotReadableReturns = struct {
+		result1 bool
+	}{result1}
+}
+
+func (fake *KafkaSaramaClient) PartitionNotReadableReturnsOnCall(i int, result1 bool) {
+	fake.partitionNotReadableMutex.Lock()
+	defer fake.partitionNotReadableMutex.Unlock()
+	fake.PartitionNotReadableStub = nil
+	if fake.partitionNotReadableReturnsOnCall == nil {
+		fake.partitionNotReadableReturnsOnCall = make(map[int]struct {
+			result1 bool
+		})
+	}
+	fake.partitionNotReadableReturnsOnCall[i] = struct {
+		result1 bool
+	}{result1}
+}
+
 func (fake *KafkaSaramaClient) Partitions(arg1 string) ([]int32, error) {
 	fake.partitionsMutex.Lock()
 	ret, specificReturn := fake.partitionsReturnsOnCall[len(fake.partitionsArgsForCall)]
@@ -1790,6 +1864,8 @@ func (fake *KafkaSaramaClient) Invocations() map[string][][]interface{} {
 	defer fake.leastLoadedBrokerMutex.RUnlock()
 	fake.offlineReplicasMutex.RLock()
 	defer fake.offlineReplicasMutex.RUnlock()
+	fake.partitionNotReadableMutex.RLock()
+	defer fake.partitionNotReadableMutex.RUnlock()
 	fake.partitionsMutex.RLock()
 	defer fake.partitionsMutex.RUnlock()
 	fake.refreshBrokersMutex.RLock()

@@ -8,6 +8,11 @@ Please choose versions by [Semantic Versioning](http://semver.org/).
 * MINOR version when you add functionality in a backwards-compatible manner, and
 * PATCH version when you make backwards-compatible bug fixes.
 
+## v1.10.3
+
+- initialize failure_out_of_range_counter metrics
+- go mod update
+
 ## v1.10.2
 
 - add create partition consumer metrics
@@ -53,7 +58,7 @@ Please choose versions by [Semantic Versioning](http://semver.org/).
 
 ## v1.8.0
 
-- add Schema to Broker (plain + tls)  
+- add Schema to Broker (plain + tls)
 - add tls support to SaramaClient
 
 ## v1.7.2
