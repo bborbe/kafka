@@ -21,9 +21,9 @@ type KafkaMetrics struct {
 		arg1 kafka.Topic
 		arg2 kafka.Partition
 	}
-	ConsumePartitionCreateOutOfRangeErrorInitialStub        func(kafka.Topic, kafka.Partition)
-	consumePartitionCreateOutOfRangeErrorInitialMutex       sync.RWMutex
-	consumePartitionCreateOutOfRangeErrorInitialArgsForCall []struct {
+	ConsumePartitionCreateOutOfRangeErrorInitializeStub        func(kafka.Topic, kafka.Partition)
+	consumePartitionCreateOutOfRangeErrorInitializeMutex       sync.RWMutex
+	consumePartitionCreateOutOfRangeErrorInitializeArgsForCall []struct {
 		arg1 kafka.Topic
 		arg2 kafka.Partition
 	}
@@ -170,35 +170,35 @@ func (fake *KafkaMetrics) ConsumePartitionCreateOutOfRangeErrorIncArgsForCall(i 
 }
 
 func (fake *KafkaMetrics) ConsumePartitionCreateOutOfRangeErrorInitialize(arg1 kafka.Topic, arg2 kafka.Partition) {
-	fake.consumePartitionCreateOutOfRangeErrorInitialMutex.Lock()
-	fake.consumePartitionCreateOutOfRangeErrorInitialArgsForCall = append(fake.consumePartitionCreateOutOfRangeErrorInitialArgsForCall, struct {
+	fake.consumePartitionCreateOutOfRangeErrorInitializeMutex.Lock()
+	fake.consumePartitionCreateOutOfRangeErrorInitializeArgsForCall = append(fake.consumePartitionCreateOutOfRangeErrorInitializeArgsForCall, struct {
 		arg1 kafka.Topic
 		arg2 kafka.Partition
 	}{arg1, arg2})
-	stub := fake.ConsumePartitionCreateOutOfRangeErrorInitialStub
+	stub := fake.ConsumePartitionCreateOutOfRangeErrorInitializeStub
 	fake.recordInvocation("ConsumePartitionCreateOutOfRangeErrorInitialize", []interface{}{arg1, arg2})
-	fake.consumePartitionCreateOutOfRangeErrorInitialMutex.Unlock()
+	fake.consumePartitionCreateOutOfRangeErrorInitializeMutex.Unlock()
 	if stub != nil {
-		fake.ConsumePartitionCreateOutOfRangeErrorInitialStub(arg1, arg2)
+		fake.ConsumePartitionCreateOutOfRangeErrorInitializeStub(arg1, arg2)
 	}
 }
 
-func (fake *KafkaMetrics) ConsumePartitionCreateOutOfRangeErrorInitialCallCount() int {
-	fake.consumePartitionCreateOutOfRangeErrorInitialMutex.RLock()
-	defer fake.consumePartitionCreateOutOfRangeErrorInitialMutex.RUnlock()
-	return len(fake.consumePartitionCreateOutOfRangeErrorInitialArgsForCall)
+func (fake *KafkaMetrics) ConsumePartitionCreateOutOfRangeErrorInitializeCallCount() int {
+	fake.consumePartitionCreateOutOfRangeErrorInitializeMutex.RLock()
+	defer fake.consumePartitionCreateOutOfRangeErrorInitializeMutex.RUnlock()
+	return len(fake.consumePartitionCreateOutOfRangeErrorInitializeArgsForCall)
 }
 
-func (fake *KafkaMetrics) ConsumePartitionCreateOutOfRangeErrorInitialCalls(stub func(kafka.Topic, kafka.Partition)) {
-	fake.consumePartitionCreateOutOfRangeErrorInitialMutex.Lock()
-	defer fake.consumePartitionCreateOutOfRangeErrorInitialMutex.Unlock()
-	fake.ConsumePartitionCreateOutOfRangeErrorInitialStub = stub
+func (fake *KafkaMetrics) ConsumePartitionCreateOutOfRangeErrorInitializeCalls(stub func(kafka.Topic, kafka.Partition)) {
+	fake.consumePartitionCreateOutOfRangeErrorInitializeMutex.Lock()
+	defer fake.consumePartitionCreateOutOfRangeErrorInitializeMutex.Unlock()
+	fake.ConsumePartitionCreateOutOfRangeErrorInitializeStub = stub
 }
 
-func (fake *KafkaMetrics) ConsumePartitionCreateOutOfRangeErrorInitialArgsForCall(i int) (kafka.Topic, kafka.Partition) {
-	fake.consumePartitionCreateOutOfRangeErrorInitialMutex.RLock()
-	defer fake.consumePartitionCreateOutOfRangeErrorInitialMutex.RUnlock()
-	argsForCall := fake.consumePartitionCreateOutOfRangeErrorInitialArgsForCall[i]
+func (fake *KafkaMetrics) ConsumePartitionCreateOutOfRangeErrorInitializeArgsForCall(i int) (kafka.Topic, kafka.Partition) {
+	fake.consumePartitionCreateOutOfRangeErrorInitializeMutex.RLock()
+	defer fake.consumePartitionCreateOutOfRangeErrorInitializeMutex.RUnlock()
+	argsForCall := fake.consumePartitionCreateOutOfRangeErrorInitializeArgsForCall[i]
 	return argsForCall.arg1, argsForCall.arg2
 }
 
@@ -605,8 +605,8 @@ func (fake *KafkaMetrics) Invocations() map[string][][]interface{} {
 	defer fake.consumePartitionCreateFailureIncMutex.RUnlock()
 	fake.consumePartitionCreateOutOfRangeErrorIncMutex.RLock()
 	defer fake.consumePartitionCreateOutOfRangeErrorIncMutex.RUnlock()
-	fake.consumePartitionCreateOutOfRangeErrorInitialMutex.RLock()
-	defer fake.consumePartitionCreateOutOfRangeErrorInitialMutex.RUnlock()
+	fake.consumePartitionCreateOutOfRangeErrorInitializeMutex.RLock()
+	defer fake.consumePartitionCreateOutOfRangeErrorInitializeMutex.RUnlock()
 	fake.consumePartitionCreateSuccessIncMutex.RLock()
 	defer fake.consumePartitionCreateSuccessIncMutex.RUnlock()
 	fake.consumePartitionCreateTotalIncMutex.RLock()
