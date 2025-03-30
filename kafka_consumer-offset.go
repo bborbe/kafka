@@ -87,7 +87,15 @@ func (c *offsetConsumer) Consume(ctx context.Context) error {
 			}
 
 			glog.V(2).Infof("consume topic(%s) with partition(%d) and offset(%s) started", c.topic, partition, nextOffset)
-			consumePartition, err := CreatePartitionConsumer(ctx, consumerFromClient, c.metrics, c.topic, Partition(partition), c.offsetManager.FallbackOffset(), nextOffset)
+			consumePartition, err := CreatePartitionConsumer(
+				ctx,
+				consumerFromClient,
+				c.metrics,
+				c.topic,
+				Partition(partition),
+				c.offsetManager.FallbackOffset(),
+				nextOffset,
+			)
 			if err != nil {
 				return errors.Wrapf(ctx, err, "create partition consumer for topic(%s) with partition(%d) and offset(%s) failed", c.topic, partition, nextOffset)
 			}
@@ -109,7 +117,8 @@ func (c *offsetConsumer) Consume(ctx context.Context) error {
 					return errors.Wrapf(ctx, err, "mark offset failed")
 				}
 				if c.logSampler.IsSample() {
-					glog.V(2).Infof("consume message in topic(%s), partition(%d) and offset(%d) completed (highwatermark: %d lag: %d) (sample)",
+					glog.V(2).Infof("consume %d messages in topic(%s), partition(%d) and offset(%d) completed (highwatermark: %d lag: %d) (sample)",
+						len(messages),
 						msg.Topic,
 						msg.Partition,
 						msg.Offset,

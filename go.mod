@@ -6,14 +6,14 @@ require (
 	github.com/IBM/sarama v1.45.1
 	github.com/bborbe/badgerkv v1.8.0
 	github.com/bborbe/boltkv v1.10.0
-	github.com/bborbe/collection v1.8.0
+	github.com/bborbe/collection v1.9.0
 	github.com/bborbe/errors v1.3.0
-	github.com/bborbe/http v1.9.0
+	github.com/bborbe/http v1.10.0
 	github.com/bborbe/kv v1.13.0
-	github.com/bborbe/log v1.0.1
-	github.com/bborbe/parse v1.6.1
+	github.com/bborbe/log v1.1.0
+	github.com/bborbe/parse v1.7.0
 	github.com/bborbe/run v1.6.0
-	github.com/bborbe/validation v1.2.0
+	github.com/bborbe/validation v1.3.0
 	github.com/golang/glog v1.2.4
 	github.com/onsi/ginkgo/v2 v2.23.3
 	github.com/onsi/gomega v1.36.3
@@ -22,9 +22,9 @@ require (
 
 require (
 	github.com/actgardner/gogen-avro/v9 v9.2.0 // indirect
-	github.com/bborbe/math v1.1.1 // indirect
-	github.com/bborbe/sentry v1.7.1 // indirect
-	github.com/bborbe/time v1.12.1 // indirect
+	github.com/bborbe/math v1.2.0 // indirect
+	github.com/bborbe/sentry v1.8.0 // indirect
+	github.com/bborbe/time v1.13.0 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/bmatcuk/doublestar/v4 v4.8.1 // indirect
 	github.com/certifi/gocertifi v0.0.0-20210507211836-431795d63e8d // indirect
