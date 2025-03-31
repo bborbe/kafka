@@ -11,6 +11,7 @@ import (
 	"github.com/bborbe/errors"
 	"github.com/bborbe/log"
 	"github.com/bborbe/run"
+	libtime "github.com/bborbe/time"
 	"github.com/golang/glog"
 )
 
@@ -20,24 +21,36 @@ func NewSimpleConsumer(
 	initalOffset Offset,
 	messageHandler MessageHandler,
 	logSamplerFactory log.SamplerFactory,
+	options ...func(*ConsumerOptions),
 ) Consumer {
+	consumerOptions := ConsumerOptions{
+		TargetLag: 0,
+		Delay:     0,
+	}
+	for _, option := range options {
+		option(&consumerOptions)
+	}
 	return &simpleConsumer{
-		saramaClient:   saramaClient,
-		topic:          topic,
-		initalOffset:   initalOffset,
-		messageHandler: messageHandler,
-		logSampler:     logSamplerFactory.Sampler(),
-		metrics:        NewMetrics(),
+		saramaClient:    saramaClient,
+		topic:           topic,
+		initalOffset:    initalOffset,
+		messageHandler:  messageHandler,
+		logSampler:      logSamplerFactory.Sampler(),
+		metrics:         NewMetrics(),
+		waiter:          libtime.NewWaiterDuration(),
+		consumerOptions: consumerOptions,
 	}
 }
 
 type simpleConsumer struct {
-	saramaClient   sarama.Client
-	topic          Topic
-	initalOffset   Offset
-	messageHandler MessageHandler
-	logSampler     log.Sampler
-	metrics        MetricsConsumer
+	saramaClient    sarama.Client
+	topic           Topic
+	initalOffset    Offset
+	messageHandler  MessageHandler
+	logSampler      log.Sampler
+	metrics         MetricsConsumer
+	waiter          libtime.WaiterDuration
+	consumerOptions ConsumerOptions
 }
 
 func (c *simpleConsumer) Consume(ctx context.Context) error {
@@ -76,18 +89,32 @@ func (c *simpleConsumer) Consume(ctx context.Context) error {
 					return errors.Wrapf(ctx, err, "parition consumer returns error")
 				case msg := <-consumePartition.Messages():
 					glog.V(4).Infof("consume message in topic %s with offset %d partition %d started", msg.Topic, msg.Offset, msg.Partition)
+
+					highWaterMarkOffset := consumePartition.HighWaterMarkOffset()
+					lag := highWaterMarkOffset - msg.Offset
+
 					c.metrics.CurrentOffset(c.topic, Partition(partition), Offset(msg.Offset))
-					c.metrics.HighWaterMarkOffset(c.topic, Partition(partition), Offset(consumePartition.HighWaterMarkOffset()))
+					c.metrics.HighWaterMarkOffset(c.topic, Partition(partition), Offset(highWaterMarkOffset))
+
 					if err := c.messageHandler.ConsumeMessage(ctx, msg); err != nil {
 						return errors.Wrapf(ctx, err, "consume message failed")
 					}
+
+					// wait if lag is low, this allow batch consumer get more messages next time
+					if lag < c.consumerOptions.TargetLag && c.consumerOptions.TargetLag > 0 && c.consumerOptions.Delay > 0 {
+						glog.V(3).Infof("lag(%d) < targetLag(%d) => wait for %v", lag, c.consumerOptions.TargetLag, c.consumerOptions.Delay)
+						if err := c.waiter.Wait(ctx, c.consumerOptions.Delay); err != nil {
+							return errors.Wrapf(ctx, err, "wait for %v failed", c.consumerOptions.Delay)
+						}
+					}
+
 					if c.logSampler.IsSample() {
 						glog.V(2).Infof("consume message in topic(%s), partition(%d) and offset(%d) completed (highwatermark: %d lag: %d) (sample)",
 							msg.Topic,
 							msg.Partition,
 							msg.Offset,
-							consumePartition.HighWaterMarkOffset(),
-							consumePartition.HighWaterMarkOffset()-msg.Offset,
+							highWaterMarkOffset,
+							lag,
 						)
 					}
 				}
