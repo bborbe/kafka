@@ -65,7 +65,7 @@ func (c *simpleConsumer) Consume(ctx context.Context) error {
 		return errors.Wrapf(ctx, err, "get partition for topic %s failed", c.topic)
 	}
 
-	glog.V(2).Infof("consume topic(%s) with %d partitions started", c.topic, len(partitions))
+	glog.V(2).Infof("consume topic %s with %d partitions %+v started", c.topic, len(partitions), c.consumerOptions)
 
 	var runs []run.Func
 	for _, partition := range partitions {
