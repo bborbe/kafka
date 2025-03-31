@@ -21,6 +21,7 @@ func NewOffsetConsumerHighwaterMarks(
 	messageHandler MessageHandler,
 	trigger run.Fire,
 	logSamplerFactory log.SamplerFactory,
+	options ...func(*ConsumerOptions),
 ) Consumer {
 	return NewOffsetConsumerHighwaterMarksBatch(
 		saramaClient,
@@ -30,6 +31,7 @@ func NewOffsetConsumerHighwaterMarks(
 		1,
 		trigger,
 		logSamplerFactory,
+		options...,
 	)
 }
 
@@ -41,6 +43,7 @@ func NewOffsetConsumerHighwaterMarksBatch(
 	batchSize BatchSize,
 	trigger run.Fire,
 	logSamplerFactory log.SamplerFactory,
+	options ...func(*ConsumerOptions),
 ) Consumer {
 	return ConsumerFunc(func(ctx context.Context) error {
 		ctx, cancel := context.WithCancel(ctx)
@@ -64,6 +67,7 @@ func NewOffsetConsumerHighwaterMarksBatch(
 			},
 			batchSize,
 			logSamplerFactory,
+			options...,
 		).Consume(ctx)
 	})
 }
