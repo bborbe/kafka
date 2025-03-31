@@ -12,10 +12,10 @@ import (
 	libtime "github.com/bborbe/time"
 )
 
-// MessageHandlerBatchDelay returns a MessageHandlerBatch
+// NewMessageHandlerBatchDelay returns a MessageHandlerBatch
 // that sleep for the given duration after each consume
 // this enabled the consumer to get more messages per consume
-func MessageHandlerBatchDelay(
+func NewMessageHandlerBatchDelay(
 	messageHandlerBatch MessageHandlerBatch,
 	waiterDuration libtime.WaiterDuration,
 	delay libtime.Duration,
