@@ -144,10 +144,11 @@ func (c *offsetConsumer) Consume(ctx context.Context) error {
 
 				// wait if lag is low, this allow batch consumer get more messages next time
 				if lag < c.consumerOptions.TargetLag && c.consumerOptions.TargetLag > 0 && c.consumerOptions.Delay > 0 {
-					glog.V(3).Infof("lag(%d) < targetLag(%d) => wait for %v", lag, c.consumerOptions.TargetLag, c.consumerOptions.Delay)
+					glog.V(3).Infof("topic(%s) partition(%d) lag(%d) < targetLag(%d) => wait for %v", c.topic, partition, lag, c.consumerOptions.TargetLag, c.consumerOptions.Delay)
 					if err := c.waiter.Wait(ctx, c.consumerOptions.Delay); err != nil {
-						return errors.Wrapf(ctx, err, "wait for %v failed", c.consumerOptions.Delay)
+						return errors.Wrapf(ctx, err, "topic(%s) partition(%d) wait for %v failed", c.topic, partition, c.consumerOptions.Delay)
 					}
+					glog.V(3).Infof("topic(%s) partition(%d) wait for %v completed", c.topic, partition, c.consumerOptions.Delay)
 				}
 
 				if c.logSampler.IsSample() {
