@@ -8,8 +8,8 @@ import (
 	"context"
 	"errors"
 
-	libbadgerkv "github.com/bborbe/badgerkv"
 	libkv "github.com/bborbe/kv"
+	libmemorykv "github.com/bborbe/memorykv"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
@@ -30,7 +30,7 @@ var _ = Describe("OffsetStore", func() {
 		partition = 0
 		topic = "my-topic"
 
-		db, err = libbadgerkv.OpenMemory(ctx)
+		db, err = libmemorykv.OpenMemory(ctx)
 		Expect(err).To(BeNil())
 
 		offsetStore = kafka.NewOffsetStore(db)
