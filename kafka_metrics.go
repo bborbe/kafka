@@ -5,7 +5,6 @@
 package kafka
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
@@ -29,6 +28,7 @@ type MetricsMessageHandler interface {
 type MetricsConsumer interface {
 	CurrentOffset(topic Topic, partition Partition, offset Offset)
 	HighWaterMarkOffset(topic Topic, partition Partition, offset Offset)
+	ErrorCounterInc(topic Topic, partition Partition)
 }
 
 type MetricsPartitionConsumer interface {
@@ -49,13 +49,19 @@ type MetricsSyncProducer interface {
 const metricsNamespace = "kafka"
 
 var (
-	currentOffset = prometheus.NewGaugeVec(prometheus.GaugeOpts{
+	consumerErrorCounter = prometheus.NewGaugeVec(prometheus.GaugeOpts{
+		Namespace: metricsNamespace,
+		Subsystem: "consumer",
+		Name:      "error_counter",
+		Help:      "Kafka Consumer Error Counter",
+	}, []string{"topic", "partition"})
+	consumerCurrentOffset = prometheus.NewGaugeVec(prometheus.GaugeOpts{
 		Namespace: metricsNamespace,
 		Subsystem: "consumer",
 		Name:      "current_offset",
 		Help:      "Offset of last processed message",
 	}, []string{"topic", "partition"})
-	highWaterMarkOffset = prometheus.NewGaugeVec(prometheus.GaugeOpts{
+	consumerHighWaterMarkOffset = prometheus.NewGaugeVec(prometheus.GaugeOpts{
 		Namespace: metricsNamespace,
 		Subsystem: "consumer",
 		Name:      "highwater_mark_offset",
@@ -148,20 +154,21 @@ var (
 
 func init() {
 	prometheus.MustRegister(
-		currentOffset,
-		highWaterMarkOffset,
-		messageHandlerTotalCounter,
-		messageHandlerSuccessCounter,
-		messageHandlerFailureCounter,
-		messageHandlerDurationMeasure,
-		syncProducerTotalCounter,
-		syncProducerSuccessCounter,
-		syncProducerFailureCounter,
-		syncProducerDurationMeasure,
-		consumePartitionCreateSuccessCounter,
-		consumePartitionCreateOutOfRangeErrorCounter,
 		consumePartitionCreateFailureCounter,
+		consumePartitionCreateOutOfRangeErrorCounter,
+		consumePartitionCreateSuccessCounter,
 		consumePartitionCreateTotalCounter,
+		consumerCurrentOffset,
+		consumerErrorCounter,
+		consumerHighWaterMarkOffset,
+		messageHandlerDurationMeasure,
+		messageHandlerFailureCounter,
+		messageHandlerSuccessCounter,
+		messageHandlerTotalCounter,
+		syncProducerDurationMeasure,
+		syncProducerFailureCounter,
+		syncProducerSuccessCounter,
+		syncProducerTotalCounter,
 	)
 }
 
@@ -172,55 +179,62 @@ func NewMetrics() Metrics {
 type metrics struct {
 }
 
+func (m *metrics) ErrorCounterInc(topic Topic, partition Partition) {
+	consumerErrorCounter.With(prometheus.Labels{
+		"topic":     topic.String(),
+		"partition": partition.String(),
+	}).Inc()
+}
+
 func (m *metrics) ConsumePartitionCreateOutOfRangeErrorInc(topic Topic, partition Partition) {
 	consumePartitionCreateOutOfRangeErrorCounter.With(prometheus.Labels{
 		"topic":     topic.String(),
-		"partition": fmt.Sprint(partition),
+		"partition": partition.String(),
 	}).Inc()
 }
 
 func (m *metrics) ConsumePartitionCreateOutOfRangeErrorInitialize(topic Topic, partition Partition) {
 	consumePartitionCreateOutOfRangeErrorCounter.With(prometheus.Labels{
 		"topic":     topic.String(),
-		"partition": fmt.Sprint(partition),
+		"partition": partition.String(),
 	}).Add(float64(0))
 }
 
 func (m *metrics) ConsumePartitionCreateFailureInc(topic Topic, partition Partition) {
 	consumePartitionCreateFailureCounter.With(prometheus.Labels{
 		"topic":     topic.String(),
-		"partition": fmt.Sprint(partition),
+		"partition": partition.String(),
 	}).Inc()
 }
 
 func (m *metrics) ConsumePartitionCreateSuccessInc(topic Topic, partition Partition) {
 	consumePartitionCreateSuccessCounter.With(prometheus.Labels{
 		"topic":     topic.String(),
-		"partition": fmt.Sprint(partition),
+		"partition": partition.String(),
 	}).Inc()
 }
 
 func (m *metrics) ConsumePartitionCreateTotalInc(topic Topic, partition Partition) {
 	consumePartitionCreateTotalCounter.With(prometheus.Labels{
 		"topic":     topic.String(),
-		"partition": fmt.Sprint(partition),
+		"partition": partition.String(),
 	}).Inc()
 }
 
 func (m *metrics) CurrentOffset(topic Topic, partition Partition, offset Offset) {
-	currentOffset.With(
+	consumerCurrentOffset.With(
 		prometheus.Labels{
 			"topic":     topic.String(),
-			"partition": fmt.Sprint(partition),
+			"partition": partition.String(),
 		},
 	).Set(float64(offset))
 }
 
 func (m *metrics) HighWaterMarkOffset(topic Topic, partition Partition, offset Offset) {
-	highWaterMarkOffset.With(
+	consumerHighWaterMarkOffset.With(
 		prometheus.Labels{
 			"topic":     topic.String(),
-			"partition": fmt.Sprint(partition),
+			"partition": partition.String(),
 		},
 	).Set(float64(offset))
 }
@@ -228,28 +242,28 @@ func (m *metrics) HighWaterMarkOffset(topic Topic, partition Partition, offset O
 func (m *metrics) MessageHandlerTotalCounterInc(topic Topic, partition Partition) {
 	messageHandlerTotalCounter.With(prometheus.Labels{
 		"topic":     topic.String(),
-		"partition": fmt.Sprint(partition),
+		"partition": partition.String(),
 	}).Inc()
 }
 
 func (m *metrics) MessageHandlerSuccessCounterInc(topic Topic, partition Partition) {
 	messageHandlerSuccessCounter.With(prometheus.Labels{
 		"topic":     topic.String(),
-		"partition": fmt.Sprint(partition),
+		"partition": partition.String(),
 	}).Inc()
 }
 
 func (m *metrics) MessageHandlerFailureCounterInc(topic Topic, partition Partition) {
 	messageHandlerFailureCounter.With(prometheus.Labels{
 		"topic":     topic.String(),
-		"partition": fmt.Sprint(partition),
+		"partition": partition.String(),
 	}).Inc()
 }
 
 func (m *metrics) MessageHandlerDurationMeasure(topic Topic, partition Partition, duration time.Duration) {
 	messageHandlerDurationMeasure.With(prometheus.Labels{
 		"topic":     topic.String(),
-		"partition": fmt.Sprint(partition),
+		"partition": partition.String(),
 	}).Observe(float64(duration))
 }
 

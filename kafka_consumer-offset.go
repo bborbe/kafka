@@ -62,9 +62,12 @@ func NewOffsetConsumerBatch(
 		messageHandlerBatch: messageHandlerBatch,
 		topic:               topic,
 		logSampler:          logSamplerFactory.Sampler(),
-		metrics:             NewMetrics(),
-		waiter:              libtime.NewWaiterDuration(),
 		consumerOptions:     consumerOptions,
+		waiter:              libtime.NewWaiterDuration(),
+		metrics:             NewMetrics(),
+		errorHandler: NewConsumerErrorHandler(
+			NewMetrics(),
+		),
 	}
 }
 
@@ -81,6 +84,7 @@ type offsetConsumer struct {
 	}
 	waiter          libtime.WaiterDuration
 	consumerOptions ConsumerOptions
+	errorHandler    ConsumerErrorHandler
 }
 
 func (c *offsetConsumer) Consume(ctx context.Context) error {
@@ -180,7 +184,9 @@ func (c *offsetConsumer) consumeMessages(ctx context.Context, consumePartition s
 	case <-ctx.Done():
 		return nil, ctx.Err()
 	case err := <-consumePartition.Errors():
-		return nil, errors.Wrapf(ctx, err, "parition consumer returns error")
+		if err := c.errorHandler.HandleError(err); err != nil {
+			return nil, errors.Wrapf(ctx, err, "parition consumer returns error")
+		}
 	case msg := <-consumePartition.Messages():
 		result = append(result, msg)
 	}
@@ -194,7 +200,9 @@ func (c *offsetConsumer) consumeMessages(ctx context.Context, consumePartition s
 		case <-ctx.Done():
 			return nil, ctx.Err()
 		case err := <-consumePartition.Errors():
-			return nil, errors.Wrapf(ctx, err, "parition consumer returns error")
+			if err := c.errorHandler.HandleError(err); err != nil {
+				return nil, errors.Wrapf(ctx, err, "parition consumer returns error")
+			}
 		case msg := <-consumePartition.Messages():
 			result = append(result, msg)
 		default:

@@ -46,6 +46,12 @@ type KafkaMetrics struct {
 		arg2 kafka.Partition
 		arg3 kafka.Offset
 	}
+	ErrorCounterIncStub        func(kafka.Topic, kafka.Partition)
+	errorCounterIncMutex       sync.RWMutex
+	errorCounterIncArgsForCall []struct {
+		arg1 kafka.Topic
+		arg2 kafka.Partition
+	}
 	HighWaterMarkOffsetStub        func(kafka.Topic, kafka.Partition, kafka.Offset)
 	highWaterMarkOffsetMutex       sync.RWMutex
 	highWaterMarkOffsetArgsForCall []struct {
@@ -300,6 +306,39 @@ func (fake *KafkaMetrics) CurrentOffsetArgsForCall(i int) (kafka.Topic, kafka.Pa
 	defer fake.currentOffsetMutex.RUnlock()
 	argsForCall := fake.currentOffsetArgsForCall[i]
 	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
+}
+
+func (fake *KafkaMetrics) ErrorCounterInc(arg1 kafka.Topic, arg2 kafka.Partition) {
+	fake.errorCounterIncMutex.Lock()
+	fake.errorCounterIncArgsForCall = append(fake.errorCounterIncArgsForCall, struct {
+		arg1 kafka.Topic
+		arg2 kafka.Partition
+	}{arg1, arg2})
+	stub := fake.ErrorCounterIncStub
+	fake.recordInvocation("ErrorCounterInc", []interface{}{arg1, arg2})
+	fake.errorCounterIncMutex.Unlock()
+	if stub != nil {
+		fake.ErrorCounterIncStub(arg1, arg2)
+	}
+}
+
+func (fake *KafkaMetrics) ErrorCounterIncCallCount() int {
+	fake.errorCounterIncMutex.RLock()
+	defer fake.errorCounterIncMutex.RUnlock()
+	return len(fake.errorCounterIncArgsForCall)
+}
+
+func (fake *KafkaMetrics) ErrorCounterIncCalls(stub func(kafka.Topic, kafka.Partition)) {
+	fake.errorCounterIncMutex.Lock()
+	defer fake.errorCounterIncMutex.Unlock()
+	fake.ErrorCounterIncStub = stub
+}
+
+func (fake *KafkaMetrics) ErrorCounterIncArgsForCall(i int) (kafka.Topic, kafka.Partition) {
+	fake.errorCounterIncMutex.RLock()
+	defer fake.errorCounterIncMutex.RUnlock()
+	argsForCall := fake.errorCounterIncArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2
 }
 
 func (fake *KafkaMetrics) HighWaterMarkOffset(arg1 kafka.Topic, arg2 kafka.Partition, arg3 kafka.Offset) {
@@ -613,6 +652,8 @@ func (fake *KafkaMetrics) Invocations() map[string][][]interface{} {
 	defer fake.consumePartitionCreateTotalIncMutex.RUnlock()
 	fake.currentOffsetMutex.RLock()
 	defer fake.currentOffsetMutex.RUnlock()
+	fake.errorCounterIncMutex.RLock()
+	defer fake.errorCounterIncMutex.RUnlock()
 	fake.highWaterMarkOffsetMutex.RLock()
 	defer fake.highWaterMarkOffsetMutex.RUnlock()
 	fake.messageHandlerDurationMeasureMutex.RLock()
