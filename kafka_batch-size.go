@@ -22,6 +22,10 @@ func (s BatchSize) Int() int {
 	return int(s)
 }
 
+func (s BatchSize) Int64() int64 {
+	return int64(s)
+}
+
 func (s BatchSize) Validate(ctx context.Context) error {
 	if s < 1 {
 		return errors.Wrapf(ctx, validation.Error, "invalid batchSize")
