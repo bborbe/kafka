@@ -3,17 +3,17 @@ module github.com/bborbe/kafka
 go 1.24.3
 
 require (
-	github.com/IBM/sarama v1.45.1
+	github.com/IBM/sarama v1.45.2
 	github.com/bborbe/boltkv v1.10.0
 	github.com/bborbe/collection v1.9.0
 	github.com/bborbe/errors v1.3.0
-	github.com/bborbe/http v1.10.3
-	github.com/bborbe/kv v1.13.2
+	github.com/bborbe/http v1.13.0
+	github.com/bborbe/kv v1.14.0
 	github.com/bborbe/log v1.1.0
 	github.com/bborbe/memorykv v1.3.0
 	github.com/bborbe/parse v1.7.0
 	github.com/bborbe/run v1.7.0
-	github.com/bborbe/time v1.15.1
+	github.com/bborbe/time v1.15.2
 	github.com/bborbe/validation v1.3.0
 	github.com/golang/glog v1.2.5
 	github.com/onsi/ginkgo/v2 v2.23.4
@@ -35,12 +35,12 @@ require (
 	github.com/eapache/queue v1.1.0 // indirect
 	github.com/getsentry/raven-go v0.2.0 // indirect
 	github.com/getsentry/sentry-go v0.33.0 // indirect
-	github.com/go-logr/logr v1.4.2 // indirect
+	github.com/go-logr/logr v1.4.3 // indirect
 	github.com/go-task/slim-sprig/v3 v3.0.0 // indirect
 	github.com/golang/snappy v1.0.0 // indirect
 	github.com/google/addlicense v1.1.1 // indirect
 	github.com/google/go-cmp v0.7.0 // indirect
-	github.com/google/pprof v0.0.0-20250501235452-c0086092b71a // indirect
+	github.com/google/pprof v0.0.0-20250602020802-c6617b811d0e // indirect
 	github.com/gorilla/mux v1.8.1 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
@@ -65,13 +65,13 @@ require (
 	go.etcd.io/bbolt v1.4.0 // indirect
 	go.uber.org/automaxprocs v1.6.0 // indirect
 	golang.org/x/crypto v0.38.0 // indirect
-	golang.org/x/exp v0.0.0-20250506013437-ce4c2cf36ca6 // indirect
+	golang.org/x/exp v0.0.0-20250531010427-b6e5de432a8b // indirect
 	golang.org/x/lint v0.0.0-20241112194109-818c5a804067 // indirect
 	golang.org/x/mod v0.24.0 // indirect
 	golang.org/x/net v0.40.0 // indirect
 	golang.org/x/sync v0.14.0 // indirect
 	golang.org/x/sys v0.33.0 // indirect
-	golang.org/x/telemetry v0.0.0-20250515191325-98a4f3d86569 // indirect
+	golang.org/x/telemetry v0.0.0-20250603144755-9a9ac2102d0e // indirect
 	golang.org/x/text v0.25.0 // indirect
 	golang.org/x/tools v0.33.0 // indirect
 	golang.org/x/vuln v1.1.4 // indirect

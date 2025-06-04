@@ -29,7 +29,7 @@ func NewConsumerErrorHandler(
 			Topic(err.Topic),
 			Partition(err.Partition),
 		)
-		glog.Warningf("got consumer error(%T) => skip", errors.Unwrap(err))
+		glog.Warningf("got consumer error(%T) => skip: %v", errors.Unwrap(err), err)
 		return err
 	})
 }
