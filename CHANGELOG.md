@@ -8,6 +8,13 @@ Please choose versions by [Semantic Versioning](http://semver.org/).
 * MINOR version when you add functionality in a backwards-compatible manner, and
 * PATCH version when you make backwards-compatible bug fixes.
 
+## v1.13.8
+
+- improve CreatePartitionConsumer offset error detection with proper error type checking
+- add IsOffsetOutOfRange function for reusable offset error detection
+- add comprehensive tests for sarama.ErrOffsetOutOfRange and sarama.KError handling
+- maintain backwards compatibility with existing string-based error matching
+
 ## v1.13.7
 
 - add tests
