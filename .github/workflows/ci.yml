@@ -26,4 +26,6 @@ jobs:
         uses: codecov/codecov-action@v4
         if: always()
         with:
+          file: ./coverage.out
           fail_ci_if_error: false
+          token: ${{ secrets.CODECOV_TOKEN }}
