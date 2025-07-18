@@ -18,7 +18,7 @@ generate:
 	go generate -mod=mod ./...
 
 test:
-	go test -mod=mod -p=$${GO_TEST_PARALLEL:-1} -cover -race $(shell go list -mod=mod ./... | grep -v /vendor/)
+	go test -mod=mod -p=$${GO_TEST_PARALLEL:-1} -cover -race -coverprofile=coverage.out $(shell go list -mod=mod ./... | grep -v /vendor/)
 
 check: vet errcheck vulncheck
 
