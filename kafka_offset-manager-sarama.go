@@ -13,6 +13,7 @@ import (
 	"github.com/golang/glog"
 )
 
+// NewSaramaOffsetManager creates a new offset manager using Sarama's built-in offset management.
 func NewSaramaOffsetManager(
 	saramaClient SaramaClient,
 	group Group,
@@ -28,6 +29,7 @@ func NewSaramaOffsetManager(
 	}
 }
 
+// saramaOffsetManager implements OffsetManager using Sarama's offset management capabilities.
 type saramaOffsetManager struct {
 	saramaClient   SaramaClient
 	initalOffset   Offset
@@ -39,14 +41,17 @@ type saramaOffsetManager struct {
 	partitionOffsetManagers map[TopicPartition]sarama.PartitionOffsetManager
 }
 
+// InitialOffset returns the initial offset to use for new partitions.
 func (s *saramaOffsetManager) InitialOffset() Offset {
 	return s.initalOffset
 }
 
+// FallbackOffset returns the fallback offset to use when initial offset fails.
 func (s *saramaOffsetManager) FallbackOffset() Offset {
 	return s.fallbackOffset
 }
 
+// NextOffset retrieves the next offset to consume for the given topic and partition.
 func (s *saramaOffsetManager) NextOffset(ctx context.Context, topic Topic, partition Partition) (Offset, error) {
 	partitionOffsetManager, err := s.getPartitionManager(ctx, topic, partition)
 	if err != nil {
@@ -60,6 +65,7 @@ func (s *saramaOffsetManager) NextOffset(ctx context.Context, topic Topic, parti
 	return Offset(nextOffset), nil
 }
 
+// MarkOffset marks the given offset as consumed for the specified topic and partition.
 func (s *saramaOffsetManager) MarkOffset(ctx context.Context, topic Topic, partition Partition, nextOffset Offset) error {
 	partitionOffsetManager, err := s.getPartitionManager(ctx, topic, partition)
 	if err != nil {
@@ -70,6 +76,7 @@ func (s *saramaOffsetManager) MarkOffset(ctx context.Context, topic Topic, parti
 	return nil
 }
 
+// Close releases all resources associated with this offset manager.
 func (s *saramaOffsetManager) Close() error {
 	s.mux.Lock()
 	defer s.mux.Unlock()
@@ -84,6 +91,7 @@ func (s *saramaOffsetManager) Close() error {
 	return nil
 }
 
+// getPartitionManager retrieves or creates a partition offset manager for the given topic and partition.
 func (s *saramaOffsetManager) getPartitionManager(ctx context.Context, topic Topic, partition Partition) (sarama.PartitionOffsetManager, error) {
 	s.mux.Lock()
 	defer s.mux.Unlock()
@@ -109,6 +117,7 @@ func (s *saramaOffsetManager) getPartitionManager(ctx context.Context, topic Top
 	return partitionOffsetManager, nil
 }
 
+// getOffsetManager retrieves or creates the Sarama offset manager instance.
 func (s *saramaOffsetManager) getOffsetManager(ctx context.Context) (sarama.OffsetManager, error) {
 	if s.offsetManager == nil {
 		offsetManager, err := sarama.NewOffsetManagerFromClient(s.group.String(), s.saramaClient)

@@ -13,8 +13,10 @@ import (
 	libkv "github.com/bborbe/kv"
 )
 
+// ClosedError is returned when operations are attempted on a closed offset manager.
 var ClosedError = stderrors.New("closed")
 
+// NewStoreOffsetManager creates a new offset manager that persists offsets using a store.
 func NewStoreOffsetManager(
 	offsetStore OffsetStore,
 	initalOffset Offset,
@@ -27,6 +29,7 @@ func NewStoreOffsetManager(
 	}
 }
 
+// storeOffsetManager implements OffsetManager using a persistent store.
 type storeOffsetManager struct {
 	initalOffset   Offset
 	fallbackOffset Offset
@@ -36,6 +39,7 @@ type storeOffsetManager struct {
 	closed bool
 }
 
+// Close marks the offset manager as closed.
 func (s *storeOffsetManager) Close() error {
 	s.mux.Lock()
 	defer s.mux.Unlock()
@@ -43,14 +47,17 @@ func (s *storeOffsetManager) Close() error {
 	return nil
 }
 
+// InitialOffset returns the initial offset to use for new partitions.
 func (s *storeOffsetManager) InitialOffset() Offset {
 	return s.initalOffset
 }
 
+// FallbackOffset returns the fallback offset to use when initial offset fails.
 func (s *storeOffsetManager) FallbackOffset() Offset {
 	return s.fallbackOffset
 }
 
+// NextOffset retrieves the next offset to consume for the given topic and partition from the store.
 func (s *storeOffsetManager) NextOffset(ctx context.Context, topic Topic, partition Partition) (Offset, error) {
 	s.mux.Lock()
 	defer s.mux.Unlock()
@@ -68,6 +75,7 @@ func (s *storeOffsetManager) NextOffset(ctx context.Context, topic Topic, partit
 	return offset, nil
 }
 
+// MarkOffset persists the given offset as consumed for the specified topic and partition.
 func (s *storeOffsetManager) MarkOffset(ctx context.Context, topic Topic, partition Partition, nextOffset Offset) error {
 	s.mux.Lock()
 	defer s.mux.Unlock()

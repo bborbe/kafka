@@ -11,6 +11,7 @@ import (
 	"github.com/bborbe/errors"
 )
 
+// NewSimpleOffsetManager creates a new simple in-memory offset manager.
 func NewSimpleOffsetManager(
 	initalOffset Offset,
 	fallbackOffset Offset,
@@ -22,6 +23,7 @@ func NewSimpleOffsetManager(
 	}
 }
 
+// simpleOffsetManager implements OffsetManager using in-memory storage.
 type simpleOffsetManager struct {
 	initalOffset   Offset
 	fallbackOffset Offset
@@ -31,6 +33,7 @@ type simpleOffsetManager struct {
 	offsets map[TopicPartition]Offset
 }
 
+// Close marks the offset manager as closed.
 func (s *simpleOffsetManager) Close() error {
 	s.mux.Lock()
 	defer s.mux.Unlock()
@@ -38,14 +41,17 @@ func (s *simpleOffsetManager) Close() error {
 	return nil
 }
 
+// InitialOffset returns the initial offset to use for new partitions.
 func (s *simpleOffsetManager) InitialOffset() Offset {
 	return s.initalOffset
 }
 
+// FallbackOffset returns the fallback offset to use when initial offset fails.
 func (s *simpleOffsetManager) FallbackOffset() Offset {
 	return s.fallbackOffset
 }
 
+// NextOffset retrieves the next offset to consume for the given topic and partition.
 func (s *simpleOffsetManager) NextOffset(ctx context.Context, topic Topic, partition Partition) (Offset, error) {
 	s.mux.Lock()
 	defer s.mux.Unlock()
@@ -59,6 +65,7 @@ func (s *simpleOffsetManager) NextOffset(ctx context.Context, topic Topic, parti
 	return result, nil
 }
 
+// MarkOffset marks the given offset as consumed for the specified topic and partition.
 func (s *simpleOffsetManager) MarkOffset(ctx context.Context, topic Topic, partition Partition, nextOffset Offset) error {
 	s.mux.Lock()
 	defer s.mux.Unlock()

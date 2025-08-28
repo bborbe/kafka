@@ -12,8 +12,10 @@ import (
 	libkv "github.com/bborbe/kv"
 )
 
+// MessageHandlerBatchTxList is a list of MessageHandlerBatchTx that executes handlers sequentially within a transaction.
 type MessageHandlerBatchTxList []MessageHandlerBatchTx
 
+// ConsumeMessages executes all transaction handlers in the list sequentially.
 func (m MessageHandlerBatchTxList) ConsumeMessages(ctx context.Context, tx libkv.Tx, messages []*sarama.ConsumerMessage) error {
 	for _, mm := range m {
 		select {

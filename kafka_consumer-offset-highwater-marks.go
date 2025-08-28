@@ -14,6 +14,7 @@ import (
 	"github.com/golang/glog"
 )
 
+// NewOffsetConsumerHighwaterMarks creates a consumer that processes messages up to high watermarks.
 func NewOffsetConsumerHighwaterMarks(
 	saramaClient sarama.Client,
 	topic Topic,
@@ -35,6 +36,7 @@ func NewOffsetConsumerHighwaterMarks(
 	)
 }
 
+// NewOffsetConsumerHighwaterMarksBatch creates a batch consumer that processes messages up to high watermarks.
 func NewOffsetConsumerHighwaterMarksBatch(
 	saramaClient sarama.Client,
 	topic Topic,
@@ -72,6 +74,7 @@ func NewOffsetConsumerHighwaterMarksBatch(
 	})
 }
 
+// createTriggerOffsets creates a map of offsets to trigger processing based on highwater marks.
 func createTriggerOffsets(
 	ctx context.Context,
 	saramaClient sarama.Client,
@@ -102,6 +105,7 @@ func createTriggerOffsets(
 	), nil
 }
 
+// combineConsumerGroupAndHighwaterMark combines consumer group offsets with highwater marks to determine trigger offsets.
 func combineConsumerGroupAndHighwaterMark(
 	consumerGroupOffsets map[Partition]Offset,
 	currentHighWaterMarks map[Partition]Offset,

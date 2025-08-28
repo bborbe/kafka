@@ -12,10 +12,13 @@ import (
 )
 
 //counterfeiter:generate -o mocks/kafka-message-handler-batch.go --fake-name KafkaMessageHandlerBatch . MessageHandlerBatch
+
+// MessageHandlerBatch defines an interface for processing batches of Kafka messages.
 type MessageHandlerBatch interface {
 	ConsumeMessages(ctx context.Context, messages []*sarama.ConsumerMessage) error
 }
 
+// NewMessageHandlerBatch creates a new batch message handler that processes messages individually using the provided MessageHandler.
 func NewMessageHandlerBatch(messageHandler MessageHandler) MessageHandlerBatch {
 	return MessageHandlerBatchFunc(func(ctx context.Context, messages []*sarama.ConsumerMessage) error {
 		for _, msg := range messages {

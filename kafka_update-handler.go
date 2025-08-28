@@ -8,6 +8,8 @@ import (
 	"context"
 )
 
+// UpdaterHandler defines a generic interface for handling update and delete operations
+// on objects identified by keys of type KEY.
 type UpdaterHandler[KEY ~[]byte | ~string, OBJECT any] interface {
 	Update(ctx context.Context, key KEY, object OBJECT) error
 	Delete(ctx context.Context, key KEY) error

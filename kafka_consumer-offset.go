@@ -15,11 +15,13 @@ import (
 	"github.com/golang/glog"
 )
 
+// ConsumerOptions configures optional parameters for offset consumers.
 type ConsumerOptions struct {
 	TargetLag int64
 	Delay     libtime.Duration
 }
 
+// NewOffsetConsumer creates a new offset-based consumer that processes messages one at a time.
 func NewOffsetConsumer(
 	saramaClient sarama.Client,
 	topic Topic,
@@ -39,6 +41,7 @@ func NewOffsetConsumer(
 	)
 }
 
+// NewOffsetConsumerBatch creates a new offset-based consumer that processes messages in batches.
 func NewOffsetConsumerBatch(
 	saramaClient sarama.Client,
 	topic Topic,

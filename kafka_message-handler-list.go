@@ -11,8 +11,10 @@ import (
 	"github.com/bborbe/errors"
 )
 
+// MessageHanderList is a list of MessageHandler that executes handlers sequentially.
 type MessageHanderList []MessageHandler
 
+// ConsumeMessage executes all handlers in the list sequentially for a single message.
 func (m MessageHanderList) ConsumeMessage(ctx context.Context, msg *sarama.ConsumerMessage) error {
 	for _, mm := range m {
 		select {

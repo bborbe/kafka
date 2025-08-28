@@ -12,8 +12,11 @@ import (
 	"github.com/bborbe/errors"
 )
 
+// SaramaConfigOptions defines a function type for modifying Sarama configuration.
 type SaramaConfigOptions func(config *sarama.Config)
 
+// CreateSaramaConfig creates a new Sarama configuration with default settings and applies optional modifications.
+// It configures producers for high durability, consumers for oldest offset consumption, and enables TLS if brokers use TLS schema.
 func CreateSaramaConfig(
 	ctx context.Context,
 	brokers Brokers,

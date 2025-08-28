@@ -13,6 +13,7 @@ import (
 	"github.com/golang/glog"
 )
 
+// NewMessageHandlerBatchSkipErrors creates a message handler that logs and skips errors.
 func NewMessageHandlerBatchSkipErrors(
 	handler MessageHandlerBatch,
 	logSamplerFactory log.SamplerFactory,

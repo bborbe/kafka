@@ -7,6 +7,8 @@ package kafka
 import "github.com/IBM/sarama"
 
 //counterfeiter:generate -o mocks/kafka-sarama-sync-producer.go --fake-name KafkaSaramaSyncProducer . SaramaSyncProducer
+
+// SaramaSyncProducer wraps the Sarama SyncProducer interface to enable dependency injection and testing.
 type SaramaSyncProducer interface {
 	sarama.SyncProducer
 }

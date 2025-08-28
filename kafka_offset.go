@@ -40,6 +40,7 @@ func (o Offset) Bytes() []byte {
 	return result.Bytes()
 }
 
+// Ptr returns a pointer to the offset value.
 func (o Offset) Ptr() *Offset {
 	return &o
 }
@@ -51,7 +52,10 @@ func OffsetFromBytes(content []byte) Offset {
 	return Offset(result)
 }
 
+// OffsetNewest represents the most recent offset available for a partition.
 const OffsetNewest = Offset(sarama.OffsetNewest)
+
+// OffsetOldest represents the oldest offset available for a partition.
 const OffsetOldest = Offset(sarama.OffsetOldest)
 
 // ParseOffset from a string

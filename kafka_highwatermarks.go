@@ -12,6 +12,7 @@ import (
 	"github.com/golang/glog"
 )
 
+// HighWaterMarks returns the high water marks for all partitions of the specified topic.
 func HighWaterMarks(
 	ctx context.Context,
 	saramaClient sarama.Client,
@@ -33,6 +34,7 @@ func HighWaterMarks(
 	return result, nil
 }
 
+// HighWaterMark returns the high water mark offset for the specified topic and partition.
 func HighWaterMark(
 	ctx context.Context,
 	saramaClient sarama.Client,
@@ -49,10 +51,13 @@ func HighWaterMark(
 }
 
 //counterfeiter:generate -o mocks/kafka-highwatermark-provider.go --fake-name KafkaHighwaterMarkProvider . HighwaterMarkProvider
+
+// HighwaterMarkProvider provides methods to retrieve high water mark offsets from Kafka topics.
 type HighwaterMarkProvider interface {
 	HighWaterMark(ctx context.Context, topic Topic, partition Partition) (*Offset, error)
 }
 
+// NewHighwaterMarkProvider creates a new HighwaterMarkProvider using the provided Sarama client.
 func NewHighwaterMarkProvider(
 	saramaClient sarama.Client,
 ) HighwaterMarkProvider {

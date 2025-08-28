@@ -12,6 +12,7 @@ import (
 	"github.com/bborbe/errors"
 )
 
+// NewJsonEncoder creates a new JSON encoder that marshals the given value into a Sarama encoder.
 func NewJsonEncoder(ctx context.Context, value interface{}) (sarama.Encoder, error) {
 	bytes, err := json.Marshal(value)
 	if err != nil {

@@ -11,6 +11,7 @@ import (
 	"github.com/bborbe/errors"
 )
 
+// NewSyncProducerWithHeader creates a sync producer that adds specified headers to all messages.
 func NewSyncProducerWithHeader(
 	ctx context.Context,
 	brokers Brokers,
@@ -34,6 +35,7 @@ func NewSyncProducerWithHeader(
 	}), nil
 }
 
+// NewSyncProducerWithName creates a sync producer that adds a 'name' header to all messages.
 func NewSyncProducerWithName(
 	ctx context.Context,
 	brokers Brokers,

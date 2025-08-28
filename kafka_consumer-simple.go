@@ -8,6 +8,8 @@ import (
 	"github.com/bborbe/log"
 )
 
+// NewSimpleConsumer creates a new simple consumer that processes messages individually.
+// It wraps the provided MessageHandler in a batch handler with batch size 1.
 func NewSimpleConsumer(
 	saramaClient SaramaClient,
 	topic Topic,
@@ -27,6 +29,8 @@ func NewSimpleConsumer(
 	)
 }
 
+// NewSimpleConsumerBatch creates a new simple consumer that processes messages in batches.
+// It uses a simple offset manager with the provided initial offset for both initial and fallback scenarios.
 func NewSimpleConsumerBatch(
 	saramaClient SaramaClient,
 	topic Topic,

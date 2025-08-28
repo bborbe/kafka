@@ -7,6 +7,8 @@ package kafka
 import "github.com/IBM/sarama"
 
 //counterfeiter:generate -o mocks/kafka-sarama-consumer.go --fake-name KafkaSaramaConsumer . SaramaConsumer
+
+// SaramaConsumer provides an interface wrapper around sarama.Consumer for testing and abstraction purposes.
 type SaramaConsumer interface {
 	sarama.Consumer
 }

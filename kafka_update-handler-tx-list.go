@@ -11,8 +11,10 @@ import (
 	libkv "github.com/bborbe/kv"
 )
 
+// UpdaterHandlerTxList is a list of UpdaterHandlerTx that executes handlers sequentially within a transaction.
 type UpdaterHandlerTxList[KEY ~[]byte | ~string, OBJECT any] []UpdaterHandlerTx[KEY, OBJECT]
 
+// Update executes all transaction handlers in the list sequentially for update operations.
 func (e UpdaterHandlerTxList[KEY, OBJECT]) Update(ctx context.Context, tx libkv.Tx, key KEY, object OBJECT) error {
 	for _, ee := range e {
 		if err := ee.Update(ctx, tx, key, object); err != nil {
@@ -22,6 +24,7 @@ func (e UpdaterHandlerTxList[KEY, OBJECT]) Update(ctx context.Context, tx libkv.
 	return nil
 }
 
+// Delete executes all transaction handlers in the list sequentially for delete operations.
 func (e UpdaterHandlerTxList[KEY, OBJECT]) Delete(ctx context.Context, tx libkv.Tx, key KEY) error {
 	for _, ee := range e {
 		if err := ee.Delete(ctx, tx, key); err != nil {

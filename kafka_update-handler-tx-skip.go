@@ -13,6 +13,7 @@ import (
 	"github.com/golang/glog"
 )
 
+// NewUpdaterHandlerTxSkipErrors creates a transaction updater handler that logs and skips errors.
 func NewUpdaterHandlerTxSkipErrors[KEY ~[]byte | ~string, OBJECT any](
 	handler UpdaterHandlerTx[KEY, OBJECT],
 	logSamplerFactory log.SamplerFactory,

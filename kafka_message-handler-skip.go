@@ -14,6 +14,7 @@ import (
 	"github.com/golang/glog"
 )
 
+// NewMessageHandlerSkipErrors creates a message handler that logs and skips errors.
 func NewMessageHandlerSkipErrors(
 	handler MessageHandler,
 	logSamplerFactory log.SamplerFactory,

@@ -12,11 +12,14 @@ import (
 )
 
 //counterfeiter:generate -o mocks/kafka-offset-store.go --fake-name KafkaOffsetStore . OffsetStore
+
+// OffsetStore provides persistent storage for Kafka topic partition offsets.
 type OffsetStore interface {
 	Get(ctx context.Context, topic Topic, partition Partition) (Offset, error)
 	Set(ctx context.Context, topic Topic, partition Partition, offset Offset) error
 }
 
+// NewOffsetStore creates a new OffsetStore using the provided database.
 func NewOffsetStore(
 	db libkv.DB,
 ) OffsetStore {
@@ -26,6 +29,7 @@ func NewOffsetStore(
 	}
 }
 
+// NewOffsetStoreGroup creates a new OffsetStore for a specific consumer group.
 func NewOffsetStoreGroup(
 	db libkv.DB,
 	group Group,

@@ -4,6 +4,7 @@
 
 package kafka
 
+// Group represents a Kafka consumer group identifier.
 type Group string
 
 func (t Group) String() string {

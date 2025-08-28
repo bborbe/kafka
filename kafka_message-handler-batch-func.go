@@ -10,8 +10,10 @@ import (
 	"github.com/IBM/sarama"
 )
 
+// MessageHandlerBatchFunc is a function type that implements MessageHandlerBatch interface.
 type MessageHandlerBatchFunc func(ctx context.Context, messages []*sarama.ConsumerMessage) error
 
+// ConsumeMessages implements the MessageHandlerBatch interface.
 func (b MessageHandlerBatchFunc) ConsumeMessages(ctx context.Context, messages []*sarama.ConsumerMessage) error {
 	return b(ctx, messages)
 }

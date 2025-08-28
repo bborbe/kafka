@@ -13,6 +13,7 @@ import (
 	"github.com/golang/glog"
 )
 
+// OutOfRangeErrorMessage defines the error message returned when the requested offset is outside the range of offsets maintained by the server.
 const OutOfRangeErrorMessage = "The requested offset is outside the range of offsets maintained by the server for the given topic/partition"
 
 // CreatePartitionConsumer create partition consumer and use initial offset if out of range error

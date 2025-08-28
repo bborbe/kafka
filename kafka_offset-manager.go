@@ -10,15 +10,20 @@ import (
 	"io"
 )
 
+// TopicPartition represents a specific partition within a Kafka topic.
 type TopicPartition struct {
 	Topic     Topic
 	Partition Partition
 }
 
+// Bytes returns a byte representation of the TopicPartition in the format "topic-partition".
 func (p TopicPartition) Bytes() []byte {
 	return []byte(fmt.Sprintf("%s-%d", p.Topic, p.Partition))
 }
 
+// OffsetManager manages Kafka consumer offsets for topics and partitions.
+// It provides methods to retrieve initial and fallback offsets, track the next offset to consume,
+// and mark offsets as processed.
 type OffsetManager interface {
 	InitialOffset() Offset
 	FallbackOffset() Offset

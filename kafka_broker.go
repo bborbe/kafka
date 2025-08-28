@@ -8,6 +8,7 @@ import (
 	"strings"
 )
 
+// ParseBroker parses a string value into a Broker, adding a default plain schema if none is specified.
 func ParseBroker(value string) Broker {
 	result := Broker(value)
 	if result.Schema() == "" {
@@ -16,12 +17,15 @@ func ParseBroker(value string) Broker {
 	return result
 }
 
+// Broker represents a Kafka broker address with schema and host information.
 type Broker string
 
+// String returns the string representation of the Broker.
 func (b Broker) String() string {
 	return string(b)
 }
 
+// Schema extracts and returns the schema portion of the broker address.
 func (b Broker) Schema() BrokerSchema {
 	parts := strings.Split(b.String(), "://")
 	if len(parts) != 2 {
@@ -30,6 +34,7 @@ func (b Broker) Schema() BrokerSchema {
 	return BrokerSchema(parts[0])
 }
 
+// Host extracts and returns the host portion of the broker address.
 func (b Broker) Host() string {
 	parts := strings.Split(b.String(), "://")
 	if len(parts) != 2 {

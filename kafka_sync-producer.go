@@ -12,12 +12,18 @@ import (
 )
 
 //counterfeiter:generate -o mocks/kafka-sync-producer.go --fake-name KafkaSyncProducer . SyncProducer
+
+// SyncProducer defines the interface for synchronously sending messages to Kafka.
 type SyncProducer interface {
+	// SendMessage sends a single message to Kafka and returns the partition and offset where it was stored.
 	SendMessage(ctx context.Context, msg *sarama.ProducerMessage) (partition int32, offset int64, err error)
+	// SendMessages sends multiple messages to Kafka in a single batch operation.
 	SendMessages(ctx context.Context, msgs []*sarama.ProducerMessage) error
+	// Close closes the producer and releases its resources.
 	Close() error
 }
 
+// NewSyncProducer creates a new synchronous Kafka producer with the given brokers and configuration options.
 func NewSyncProducer(
 	ctx context.Context,
 	brokers Brokers,
@@ -34,6 +40,7 @@ func NewSyncProducer(
 	return NewSyncProducerFromSaramaSyncProducer(saramaSyncProducer), nil
 }
 
+// NewSyncProducerFromSaramaSyncProducer creates a new SyncProducer wrapper around an existing Sarama SyncProducer.
 func NewSyncProducerFromSaramaSyncProducer(saramaSyncProducer sarama.SyncProducer) SyncProducer {
 	return &syncProducer{
 		saramaSyncProducer: saramaSyncProducer,

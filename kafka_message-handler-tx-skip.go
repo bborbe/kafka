@@ -15,6 +15,7 @@ import (
 	"github.com/golang/glog"
 )
 
+// NewMessageHandlerTxSkipErrors creates a transaction message handler that logs and skips errors.
 func NewMessageHandlerTxSkipErrors(
 	handler MessageHandlerTx,
 	logSamplerFactory log.SamplerFactory,

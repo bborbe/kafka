@@ -13,6 +13,7 @@ import (
 	"github.com/bborbe/errors"
 )
 
+// PartitionsFromInt32 converts a slice of int32 values to Partitions.
 func PartitionsFromInt32(partitions []int32) Partitions {
 	var result Partitions
 	for _, partition := range partitions {
@@ -21,6 +22,7 @@ func PartitionsFromInt32(partitions []int32) Partitions {
 	return result
 }
 
+// Partitions represents a collection of Kafka partitions.
 type Partitions []Partition
 
 // ParsePartition from a string
@@ -41,6 +43,7 @@ func (p Partition) Int32() int32 {
 	return int32(p)
 }
 
+// String returns the string representation of the partition.
 func (p Partition) String() string {
 	return strconv.FormatInt(int64(p), 10)
 }

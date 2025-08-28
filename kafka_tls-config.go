@@ -14,6 +14,7 @@ import (
 	"github.com/golang/glog"
 )
 
+// NewTLSConfig creates a TLS configuration for secure Kafka connections using client certificates and CA.
 func NewTLSConfig(ctx context.Context, clientCertFile, clientKeyFile, caCertFile string) (*tls.Config, error) {
 
 	// Load client cert

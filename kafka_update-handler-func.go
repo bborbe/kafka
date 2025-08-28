@@ -10,6 +10,7 @@ import (
 	"github.com/bborbe/errors"
 )
 
+// UpdaterHandlerFunc creates an UpdaterHandler from separate update and delete functions.
 func UpdaterHandlerFunc[KEY ~[]byte | ~string, OBJECT any](
 	update func(ctx context.Context, key KEY, object OBJECT) error,
 	delete func(ctx context.Context, key KEY) error,
@@ -20,11 +21,13 @@ func UpdaterHandlerFunc[KEY ~[]byte | ~string, OBJECT any](
 	}
 }
 
+// updaterHandlerFunc implements UpdaterHandler using function pointers.
 type updaterHandlerFunc[KEY ~[]byte | ~string, OBJECT any] struct {
 	update func(ctx context.Context, key KEY, object OBJECT) error
 	delete func(ctx context.Context, OBJECT KEY) error
 }
 
+// Update executes the update function if provided.
 func (e *updaterHandlerFunc[KEY, OBJECT]) Update(ctx context.Context, key KEY, object OBJECT) error {
 	if e.update == nil {
 		return nil
@@ -35,6 +38,7 @@ func (e *updaterHandlerFunc[KEY, OBJECT]) Update(ctx context.Context, key KEY, o
 	return nil
 }
 
+// Delete executes the delete function if provided.
 func (e *updaterHandlerFunc[KEY, OBJECT]) Delete(ctx context.Context, key KEY) error {
 	if e.delete == nil {
 		return nil

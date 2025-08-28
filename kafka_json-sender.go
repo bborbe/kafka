@@ -17,8 +17,10 @@ import (
 	"github.com/golang/glog"
 )
 
+// Entries represents a collection of Entry items for batch operations.
 type Entries []Entry
 
+// Entry represents a single Kafka message entry with topic, headers, key and value.
 type Entry struct {
 	Topic   Topic                 `json:"topic"`
 	Headers []sarama.RecordHeader `json:"headers"`
@@ -26,8 +28,10 @@ type Entry struct {
 	Value   Value                 `json:"value"`
 }
 
+// Keys represents a collection of Key items.
 type Keys []Key
 
+// Key represents a Kafka message key that can be converted to bytes or string.
 type Key interface {
 	Bytes() []byte
 	String() string
@@ -43,6 +47,7 @@ func (f key) Bytes() []byte {
 	return f
 }
 
+// ParseKey parses an interface value into a Key by converting it to a string.
 func ParseKey(ctx context.Context, value interface{}) (*Key, error) {
 	str, err := parse.ParseString(ctx, value)
 	if err != nil {
@@ -52,32 +57,38 @@ func ParseKey(ctx context.Context, value interface{}) (*Key, error) {
 	return &key, nil
 }
 
+// NewKey creates a new Key from a byte slice or string value.
 func NewKey[K ~[]byte | ~string](value K) Key {
 	return key(value)
 }
 
+// Value represents a Kafka message value that supports validation.
 type Value interface {
 	validation.HasValidation
 }
 
-type JsonSenderOptions struct {
+// JSONSenderOptions defines configuration options for JSONSender behavior.
+type JSONSenderOptions struct {
 	ValidationDisabled bool
 }
 
-//counterfeiter:generate -o mocks/kafka-json-sender.go --fake-name KafkaJsonSender . JsonSender
-type JsonSender interface {
+//counterfeiter:generate -o mocks/kafka-json-sender.go --fake-name KafkaJSONSender . JSONSender
+
+// JSONSender provides methods for sending JSON-encoded messages to Kafka topics.
+type JSONSender interface {
 	SendUpdate(ctx context.Context, topic Topic, key Key, value Value, headers ...sarama.RecordHeader) error
 	SendUpdates(ctx context.Context, entries Entries) error
 	SendDelete(ctx context.Context, topic Topic, key Key, headers ...sarama.RecordHeader) error
 	SendDeletes(ctx context.Context, entries Entries) error
 }
 
-func NewJsonSender(
+// NewJSONSender creates a new JSONSender with the provided producer and options.
+func NewJSONSender(
 	producer SyncProducer,
 	logSamplerFactory log.SamplerFactory,
-	optionsFns ...func(options *JsonSenderOptions),
-) JsonSender {
-	options := JsonSenderOptions{}
+	optionsFns ...func(options *JSONSenderOptions),
+) JSONSender {
+	options := JSONSenderOptions{}
 	for _, fn := range optionsFns {
 		fn(&options)
 	}
@@ -93,7 +104,7 @@ type jsonSender struct {
 	producer         SyncProducer
 	logSamplerUpdate log.Sampler
 	logSamplerDelete log.Sampler
-	options          JsonSenderOptions
+	options          JSONSenderOptions
 }
 
 func (j *jsonSender) SendUpdate(ctx context.Context, topic Topic, key Key, value Value, headers ...sarama.RecordHeader) error {

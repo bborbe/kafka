@@ -11,16 +11,20 @@ import (
 	"github.com/golang/glog"
 )
 
+// ConsumerErrorHandler defines an interface for handling Kafka consumer errors.
 type ConsumerErrorHandler interface {
 	HandleError(err *sarama.ConsumerError) error
 }
 
+// ConsumerErrorHandlerFunc is a function type that implements ConsumerErrorHandler.
 type ConsumerErrorHandlerFunc func(err *sarama.ConsumerError) error
 
+// HandleError implements the ConsumerErrorHandler interface for ConsumerErrorHandlerFunc.
 func (c ConsumerErrorHandlerFunc) HandleError(err *sarama.ConsumerError) error {
 	return c(err)
 }
 
+// NewConsumerErrorHandler creates a new ConsumerErrorHandler that logs errors and updates metrics.
 func NewConsumerErrorHandler(
 	metricsConsumer MetricsConsumer,
 ) ConsumerErrorHandler {

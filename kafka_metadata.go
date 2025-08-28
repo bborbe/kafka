@@ -4,8 +4,10 @@
 
 package kafka
 
+// DefaultMetadata defines the default metadata value used for offset manager operations.
 const DefaultMetadata Metadata = "offsetmanager"
 
+// Metadata represents a string-based metadata identifier used in Kafka operations.
 type Metadata string
 
 func (m Metadata) String() string {

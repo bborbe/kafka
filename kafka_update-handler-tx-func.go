@@ -11,6 +11,7 @@ import (
 	libkv "github.com/bborbe/kv"
 )
 
+// UpdaterHandlerTxFunc creates an UpdaterHandlerTx from separate update and delete functions.
 func UpdaterHandlerTxFunc[KEY ~[]byte | ~string, OBJECT any](
 	update func(ctx context.Context, tx libkv.Tx, key KEY, object OBJECT) error,
 	delete func(ctx context.Context, tx libkv.Tx, key KEY) error,
@@ -21,11 +22,13 @@ func UpdaterHandlerTxFunc[KEY ~[]byte | ~string, OBJECT any](
 	}
 }
 
+// updaterHandlerTxFunc implements UpdaterHandlerTx using function pointers.
 type updaterHandlerTxFunc[KEY ~[]byte | ~string, OBJECT any] struct {
 	update func(ctx context.Context, tx libkv.Tx, key KEY, object OBJECT) error
 	delete func(ctx context.Context, tx libkv.Tx, OBJECT KEY) error
 }
 
+// Update executes the update function within a transaction if provided.
 func (e *updaterHandlerTxFunc[KEY, OBJECT]) Update(ctx context.Context, tx libkv.Tx, key KEY, object OBJECT) error {
 	if e.update == nil {
 		return nil
@@ -36,6 +39,7 @@ func (e *updaterHandlerTxFunc[KEY, OBJECT]) Update(ctx context.Context, tx libkv
 	return nil
 }
 
+// Delete executes the delete function within a transaction if provided.
 func (e *updaterHandlerTxFunc[KEY, OBJECT]) Delete(ctx context.Context, tx libkv.Tx, key KEY) error {
 	if e.delete == nil {
 		return nil

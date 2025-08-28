@@ -13,6 +13,7 @@ import (
 	libkv "github.com/bborbe/kv"
 )
 
+// NewMessageHandlerTxUpdate creates a generic transaction message handler that processes JSON messages for CRUD operations.
 func NewMessageHandlerTxUpdate[KEY ~[]byte | ~string, OBJECT any](updateHandlerTx UpdaterHandlerTx[KEY, OBJECT]) MessageHandlerTx {
 	return MessageHandlerTxFunc(func(ctx context.Context, tx libkv.Tx, msg *sarama.ConsumerMessage) error {
 		var objectID = KEY(msg.Key)

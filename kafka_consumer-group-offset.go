@@ -11,6 +11,8 @@ import (
 	"github.com/bborbe/errors"
 )
 
+// ConsumerGroupOffsets retrieves the next offset for each partition of the specified topic using the provided offset manager.
+// It returns a map of partitions to their corresponding next offsets.
 func ConsumerGroupOffsets(
 	ctx context.Context,
 	saramaClient sarama.Client,

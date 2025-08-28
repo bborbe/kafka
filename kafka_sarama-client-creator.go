@@ -12,10 +12,13 @@ import (
 )
 
 //counterfeiter:generate -o mocks/kafka-sarama-client.go --fake-name KafkaSaramaClient . SaramaClient
+
+// SaramaClient defines the interface for Sarama Kafka client operations.
 type SaramaClient interface {
 	sarama.Client
 }
 
+// CreateSaramaClient creates a new Sarama Kafka client with the specified configuration.
 func CreateSaramaClient(
 	ctx context.Context,
 	brokers Brokers,

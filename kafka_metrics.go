@@ -11,6 +11,9 @@ import (
 )
 
 //counterfeiter:generate -o mocks/kafka-metrics.go --fake-name KafkaMetrics . Metrics
+
+// Metrics provides a comprehensive interface for collecting Kafka-related metrics.
+// It combines all metric collection interfaces for consumers, producers, and message handlers.
 type Metrics interface {
 	MetricsMessageHandler
 	MetricsConsumer
@@ -18,6 +21,8 @@ type Metrics interface {
 	MetricsSyncProducer
 }
 
+// MetricsMessageHandler provides metrics collection methods for message handler operations.
+// It tracks total processed messages, success/failure rates, and processing durations.
 type MetricsMessageHandler interface {
 	MessageHandlerTotalCounterInc(topic Topic, partition Partition)
 	MessageHandlerSuccessCounterInc(topic Topic, partition Partition)
@@ -25,12 +30,16 @@ type MetricsMessageHandler interface {
 	MessageHandlerDurationMeasure(topic Topic, partition Partition, duration time.Duration)
 }
 
+// MetricsConsumer provides metrics collection methods for Kafka consumer operations.
+// It tracks offset positions, high watermarks, and consumer errors.
 type MetricsConsumer interface {
 	CurrentOffset(topic Topic, partition Partition, offset Offset)
 	HighWaterMarkOffset(topic Topic, partition Partition, offset Offset)
 	ErrorCounterInc(topic Topic, partition Partition)
 }
 
+// MetricsPartitionConsumer provides metrics collection methods for partition consumer creation operations.
+// It tracks the success, failure, and out-of-range error rates when creating partition consumers.
 type MetricsPartitionConsumer interface {
 	ConsumePartitionCreateOutOfRangeErrorInitialize(topic Topic, partition Partition)
 	ConsumePartitionCreateOutOfRangeErrorInc(topic Topic, partition Partition)
@@ -39,6 +48,8 @@ type MetricsPartitionConsumer interface {
 	ConsumePartitionCreateTotalInc(topic Topic, partition Partition)
 }
 
+// MetricsSyncProducer provides metrics collection methods for synchronous Kafka producer operations.
+// It tracks total messages sent, success/failure rates, and send durations.
 type MetricsSyncProducer interface {
 	SyncProducerTotalCounterInc(topic Topic)
 	SyncProducerFailureCounterInc(topic Topic)
@@ -172,6 +183,8 @@ func init() {
 	)
 }
 
+// NewMetrics creates a new Metrics implementation that collects Prometheus metrics
+// for Kafka operations including consumer, producer, and message handler activities.
 func NewMetrics() Metrics {
 	return &metrics{}
 }

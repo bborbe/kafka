@@ -12,6 +12,7 @@ import (
 	"github.com/golang/glog"
 )
 
+// NewUpdaterHandlerSkipErrors creates an updater handler that logs and skips errors.
 func NewUpdaterHandlerSkipErrors[KEY ~[]byte | ~string, OBJECT any](
 	handler UpdaterHandler[KEY, OBJECT],
 	logSamplerFactory log.SamplerFactory,

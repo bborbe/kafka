@@ -11,6 +11,7 @@ import (
 	"github.com/bborbe/errors"
 )
 
+// ParsePartitionOffsetFromBytes parses partition offsets from JSON bytes.
 func ParsePartitionOffsetFromBytes(ctx context.Context, offsetBytes []byte) (PartitionOffsets, error) {
 	var partitionOffsetItems PartitionOffsetItems
 	if err := json.Unmarshal(offsetBytes, &partitionOffsetItems); err != nil {
@@ -19,8 +20,10 @@ func ParsePartitionOffsetFromBytes(ctx context.Context, offsetBytes []byte) (Par
 	return partitionOffsetItems.Offsets(), nil
 }
 
+// PartitionOffsets represents a mapping of partitions to their corresponding offsets.
 type PartitionOffsets map[Partition]Offset
 
+// Clone creates a deep copy of the partition offsets.
 func (o PartitionOffsets) Clone() PartitionOffsets {
 	result := PartitionOffsets{}
 	for k, v := range o {
@@ -29,10 +32,12 @@ func (o PartitionOffsets) Clone() PartitionOffsets {
 	return result
 }
 
+// Bytes serializes the partition offsets to JSON bytes.
 func (o PartitionOffsets) Bytes() ([]byte, error) {
 	return json.Marshal(o.OffsetPartitions())
 }
 
+// OffsetPartitions converts the map to a slice of PartitionOffsetItem.
 func (o PartitionOffsets) OffsetPartitions() PartitionOffsetItems {
 	var result []PartitionOffsetItem
 	for partition, offset := range o {
@@ -44,13 +49,16 @@ func (o PartitionOffsets) OffsetPartitions() PartitionOffsetItems {
 	return result
 }
 
+// PartitionOffsetItems represents a slice of partition offset items.
 type PartitionOffsetItems []PartitionOffsetItem
 
+// PartitionOffsetItem represents a single partition and its offset.
 type PartitionOffsetItem struct {
 	Offset    Offset
 	Partition Partition
 }
 
+// Offsets converts the slice to a PartitionOffsets map.
 func (o PartitionOffsetItems) Offsets() PartitionOffsets {
 	offsets := PartitionOffsets{}
 	for _, item := range o {

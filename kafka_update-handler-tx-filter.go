@@ -11,18 +11,22 @@ import (
 	libkv "github.com/bborbe/kv"
 )
 
+// FilterTx defines an interface for filtering objects within a transaction context.
 type FilterTx[KEY ~[]byte | ~string, OBJECT any] interface {
 	// Filtered return true if should be filter out
 	Filtered(ctx context.Context, tx libkv.Tx, key KEY, object OBJECT) (bool, error)
 }
 
+// FilterTxFunc is a function type that implements the FilterTx interface.
 type FilterTxFunc[KEY ~[]byte | ~string, OBJECT any] func(ctx context.Context, tx libkv.Tx, key KEY, object OBJECT) (bool, error)
 
+// Filtered implements the FilterTx interface.
 func (f FilterTxFunc[KEY, OBJECT]) Filtered(ctx context.Context, tx libkv.Tx, key KEY, object OBJECT) (bool, error) {
 	return f(ctx, tx, key, object)
 }
 
-func NewUpdaterHandlerTxilter[KEY ~[]byte | ~string, OBJECT any](
+// NewUpdaterHandlerTxFilter creates a transaction updater handler that filters objects before updating.
+func NewUpdaterHandlerTxFilter[KEY ~[]byte | ~string, OBJECT any](
 	filterTx Filter[KEY, OBJECT],
 	updateHandlerTx UpdaterHandlerTx[KEY, OBJECT],
 ) UpdaterHandlerTx[KEY, OBJECT] {

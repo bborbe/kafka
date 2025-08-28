@@ -13,6 +13,7 @@ import (
 	"github.com/golang/glog"
 )
 
+// NewOffsetManagerHandler creates an HTTP handler for managing Kafka consumer offsets.
 func NewOffsetManagerHandler(
 	offsetManager OffsetManager,
 	cancel context.CancelFunc,

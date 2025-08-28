@@ -7,6 +7,8 @@ package kafka
 import "github.com/IBM/sarama"
 
 //counterfeiter:generate -o mocks/kafka-sarama-partition-consumer.go --fake-name KafkaSaramaPartitionConsumer . SaramaPartitionConsumer
+
+// SaramaPartitionConsumer represents a wrapper interface for sarama.PartitionConsumer.
 type SaramaPartitionConsumer interface {
 	sarama.PartitionConsumer
 }

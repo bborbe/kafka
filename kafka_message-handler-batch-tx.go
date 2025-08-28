@@ -13,10 +13,13 @@ import (
 )
 
 //counterfeiter:generate -o mocks/kafka-message-handler-batch-tx.go --fake-name KafkaMessageHandlerBatchTx . MessageHandlerBatchTx
+
+// MessageHandlerBatchTx defines the interface for handling batch messages within a transaction context.
 type MessageHandlerBatchTx interface {
 	ConsumeMessages(ctx context.Context, tx libkv.Tx, messages []*sarama.ConsumerMessage) error
 }
 
+// NewMessageHandlerBatchTx creates a batch transaction handler from a single message transaction handler.
 func NewMessageHandlerBatchTx(messageHandler MessageHandlerTx) MessageHandlerBatchTx {
 	return MessageHandlerBatchTxFunc(func(ctx context.Context, tx libkv.Tx, messages []*sarama.ConsumerMessage) error {
 		for _, msg := range messages {
@@ -33,6 +36,7 @@ func NewMessageHandlerBatchTx(messageHandler MessageHandlerTx) MessageHandlerBat
 	})
 }
 
+// NewMessageHandlerBatchTxView creates a read-only batch handler that executes within a database view transaction.
 func NewMessageHandlerBatchTxView(db libkv.DB, messageHandler MessageHandlerBatchTx) MessageHandlerBatch {
 	return MessageHandlerBatchFunc(func(ctx context.Context, messages []*sarama.ConsumerMessage) error {
 		return db.View(ctx, func(ctx context.Context, tx libkv.Tx) error {
@@ -41,6 +45,7 @@ func NewMessageHandlerBatchTxView(db libkv.DB, messageHandler MessageHandlerBatc
 	})
 }
 
+// NewMessageHandlerBatchTxUpdate creates a batch handler that executes within a database update transaction.
 func NewMessageHandlerBatchTxUpdate(db libkv.DB, messageHandler MessageHandlerBatchTx) MessageHandlerBatch {
 	return MessageHandlerBatchFunc(func(ctx context.Context, messages []*sarama.ConsumerMessage) error {
 		return db.Update(ctx, func(ctx context.Context, tx libkv.Tx) error {

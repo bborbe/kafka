@@ -8,6 +8,14 @@ Please choose versions by [Semantic Versioning](http://semver.org/).
 * MINOR version when you add functionality in a backwards-compatible manner, and
 * PATCH version when you make backwards-compatible bug fixes.
 
+## v1.14.0
+
+- Add IsBrokenPipeError function for detecting broken pipe network errors
+- Add LICENSE file with BSD license
+- Update GitHub workflows and CI configuration
+- Fix test coverage reporting
+- Improve counterfeiter generate comment placement
+
 ## v1.13.7
 
 - add tests

@@ -10,11 +10,13 @@ import (
 	libkv "github.com/bborbe/kv"
 )
 
+// UpdaterHandlerTx defines the interface for handling CRUD operations within a transaction context.
 type UpdaterHandlerTx[KEY ~[]byte | ~string, OBJECT any] interface {
 	Update(ctx context.Context, tx libkv.Tx, key KEY, object OBJECT) error
 	Delete(ctx context.Context, tx libkv.Tx, key KEY) error
 }
 
+// NewUpdaterHandlerTxView creates a read-only updater handler that executes within a database view transaction.
 func NewUpdaterHandlerTxView[KEY ~[]byte | ~string, OBJECT any](db libkv.DB, updaterHandlerTx UpdaterHandlerTx[KEY, OBJECT]) UpdaterHandler[KEY, OBJECT] {
 	return UpdaterHandlerFunc[KEY, OBJECT](
 		func(ctx context.Context, key KEY, object OBJECT) error {
@@ -30,6 +32,7 @@ func NewUpdaterHandlerTxView[KEY ~[]byte | ~string, OBJECT any](db libkv.DB, upd
 	)
 }
 
+// NewUpdaterHandlerTxUpdate creates an updater handler that executes within a database update transaction.
 func NewUpdaterHandlerTxUpdate[KEY ~[]byte | ~string, OBJECT any](db libkv.DB, updaterHandlerTx UpdaterHandlerTx[KEY, OBJECT]) UpdaterHandler[KEY, OBJECT] {
 	return UpdaterHandlerFunc[KEY, OBJECT](
 		func(ctx context.Context, key KEY, object OBJECT) error {

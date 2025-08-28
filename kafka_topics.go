@@ -10,12 +10,14 @@ import (
 	"github.com/bborbe/collection"
 )
 
+// ParseTopicsFromString parses a comma-separated string into a Topics slice.
 func ParseTopicsFromString(value string) Topics {
 	return ParseTopics(strings.FieldsFunc(value, func(r rune) bool {
 		return r == ','
 	}))
 }
 
+// ParseTopics converts a slice of strings into a Topics slice.
 func ParseTopics(values []string) Topics {
 	result := make(Topics, len(values))
 	for i, value := range values {
@@ -24,16 +26,20 @@ func ParseTopics(values []string) Topics {
 	return result
 }
 
+// Topics represents a collection of Kafka topics.
 type Topics []Topic
 
+// Contains returns true if the Topics collection contains the specified topic.
 func (t Topics) Contains(topic Topic) bool {
 	return collection.Contains(t, topic)
 }
 
+// Unique returns a new Topics slice containing only unique topics.
 func (t Topics) Unique() Topics {
 	return collection.Unique(t)
 }
 
+// Interfaces converts the Topics slice to a slice of interface{} values.
 func (t Topics) Interfaces() []interface{} {
 	result := make([]interface{}, len(t))
 	for i, ss := range t {
@@ -42,6 +48,7 @@ func (t Topics) Interfaces() []interface{} {
 	return result
 }
 
+// Strings converts the Topics slice to a slice of string values.
 func (t Topics) Strings() []string {
 	result := make([]string, len(t))
 	for i, ss := range t {
