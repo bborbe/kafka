@@ -28,12 +28,12 @@ func (t testValue) Validate(ctx context.Context) error {
 	return nil
 }
 
-var _ = Describe("JSONSender", func() {
+var _ = Describe("JsonSender", func() {
 	var (
 		mockProducer       *mocks.KafkaSyncProducer
 		mockLogSampler     *logmocks.LogSampler
 		mockSamplerFactory *logmocks.LogSamplerFactory
-		jsonSender         libkafka.JSONSender
+		jsonSender         libkafka.JsonSender
 		ctx                context.Context
 	)
 
@@ -45,7 +45,7 @@ var _ = Describe("JSONSender", func() {
 		mockSamplerFactory.SamplerReturns(mockLogSampler)
 		mockLogSampler.IsSampleReturns(false)
 
-		jsonSender = libkafka.NewJSONSender(mockProducer, mockSamplerFactory)
+		jsonSender = libkafka.NewJsonSender(mockProducer, mockSamplerFactory)
 		ctx = context.Background()
 	})
 
@@ -160,7 +160,7 @@ var _ = Describe("JSONSender", func() {
 
 	Describe("with validation disabled", func() {
 		BeforeEach(func() {
-			jsonSender = libkafka.NewJSONSender(mockProducer, mockSamplerFactory, func(options *libkafka.JSONSenderOptions) {
+			jsonSender = libkafka.NewJsonSender(mockProducer, mockSamplerFactory, func(options *libkafka.JsonSenderOptions) {
 				options.ValidationDisabled = true
 			})
 		})

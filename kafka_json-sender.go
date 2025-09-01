@@ -67,28 +67,28 @@ type Value interface {
 	validation.HasValidation
 }
 
-// JSONSenderOptions defines configuration options for JSONSender behavior.
-type JSONSenderOptions struct {
+// JsonSenderOptions defines configuration options for JsonSender behavior.
+type JsonSenderOptions struct {
 	ValidationDisabled bool
 }
 
-//counterfeiter:generate -o mocks/kafka-json-sender.go --fake-name KafkaJSONSender . JSONSender
+//counterfeiter:generate -o mocks/kafka-json-sender.go --fake-name KafkaJsonSender . JsonSender
 
-// JSONSender provides methods for sending JSON-encoded messages to Kafka topics.
-type JSONSender interface {
+// JsonSender provides methods for sending JSON-encoded messages to Kafka topics.
+type JsonSender interface {
 	SendUpdate(ctx context.Context, topic Topic, key Key, value Value, headers ...sarama.RecordHeader) error
 	SendUpdates(ctx context.Context, entries Entries) error
 	SendDelete(ctx context.Context, topic Topic, key Key, headers ...sarama.RecordHeader) error
 	SendDeletes(ctx context.Context, entries Entries) error
 }
 
-// NewJSONSender creates a new JSONSender with the provided producer and options.
-func NewJSONSender(
+// NewJsonSender creates a new JsonSender with the provided producer and options.
+func NewJsonSender(
 	producer SyncProducer,
 	logSamplerFactory log.SamplerFactory,
-	optionsFns ...func(options *JSONSenderOptions),
-) JSONSender {
-	options := JSONSenderOptions{}
+	optionsFns ...func(options *JsonSenderOptions),
+) JsonSender {
+	options := JsonSenderOptions{}
 	for _, fn := range optionsFns {
 		fn(&options)
 	}
@@ -104,7 +104,7 @@ type jsonSender struct {
 	producer         SyncProducer
 	logSamplerUpdate log.Sampler
 	logSamplerDelete log.Sampler
-	options          JSONSenderOptions
+	options          JsonSenderOptions
 }
 
 func (j *jsonSender) SendUpdate(ctx context.Context, topic Topic, key Key, value Value, headers ...sarama.RecordHeader) error {
