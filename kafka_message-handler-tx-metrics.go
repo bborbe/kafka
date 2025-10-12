@@ -17,15 +17,21 @@ func NewMessageHandlerTxMetrics(
 	messageHandler MessageHandlerTx,
 	metrics MetricsMessageHandler,
 ) MessageHandlerTx {
-	return MessageHandlerTxFunc(func(ctx context.Context, tx libkv.Tx, msg *sarama.ConsumerMessage) error {
-		start := time.Now()
-		metrics.MessageHandlerTotalCounterInc(Topic(msg.Topic), Partition(msg.Partition))
-		if err := messageHandler.ConsumeMessage(ctx, tx, msg); err != nil {
-			metrics.MessageHandlerFailureCounterInc(Topic(msg.Topic), Partition(msg.Partition))
-			return err
-		}
-		metrics.MessageHandlerSuccessCounterInc(Topic(msg.Topic), Partition(msg.Partition))
-		metrics.MessageHandlerDurationMeasure(Topic(msg.Topic), Partition(msg.Partition), time.Since(start))
-		return nil
-	})
+	return MessageHandlerTxFunc(
+		func(ctx context.Context, tx libkv.Tx, msg *sarama.ConsumerMessage) error {
+			start := time.Now()
+			metrics.MessageHandlerTotalCounterInc(Topic(msg.Topic), Partition(msg.Partition))
+			if err := messageHandler.ConsumeMessage(ctx, tx, msg); err != nil {
+				metrics.MessageHandlerFailureCounterInc(Topic(msg.Topic), Partition(msg.Partition))
+				return err
+			}
+			metrics.MessageHandlerSuccessCounterInc(Topic(msg.Topic), Partition(msg.Partition))
+			metrics.MessageHandlerDurationMeasure(
+				Topic(msg.Topic),
+				Partition(msg.Partition),
+				time.Since(start),
+			)
+			return nil
+		},
+	)
 }

@@ -29,7 +29,12 @@ type updaterHandlerTxFunc[KEY ~[]byte | ~string, OBJECT any] struct {
 }
 
 // Update executes the update function within a transaction if provided.
-func (e *updaterHandlerTxFunc[KEY, OBJECT]) Update(ctx context.Context, tx libkv.Tx, key KEY, object OBJECT) error {
+func (e *updaterHandlerTxFunc[KEY, OBJECT]) Update(
+	ctx context.Context,
+	tx libkv.Tx,
+	key KEY,
+	object OBJECT,
+) error {
 	if e.update == nil {
 		return nil
 	}
@@ -40,7 +45,11 @@ func (e *updaterHandlerTxFunc[KEY, OBJECT]) Update(ctx context.Context, tx libkv
 }
 
 // Delete executes the delete function within a transaction if provided.
-func (e *updaterHandlerTxFunc[KEY, OBJECT]) Delete(ctx context.Context, tx libkv.Tx, key KEY) error {
+func (e *updaterHandlerTxFunc[KEY, OBJECT]) Delete(
+	ctx context.Context,
+	tx libkv.Tx,
+	key KEY,
+) error {
 	if e.delete == nil {
 		return nil
 	}

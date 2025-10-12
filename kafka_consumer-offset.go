@@ -102,7 +102,8 @@ func (c *offsetConsumer) Consume(ctx context.Context) error {
 		return errors.Wrapf(ctx, err, "get partition for topic %s failed", c.topic)
 	}
 
-	glog.V(2).Infof("consume topic %s with %d partitions %+v started", c.topic, len(partitions), c.consumerOptions)
+	glog.V(2).
+		Infof("consume topic %s with %d partitions %+v started", c.topic, len(partitions), c.consumerOptions)
 
 	var runs []run.Func
 	for _, partition := range partitions {
@@ -110,10 +111,17 @@ func (c *offsetConsumer) Consume(ctx context.Context) error {
 
 			nextOffset, err := c.offsetManager.NextOffset(ctx, c.topic, Partition(partition))
 			if err != nil {
-				return errors.Wrapf(ctx, err, "get next offset  topic(%s) with partition(%d) failed", c.topic, Partition(partition))
+				return errors.Wrapf(
+					ctx,
+					err,
+					"get next offset  topic(%s) with partition(%d) failed",
+					c.topic,
+					Partition(partition),
+				)
 			}
 
-			glog.V(2).Infof("consume topic(%s) with partition(%d) and offset(%s) started", c.topic, partition, nextOffset)
+			glog.V(2).
+				Infof("consume topic(%s) with partition(%d) and offset(%s) started", c.topic, partition, nextOffset)
 			consumePartition, err := CreatePartitionConsumer(
 				ctx,
 				consumerFromClient,
@@ -124,7 +132,14 @@ func (c *offsetConsumer) Consume(ctx context.Context) error {
 				nextOffset,
 			)
 			if err != nil {
-				return errors.Wrapf(ctx, err, "create partition consumer for topic(%s) with partition(%d) and offset(%s) failed", c.topic, partition, nextOffset)
+				return errors.Wrapf(
+					ctx,
+					err,
+					"create partition consumer for topic(%s) with partition(%d) and offset(%s) failed",
+					c.topic,
+					partition,
+					nextOffset,
+				)
 			}
 			defer consumePartition.Close()
 			for {
@@ -133,13 +148,18 @@ func (c *offsetConsumer) Consume(ctx context.Context) error {
 					return errors.Wrapf(ctx, err, "consume failed")
 				}
 				msg := messages[len(messages)-1]
-				glog.V(4).Infof("consume %d messages in topic %s with offset %d partition %d started", len(messages), msg.Topic, msg.Offset, msg.Partition)
+				glog.V(4).
+					Infof("consume %d messages in topic %s with offset %d partition %d started", len(messages), msg.Topic, msg.Offset, msg.Partition)
 
 				highWaterMarketOffset := consumePartition.HighWaterMarkOffset()
 				lag := highWaterMarketOffset - msg.Offset
 
 				c.metrics.CurrentOffset(c.topic, Partition(partition), Offset(msg.Offset))
-				c.metrics.HighWaterMarkOffset(c.topic, Partition(partition), Offset(highWaterMarketOffset))
+				c.metrics.HighWaterMarkOffset(
+					c.topic,
+					Partition(partition),
+					Offset(highWaterMarketOffset),
+				)
 
 				if err := c.messageHandlerBatch.ConsumeMessages(ctx, messages); err != nil {
 					return errors.Wrapf(ctx, err, "consume message failed")
@@ -150,23 +170,34 @@ func (c *offsetConsumer) Consume(ctx context.Context) error {
 				}
 
 				// wait if lag is low, this allow batch consumer get more messages next time
-				if lag < c.consumerOptions.TargetLag && c.consumerOptions.TargetLag > 0 && c.consumerOptions.Delay > 0 {
-					glog.V(4).Infof("topic(%s) partition(%d) lag(%d) < targetLag(%d) => wait for %v", c.topic, partition, lag, c.consumerOptions.TargetLag, c.consumerOptions.Delay)
+				if lag < c.consumerOptions.TargetLag && c.consumerOptions.TargetLag > 0 &&
+					c.consumerOptions.Delay > 0 {
+					glog.V(4).
+						Infof("topic(%s) partition(%d) lag(%d) < targetLag(%d) => wait for %v", c.topic, partition, lag, c.consumerOptions.TargetLag, c.consumerOptions.Delay)
 					if err := c.waiter.Wait(ctx, c.consumerOptions.Delay); err != nil {
-						return errors.Wrapf(ctx, err, "topic(%s) partition(%d) wait for %v failed", c.topic, partition, c.consumerOptions.Delay)
+						return errors.Wrapf(
+							ctx,
+							err,
+							"topic(%s) partition(%d) wait for %v failed",
+							c.topic,
+							partition,
+							c.consumerOptions.Delay,
+						)
 					}
-					glog.V(4).Infof("topic(%s) partition(%d) wait for %v completed", c.topic, partition, c.consumerOptions.Delay)
+					glog.V(4).
+						Infof("topic(%s) partition(%d) wait for %v completed", c.topic, partition, c.consumerOptions.Delay)
 				}
 
 				if c.logSampler.IsSample() {
-					glog.V(2).Infof("consume %d messages in topic(%s), partition(%d) and offset(%d) completed (highwatermark: %d lag: %d) (sample)",
-						len(messages),
-						msg.Topic,
-						msg.Partition,
-						msg.Offset,
-						highWaterMarketOffset,
-						lag,
-					)
+					glog.V(2).
+						Infof("consume %d messages in topic(%s), partition(%d) and offset(%d) completed (highwatermark: %d lag: %d) (sample)",
+							len(messages),
+							msg.Topic,
+							msg.Partition,
+							msg.Offset,
+							highWaterMarketOffset,
+							lag,
+						)
 				}
 			}
 		})
@@ -180,7 +211,10 @@ func (c *offsetConsumer) Consume(ctx context.Context) error {
 }
 
 // consume
-func (c *offsetConsumer) consumeMessages(ctx context.Context, consumePartition sarama.PartitionConsumer) ([]*sarama.ConsumerMessage, error) {
+func (c *offsetConsumer) consumeMessages(
+	ctx context.Context,
+	consumePartition sarama.PartitionConsumer,
+) ([]*sarama.ConsumerMessage, error) {
 	var result []*sarama.ConsumerMessage
 
 	select {

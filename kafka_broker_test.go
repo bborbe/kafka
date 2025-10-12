@@ -11,7 +11,8 @@ import (
 	libkafka "github.com/bborbe/kafka"
 )
 
-var _ = DescribeTable("ParseBroker",
+var _ = DescribeTable(
+	"ParseBroker",
 	func(input string, expectedBroker libkafka.Broker) {
 		result := libkafka.ParseBroker(input)
 		Expect(result).To(Equal(expectedBroker))
@@ -21,7 +22,11 @@ var _ = DescribeTable("ParseBroker",
 	Entry("tls with schema", "tls://localhost:9093", libkafka.Broker("tls://localhost:9093")),
 	Entry("ip without schema", "127.0.0.1:9092", libkafka.Broker("plain://127.0.0.1:9092")),
 	Entry("ip with schema", "plain://127.0.0.1:9092", libkafka.Broker("plain://127.0.0.1:9092")),
-	Entry("hostname with port", "kafka.example.com:9092", libkafka.Broker("plain://kafka.example.com:9092")),
+	Entry(
+		"hostname with port",
+		"kafka.example.com:9092",
+		libkafka.Broker("plain://kafka.example.com:9092"),
+	),
 )
 
 var _ = DescribeTable("Broker String",

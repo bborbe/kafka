@@ -12,7 +12,10 @@ import (
 )
 
 // ParsePartitionOffsetFromBytes parses partition offsets from JSON bytes.
-func ParsePartitionOffsetFromBytes(ctx context.Context, offsetBytes []byte) (PartitionOffsets, error) {
+func ParsePartitionOffsetFromBytes(
+	ctx context.Context,
+	offsetBytes []byte,
+) (PartitionOffsets, error) {
 	var partitionOffsetItems PartitionOffsetItems
 	if err := json.Unmarshal(offsetBytes, &partitionOffsetItems); err != nil {
 		return nil, errors.Wrapf(ctx, err, "parse partitionOffsetItems failed")

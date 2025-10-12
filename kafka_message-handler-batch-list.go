@@ -15,7 +15,10 @@ import (
 type MessageHandlerBatchList []MessageHandlerBatch
 
 // ConsumeMessages executes all handlers in the list sequentially.
-func (m MessageHandlerBatchList) ConsumeMessages(ctx context.Context, messages []*sarama.ConsumerMessage) error {
+func (m MessageHandlerBatchList) ConsumeMessages(
+	ctx context.Context,
+	messages []*sarama.ConsumerMessage,
+) error {
 	for _, mm := range m {
 		select {
 		case <-ctx.Done():

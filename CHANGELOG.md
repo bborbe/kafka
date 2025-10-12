@@ -8,6 +8,14 @@ Please choose versions by [Semantic Versioning](http://semver.org/).
 * MINOR version when you add functionality in a backwards-compatible manner, and
 * PATCH version when you make backwards-compatible bug fixes.
 
+## v1.15.0
+
+- Add golangci-lint configuration with multiple linters enabled
+- Add tools.go for Go development tool dependency management
+- Enhanced Makefile with new security and quality checks (osv-scanner, gosec, trivy)
+- Apply consistent code formatting with golines (max line length 100)
+- Update development dependencies in go.mod
+
 ## v1.14.1
 
 - revert JSONSender back to JsonSender

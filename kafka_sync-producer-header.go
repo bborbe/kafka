@@ -22,17 +22,20 @@ func NewSyncProducerWithHeader(
 	if err != nil {
 		return nil, errors.Wrapf(ctx, err, "create sync producer failed")
 	}
-	return NewSyncProducerModify(syncProducer, func(ctx context.Context, msg *sarama.ProducerMessage) error {
-		for key, values := range headers {
-			for _, value := range values {
-				msg.Headers = append(msg.Headers, sarama.RecordHeader{
-					Key:   []byte(key),
-					Value: []byte(value),
-				})
+	return NewSyncProducerModify(
+		syncProducer,
+		func(ctx context.Context, msg *sarama.ProducerMessage) error {
+			for key, values := range headers {
+				for _, value := range values {
+					msg.Headers = append(msg.Headers, sarama.RecordHeader{
+						Key:   []byte(key),
+						Value: []byte(value),
+					})
+				}
 			}
-		}
-		return nil
-	}), nil
+			return nil
+		},
+	), nil
 }
 
 // NewSyncProducerWithName creates a sync producer that adds a 'name' header to all messages.

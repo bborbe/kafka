@@ -41,12 +41,17 @@ func HighWaterMark(
 	topic Topic,
 	partition Partition,
 ) (*Offset, error) {
-	highwaterMarkOffset, err := saramaClient.GetOffset(topic.String(), partition.Int32(), sarama.OffsetNewest)
+	highwaterMarkOffset, err := saramaClient.GetOffset(
+		topic.String(),
+		partition.Int32(),
+		sarama.OffsetNewest,
+	)
 	if err != nil {
 		return nil, errors.Wrapf(ctx, err, "get offset for topic %s failed", topic)
 	}
 	offset := Offset(highwaterMarkOffset)
-	glog.V(3).Infof("found highwater mark %d for topic %s and partition %d", offset, topic, partition)
+	glog.V(3).
+		Infof("found highwater mark %d for topic %s and partition %d", offset, topic, partition)
 	return &offset, nil
 }
 

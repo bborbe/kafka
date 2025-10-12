@@ -21,35 +21,47 @@ type MessageHandlerBatchTx interface {
 
 // NewMessageHandlerBatchTx creates a batch transaction handler from a single message transaction handler.
 func NewMessageHandlerBatchTx(messageHandler MessageHandlerTx) MessageHandlerBatchTx {
-	return MessageHandlerBatchTxFunc(func(ctx context.Context, tx libkv.Tx, messages []*sarama.ConsumerMessage) error {
-		for _, msg := range messages {
-			select {
-			case <-ctx.Done():
-				return ctx.Err()
-			default:
-				if err := messageHandler.ConsumeMessage(ctx, tx, msg); err != nil {
-					return errors.Wrapf(ctx, err, "consume message failed")
+	return MessageHandlerBatchTxFunc(
+		func(ctx context.Context, tx libkv.Tx, messages []*sarama.ConsumerMessage) error {
+			for _, msg := range messages {
+				select {
+				case <-ctx.Done():
+					return ctx.Err()
+				default:
+					if err := messageHandler.ConsumeMessage(ctx, tx, msg); err != nil {
+						return errors.Wrapf(ctx, err, "consume message failed")
+					}
 				}
 			}
-		}
-		return nil
-	})
+			return nil
+		},
+	)
 }
 
 // NewMessageHandlerBatchTxView creates a read-only batch handler that executes within a database view transaction.
-func NewMessageHandlerBatchTxView(db libkv.DB, messageHandler MessageHandlerBatchTx) MessageHandlerBatch {
-	return MessageHandlerBatchFunc(func(ctx context.Context, messages []*sarama.ConsumerMessage) error {
-		return db.View(ctx, func(ctx context.Context, tx libkv.Tx) error {
-			return messageHandler.ConsumeMessages(ctx, tx, messages)
-		})
-	})
+func NewMessageHandlerBatchTxView(
+	db libkv.DB,
+	messageHandler MessageHandlerBatchTx,
+) MessageHandlerBatch {
+	return MessageHandlerBatchFunc(
+		func(ctx context.Context, messages []*sarama.ConsumerMessage) error {
+			return db.View(ctx, func(ctx context.Context, tx libkv.Tx) error {
+				return messageHandler.ConsumeMessages(ctx, tx, messages)
+			})
+		},
+	)
 }
 
 // NewMessageHandlerBatchTxUpdate creates a batch handler that executes within a database update transaction.
-func NewMessageHandlerBatchTxUpdate(db libkv.DB, messageHandler MessageHandlerBatchTx) MessageHandlerBatch {
-	return MessageHandlerBatchFunc(func(ctx context.Context, messages []*sarama.ConsumerMessage) error {
-		return db.Update(ctx, func(ctx context.Context, tx libkv.Tx) error {
-			return messageHandler.ConsumeMessages(ctx, tx, messages)
-		})
-	})
+func NewMessageHandlerBatchTxUpdate(
+	db libkv.DB,
+	messageHandler MessageHandlerBatchTx,
+) MessageHandlerBatch {
+	return MessageHandlerBatchFunc(
+		func(ctx context.Context, messages []*sarama.ConsumerMessage) error {
+			return db.Update(ctx, func(ctx context.Context, tx libkv.Tx) error {
+				return messageHandler.ConsumeMessages(ctx, tx, messages)
+			})
+		},
+	)
 }

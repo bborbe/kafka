@@ -21,22 +21,31 @@ func NewMessageHandlerTxSkipErrors(
 	logSamplerFactory log.SamplerFactory,
 ) MessageHandlerTx {
 	logSampler := logSamplerFactory.Sampler()
-	return MessageHandlerTxFunc(func(ctx context.Context, tx libkv.Tx, msg *sarama.ConsumerMessage) error {
-		if err := handler.ConsumeMessage(ctx, tx, msg); err != nil {
-			if logSampler.IsSample() {
-				data := errors.DataFromError(
-					errors.AddDataToError(
+	return MessageHandlerTxFunc(
+		func(ctx context.Context, tx libkv.Tx, msg *sarama.ConsumerMessage) error {
+			if err := handler.ConsumeMessage(ctx, tx, msg); err != nil {
+				if logSampler.IsSample() {
+					data := errors.DataFromError(
+						errors.AddDataToError(
+							err,
+							map[string]string{
+								"topic":     msg.Topic,
+								"partition": fmt.Sprintf("%d", msg.Partition),
+								"offset":    fmt.Sprintf("%d", msg.Offset),
+							},
+						),
+					)
+					glog.Warningf(
+						"consume message with offset %d in partition %d in topic %s failed: %v %+v (sample)",
+						msg.Offset,
+						msg.Partition,
+						msg.Topic,
 						err,
-						map[string]string{
-							"topic":     msg.Topic,
-							"partition": fmt.Sprintf("%d", msg.Partition),
-							"offset":    fmt.Sprintf("%d", msg.Offset),
-						},
-					),
-				)
-				glog.Warningf("consume message with offset %d in partition %d in topic %s failed: %v %+v (sample)", msg.Offset, msg.Partition, msg.Topic, err, data)
+						data,
+					)
+				}
 			}
-		}
-		return nil
-	})
+			return nil
+		},
+	)
 }

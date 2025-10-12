@@ -37,7 +37,8 @@ func NewOffsetTriggerMessageHandler(
 		mux.Unlock()
 		if ok {
 			if triggerOffset <= Offset(msg.Offset) {
-				glog.V(2).Infof("partiton %d reached highwater mark offset of %d for %s", msg.Partition, msg.Offset, msg.Topic)
+				glog.V(2).
+					Infof("partiton %d reached highwater mark offset of %d for %s", msg.Partition, msg.Offset, msg.Topic)
 				mux.Lock()
 				delete(clonedTriggerOffset, Partition(msg.Partition))
 				mux.Unlock()

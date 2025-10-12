@@ -15,6 +15,10 @@ import (
 type MessageHandlerBatchTxFunc func(ctx context.Context, tx libkv.Tx, messages []*sarama.ConsumerMessage) error
 
 // ConsumeMessages implements the MessageHandlerBatchTx interface.
-func (b MessageHandlerBatchTxFunc) ConsumeMessages(ctx context.Context, tx libkv.Tx, messages []*sarama.ConsumerMessage) error {
+func (b MessageHandlerBatchTxFunc) ConsumeMessages(
+	ctx context.Context,
+	tx libkv.Tx,
+	messages []*sarama.ConsumerMessage,
+) error {
 	return b(ctx, tx, messages)
 }

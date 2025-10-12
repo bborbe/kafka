@@ -15,7 +15,12 @@ import (
 type UpdaterHandlerTxList[KEY ~[]byte | ~string, OBJECT any] []UpdaterHandlerTx[KEY, OBJECT]
 
 // Update executes all transaction handlers in the list sequentially for update operations.
-func (e UpdaterHandlerTxList[KEY, OBJECT]) Update(ctx context.Context, tx libkv.Tx, key KEY, object OBJECT) error {
+func (e UpdaterHandlerTxList[KEY, OBJECT]) Update(
+	ctx context.Context,
+	tx libkv.Tx,
+	key KEY,
+	object OBJECT,
+) error {
 	for _, ee := range e {
 		if err := ee.Update(ctx, tx, key, object); err != nil {
 			return errors.Wrapf(ctx, err, "update failed")

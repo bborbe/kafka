@@ -17,7 +17,10 @@ type UpdaterHandlerTx[KEY ~[]byte | ~string, OBJECT any] interface {
 }
 
 // NewUpdaterHandlerTxView creates a read-only updater handler that executes within a database view transaction.
-func NewUpdaterHandlerTxView[KEY ~[]byte | ~string, OBJECT any](db libkv.DB, updaterHandlerTx UpdaterHandlerTx[KEY, OBJECT]) UpdaterHandler[KEY, OBJECT] {
+func NewUpdaterHandlerTxView[KEY ~[]byte | ~string, OBJECT any](
+	db libkv.DB,
+	updaterHandlerTx UpdaterHandlerTx[KEY, OBJECT],
+) UpdaterHandler[KEY, OBJECT] {
 	return UpdaterHandlerFunc[KEY, OBJECT](
 		func(ctx context.Context, key KEY, object OBJECT) error {
 			return db.View(ctx, func(ctx context.Context, tx libkv.Tx) error {
@@ -33,7 +36,10 @@ func NewUpdaterHandlerTxView[KEY ~[]byte | ~string, OBJECT any](db libkv.DB, upd
 }
 
 // NewUpdaterHandlerTxUpdate creates an updater handler that executes within a database update transaction.
-func NewUpdaterHandlerTxUpdate[KEY ~[]byte | ~string, OBJECT any](db libkv.DB, updaterHandlerTx UpdaterHandlerTx[KEY, OBJECT]) UpdaterHandler[KEY, OBJECT] {
+func NewUpdaterHandlerTxUpdate[KEY ~[]byte | ~string, OBJECT any](
+	db libkv.DB,
+	updaterHandlerTx UpdaterHandlerTx[KEY, OBJECT],
+) UpdaterHandler[KEY, OBJECT] {
 	return UpdaterHandlerFunc[KEY, OBJECT](
 		func(ctx context.Context, key KEY, object OBJECT) error {
 			return db.Update(ctx, func(ctx context.Context, tx libkv.Tx) error {

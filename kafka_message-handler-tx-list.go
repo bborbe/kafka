@@ -16,7 +16,11 @@ import (
 type MessageHanderTxList []MessageHandlerTx
 
 // ConsumeMessage executes all transaction handlers in the list sequentially for a single message.
-func (m MessageHanderTxList) ConsumeMessage(ctx context.Context, tx libkv.Tx, msg *sarama.ConsumerMessage) error {
+func (m MessageHanderTxList) ConsumeMessage(
+	ctx context.Context,
+	tx libkv.Tx,
+	msg *sarama.ConsumerMessage,
+) error {
 	for _, mm := range m {
 		select {
 		case <-ctx.Done():

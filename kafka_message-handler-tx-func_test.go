@@ -43,10 +43,12 @@ var _ = Describe("MessageHandlerTxFunc", func() {
 
 	It("should call the function when ConsumeMessage is called", func() {
 		called := false
-		handler := libkafka.MessageHandlerTxFunc(func(ctx context.Context, tx libkv.Tx, msg *sarama.ConsumerMessage) error {
-			called = true
-			return nil
-		})
+		handler := libkafka.MessageHandlerTxFunc(
+			func(ctx context.Context, tx libkv.Tx, msg *sarama.ConsumerMessage) error {
+				called = true
+				return nil
+			},
+		)
 
 		err := handler.ConsumeMessage(ctx, tx, msg)
 		Expect(err).To(BeNil())
@@ -58,12 +60,14 @@ var _ = Describe("MessageHandlerTxFunc", func() {
 		var receivedTx libkv.Tx
 		var receivedMsg *sarama.ConsumerMessage
 
-		handler := libkafka.MessageHandlerTxFunc(func(ctx context.Context, tx libkv.Tx, msg *sarama.ConsumerMessage) error {
-			receivedCtx = ctx
-			receivedTx = tx
-			receivedMsg = msg
-			return nil
-		})
+		handler := libkafka.MessageHandlerTxFunc(
+			func(ctx context.Context, tx libkv.Tx, msg *sarama.ConsumerMessage) error {
+				receivedCtx = ctx
+				receivedTx = tx
+				receivedMsg = msg
+				return nil
+			},
+		)
 
 		ctx = context.WithValue(context.Background(), "test", "value")
 		msg = &sarama.ConsumerMessage{
@@ -82,9 +86,11 @@ var _ = Describe("MessageHandlerTxFunc", func() {
 
 	It("should return error from function", func() {
 		expectedErr := errors.New("test error")
-		handler := libkafka.MessageHandlerTxFunc(func(ctx context.Context, tx libkv.Tx, msg *sarama.ConsumerMessage) error {
-			return expectedErr
-		})
+		handler := libkafka.MessageHandlerTxFunc(
+			func(ctx context.Context, tx libkv.Tx, msg *sarama.ConsumerMessage) error {
+				return expectedErr
+			},
+		)
 
 		err := handler.ConsumeMessage(ctx, tx, msg)
 		Expect(err).To(Equal(expectedErr))

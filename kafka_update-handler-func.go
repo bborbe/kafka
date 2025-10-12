@@ -28,7 +28,11 @@ type updaterHandlerFunc[KEY ~[]byte | ~string, OBJECT any] struct {
 }
 
 // Update executes the update function if provided.
-func (e *updaterHandlerFunc[KEY, OBJECT]) Update(ctx context.Context, key KEY, object OBJECT) error {
+func (e *updaterHandlerFunc[KEY, OBJECT]) Update(
+	ctx context.Context,
+	key KEY,
+	object OBJECT,
+) error {
 	if e.update == nil {
 		return nil
 	}

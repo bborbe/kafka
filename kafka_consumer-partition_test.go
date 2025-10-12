@@ -57,7 +57,9 @@ var _ = Describe("CreatePartitionConsumer", func() {
 		It("calls ConsumePartition", func() {
 			Expect(consumerFromClient.ConsumePartitionCallCount()).To(Equal(1))
 			{
-				argTopic, argPartition, argOffset := consumerFromClient.ConsumePartitionArgsForCall(0)
+				argTopic, argPartition, argOffset := consumerFromClient.ConsumePartitionArgsForCall(
+					0,
+				)
 				Expect(argTopic).To(Equal(topic.String()))
 				Expect(argPartition).To(Equal(partition.Int32()))
 				Expect(argOffset).To(Equal(nextOffext.Int64()))
@@ -66,8 +68,16 @@ var _ = Describe("CreatePartitionConsumer", func() {
 	})
 	Context("with outOfRange error", func() {
 		BeforeEach(func() {
-			consumerFromClient.ConsumePartitionReturnsOnCall(0, nil, stderrors.New(libkafka.OutOfRangeErrorMessage))
-			consumerFromClient.ConsumePartitionReturnsOnCall(1, &mocks.KafkaSaramaPartitionConsumer{}, nil)
+			consumerFromClient.ConsumePartitionReturnsOnCall(
+				0,
+				nil,
+				stderrors.New(libkafka.OutOfRangeErrorMessage),
+			)
+			consumerFromClient.ConsumePartitionReturnsOnCall(
+				1,
+				&mocks.KafkaSaramaPartitionConsumer{},
+				nil,
+			)
 		})
 		It("returns no error", func() {
 			Expect(err).To(BeNil())
@@ -78,13 +88,17 @@ var _ = Describe("CreatePartitionConsumer", func() {
 		It("calls ConsumePartition", func() {
 			Expect(consumerFromClient.ConsumePartitionCallCount()).To(Equal(2))
 			{
-				argTopic, argPartition, argOffset := consumerFromClient.ConsumePartitionArgsForCall(0)
+				argTopic, argPartition, argOffset := consumerFromClient.ConsumePartitionArgsForCall(
+					0,
+				)
 				Expect(argTopic).To(Equal(topic.String()))
 				Expect(argPartition).To(Equal(partition.Int32()))
 				Expect(argOffset).To(Equal(nextOffext.Int64()))
 			}
 			{
-				argTopic, argPartition, argOffset := consumerFromClient.ConsumePartitionArgsForCall(1)
+				argTopic, argPartition, argOffset := consumerFromClient.ConsumePartitionArgsForCall(
+					1,
+				)
 				Expect(argTopic).To(Equal(topic.String()))
 				Expect(argPartition).To(Equal(partition.Int32()))
 				Expect(argOffset).To(Equal(fallbackOffset.Int64()))
@@ -104,7 +118,9 @@ var _ = Describe("CreatePartitionConsumer", func() {
 		It("calls ConsumePartition", func() {
 			Expect(consumerFromClient.ConsumePartitionCallCount()).To(Equal(1))
 			{
-				argTopic, argPartition, argOffset := consumerFromClient.ConsumePartitionArgsForCall(0)
+				argTopic, argPartition, argOffset := consumerFromClient.ConsumePartitionArgsForCall(
+					0,
+				)
 				Expect(argTopic).To(Equal(topic.String()))
 				Expect(argPartition).To(Equal(partition.Int32()))
 				Expect(argOffset).To(Equal(nextOffext.Int64()))

@@ -160,9 +160,13 @@ var _ = Describe("JsonSender", func() {
 
 	Describe("with validation disabled", func() {
 		BeforeEach(func() {
-			jsonSender = libkafka.NewJsonSender(mockProducer, mockSamplerFactory, func(options *libkafka.JsonSenderOptions) {
-				options.ValidationDisabled = true
-			})
+			jsonSender = libkafka.NewJsonSender(
+				mockProducer,
+				mockSamplerFactory,
+				func(options *libkafka.JsonSenderOptions) {
+					options.ValidationDisabled = true
+				},
+			)
 		})
 
 		It("should send update even with invalid value", func() {

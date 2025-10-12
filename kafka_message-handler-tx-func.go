@@ -15,6 +15,10 @@ import (
 type MessageHandlerTxFunc func(ctx context.Context, tx libkv.Tx, msg *sarama.ConsumerMessage) error
 
 // ConsumeMessage forward to the function.
-func (m MessageHandlerTxFunc) ConsumeMessage(ctx context.Context, tx libkv.Tx, msg *sarama.ConsumerMessage) error {
+func (m MessageHandlerTxFunc) ConsumeMessage(
+	ctx context.Context,
+	tx libkv.Tx,
+	msg *sarama.ConsumerMessage,
+) error {
 	return m(ctx, tx, msg)
 }

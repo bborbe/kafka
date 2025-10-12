@@ -14,22 +14,26 @@ import (
 )
 
 // NewMessageHandlerTxUpdate creates a generic transaction message handler that processes JSON messages for CRUD operations.
-func NewMessageHandlerTxUpdate[KEY ~[]byte | ~string, OBJECT any](updateHandlerTx UpdaterHandlerTx[KEY, OBJECT]) MessageHandlerTx {
-	return MessageHandlerTxFunc(func(ctx context.Context, tx libkv.Tx, msg *sarama.ConsumerMessage) error {
-		var objectID = KEY(msg.Key)
-		if len(msg.Value) == 0 {
-			if err := updateHandlerTx.Delete(ctx, tx, objectID); err != nil {
-				return errors.Wrapf(ctx, err, "delete %s failed", objectID)
+func NewMessageHandlerTxUpdate[KEY ~[]byte | ~string, OBJECT any](
+	updateHandlerTx UpdaterHandlerTx[KEY, OBJECT],
+) MessageHandlerTx {
+	return MessageHandlerTxFunc(
+		func(ctx context.Context, tx libkv.Tx, msg *sarama.ConsumerMessage) error {
+			var objectID = KEY(msg.Key)
+			if len(msg.Value) == 0 {
+				if err := updateHandlerTx.Delete(ctx, tx, objectID); err != nil {
+					return errors.Wrapf(ctx, err, "delete %s failed", objectID)
+				}
+				return nil
+			}
+			var object OBJECT
+			if err := json.Unmarshal(msg.Value, &object); err != nil {
+				return errors.Wrapf(ctx, err, "unmarshal value of %s failed", objectID)
+			}
+			if err := updateHandlerTx.Update(ctx, tx, objectID, object); err != nil {
+				return errors.Wrapf(ctx, err, "update %s failed", objectID)
 			}
 			return nil
-		}
-		var object OBJECT
-		if err := json.Unmarshal(msg.Value, &object); err != nil {
-			return errors.Wrapf(ctx, err, "unmarshal value of %s failed", objectID)
-		}
-		if err := updateHandlerTx.Update(ctx, tx, objectID, object); err != nil {
-			return errors.Wrapf(ctx, err, "update %s failed", objectID)
-		}
-		return nil
-	})
+		},
+	)
 }

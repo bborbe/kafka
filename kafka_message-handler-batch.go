@@ -20,17 +20,19 @@ type MessageHandlerBatch interface {
 
 // NewMessageHandlerBatch creates a new batch message handler that processes messages individually using the provided MessageHandler.
 func NewMessageHandlerBatch(messageHandler MessageHandler) MessageHandlerBatch {
-	return MessageHandlerBatchFunc(func(ctx context.Context, messages []*sarama.ConsumerMessage) error {
-		for _, msg := range messages {
-			select {
-			case <-ctx.Done():
-				return ctx.Err()
-			default:
-				if err := messageHandler.ConsumeMessage(ctx, msg); err != nil {
-					return errors.Wrapf(ctx, err, "consume message failed")
+	return MessageHandlerBatchFunc(
+		func(ctx context.Context, messages []*sarama.ConsumerMessage) error {
+			for _, msg := range messages {
+				select {
+				case <-ctx.Done():
+					return ctx.Err()
+				default:
+					if err := messageHandler.ConsumeMessage(ctx, msg); err != nil {
+						return errors.Wrapf(ctx, err, "consume message failed")
+					}
 				}
 			}
-		}
-		return nil
-	})
+			return nil
+		},
+	)
 }

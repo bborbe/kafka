@@ -28,13 +28,27 @@ func CreatePartitionConsumer(
 ) (sarama.PartitionConsumer, error) {
 	metricsConsumer.ConsumePartitionCreateTotalInc(topic, partition)
 	metricsConsumer.ConsumePartitionCreateOutOfRangeErrorInitialize(topic, partition)
-	consumePartition, err := consumerFromClient.ConsumePartition(topic.String(), partition.Int32(), nextOffset.Int64())
+	consumePartition, err := consumerFromClient.ConsumePartition(
+		topic.String(),
+		partition.Int32(),
+		nextOffset.Int64(),
+	)
 	if err != nil {
 		metricsConsumer.ConsumePartitionCreateFailureInc(topic, partition)
 		if strings.Contains(err.Error(), OutOfRangeErrorMessage) {
 			metricsConsumer.ConsumePartitionCreateOutOfRangeErrorInc(topic, partition)
-			glog.Warningf("create partition consumer for topic(%s), partition(%s) anf offset(%s) got out of range error => fallback to initial offset(%s)", topic, partition, nextOffset, fallbackOffset)
-			return consumerFromClient.ConsumePartition(topic.String(), partition.Int32(), fallbackOffset.Int64())
+			glog.Warningf(
+				"create partition consumer for topic(%s), partition(%s) anf offset(%s) got out of range error => fallback to initial offset(%s)",
+				topic,
+				partition,
+				nextOffset,
+				fallbackOffset,
+			)
+			return consumerFromClient.ConsumePartition(
+				topic.String(),
+				partition.Int32(),
+				fallbackOffset.Int64(),
+			)
 		}
 		return nil, errors.Wrapf(ctx, err, "create partition consumer failed")
 	}

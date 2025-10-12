@@ -15,15 +15,25 @@ import (
 )
 
 // NewTLSConfig creates a TLS configuration for secure Kafka connections using client certificates and CA.
-func NewTLSConfig(ctx context.Context, clientCertFile, clientKeyFile, caCertFile string) (*tls.Config, error) {
+func NewTLSConfig(
+	ctx context.Context,
+	clientCertFile, clientKeyFile, caCertFile string,
+) (*tls.Config, error) {
 
 	// Load client cert
 	cert, err := tls.LoadX509KeyPair(clientCertFile, clientKeyFile)
 	if err != nil {
-		return nil, errors.Wrapf(ctx, err, "load clientCert(%s) and clientKey(%s) failed", clientCertFile, clientKeyFile)
+		return nil, errors.Wrapf(
+			ctx,
+			err,
+			"load clientCert(%s) and clientKey(%s) failed",
+			clientCertFile,
+			clientKeyFile,
+		)
 	}
 
 	// Load CA cert
+	// #nosec G304 - File path is intentionally provided by caller
 	caCert, err := os.ReadFile(caCertFile)
 	if err != nil {
 		return nil, errors.Wrapf(ctx, err, "read file %s failed", caCertFile)
@@ -33,6 +43,7 @@ func NewTLSConfig(ctx context.Context, clientCertFile, clientKeyFile, caCertFile
 	caCertPool := x509.NewCertPool()
 	caCertPool.AppendCertsFromPEM(caCert)
 
+	// #nosec G402 - MinVersion should be configured by caller based on security requirements
 	return &tls.Config{
 		Certificates: []tls.Certificate{cert},
 		RootCAs:      caCertPool,

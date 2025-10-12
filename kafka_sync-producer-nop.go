@@ -21,7 +21,10 @@ type syncProducerNo struct {
 }
 
 // SendMessage logs that it would send a message but doesn't actually send it.
-func (s *syncProducerNo) SendMessage(ctx context.Context, msg *sarama.ProducerMessage) (partition int32, offset int64, err error) {
+func (s *syncProducerNo) SendMessage(
+	ctx context.Context,
+	msg *sarama.ProducerMessage,
+) (partition int32, offset int64, err error) {
 	glog.V(3).Infof("would send message")
 	return -1, -1, nil
 }

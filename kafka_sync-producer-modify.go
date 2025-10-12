@@ -29,7 +29,10 @@ type syncProducerModify struct {
 }
 
 // SendMessage modifies and sends a single message.
-func (s *syncProducerModify) SendMessage(ctx context.Context, msg *sarama.ProducerMessage) (partition int32, offset int64, err error) {
+func (s *syncProducerModify) SendMessage(
+	ctx context.Context,
+	msg *sarama.ProducerMessage,
+) (partition int32, offset int64, err error) {
 	if err := s.fn(ctx, msg); err != nil {
 		return 0, 0, err
 	}
@@ -37,7 +40,10 @@ func (s *syncProducerModify) SendMessage(ctx context.Context, msg *sarama.Produc
 }
 
 // SendMessages modifies and sends multiple messages.
-func (s *syncProducerModify) SendMessages(ctx context.Context, msgs []*sarama.ProducerMessage) error {
+func (s *syncProducerModify) SendMessages(
+	ctx context.Context,
+	msgs []*sarama.ProducerMessage,
+) error {
 	for _, msg := range msgs {
 		select {
 		case <-ctx.Done():

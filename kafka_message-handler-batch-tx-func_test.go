@@ -45,10 +45,12 @@ var _ = Describe("MessageHandlerBatchTxFunc", func() {
 
 	It("should call the function when ConsumeMessages is called", func() {
 		called := false
-		handler := libkafka.MessageHandlerBatchTxFunc(func(ctx context.Context, tx libkv.Tx, messages []*sarama.ConsumerMessage) error {
-			called = true
-			return nil
-		})
+		handler := libkafka.MessageHandlerBatchTxFunc(
+			func(ctx context.Context, tx libkv.Tx, messages []*sarama.ConsumerMessage) error {
+				called = true
+				return nil
+			},
+		)
 
 		err := handler.ConsumeMessages(ctx, tx, messages)
 		Expect(err).To(BeNil())
@@ -60,12 +62,14 @@ var _ = Describe("MessageHandlerBatchTxFunc", func() {
 		var receivedTx libkv.Tx
 		var receivedMessages []*sarama.ConsumerMessage
 
-		handler := libkafka.MessageHandlerBatchTxFunc(func(ctx context.Context, tx libkv.Tx, messages []*sarama.ConsumerMessage) error {
-			receivedCtx = ctx
-			receivedTx = tx
-			receivedMessages = messages
-			return nil
-		})
+		handler := libkafka.MessageHandlerBatchTxFunc(
+			func(ctx context.Context, tx libkv.Tx, messages []*sarama.ConsumerMessage) error {
+				receivedCtx = ctx
+				receivedTx = tx
+				receivedMessages = messages
+				return nil
+			},
+		)
 
 		ctx = context.WithValue(context.Background(), "test", "value")
 		messages = []*sarama.ConsumerMessage{
@@ -92,9 +96,11 @@ var _ = Describe("MessageHandlerBatchTxFunc", func() {
 
 	It("should return error from function", func() {
 		expectedErr := errors.New("test error")
-		handler := libkafka.MessageHandlerBatchTxFunc(func(ctx context.Context, tx libkv.Tx, messages []*sarama.ConsumerMessage) error {
-			return expectedErr
-		})
+		handler := libkafka.MessageHandlerBatchTxFunc(
+			func(ctx context.Context, tx libkv.Tx, messages []*sarama.ConsumerMessage) error {
+				return expectedErr
+			},
+		)
 
 		err := handler.ConsumeMessages(ctx, tx, messages)
 		Expect(err).To(Equal(expectedErr))
@@ -102,11 +108,13 @@ var _ = Describe("MessageHandlerBatchTxFunc", func() {
 
 	It("should handle empty message slice", func() {
 		called := false
-		handler := libkafka.MessageHandlerBatchTxFunc(func(ctx context.Context, tx libkv.Tx, messages []*sarama.ConsumerMessage) error {
-			called = true
-			Expect(messages).To(BeEmpty())
-			return nil
-		})
+		handler := libkafka.MessageHandlerBatchTxFunc(
+			func(ctx context.Context, tx libkv.Tx, messages []*sarama.ConsumerMessage) error {
+				called = true
+				Expect(messages).To(BeEmpty())
+				return nil
+			},
+		)
 
 		err := handler.ConsumeMessages(ctx, tx, []*sarama.ConsumerMessage{})
 		Expect(err).To(BeNil())

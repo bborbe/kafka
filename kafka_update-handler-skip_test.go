@@ -31,7 +31,10 @@ var _ = Describe("NewUpdaterHandlerSkipErrors", func() {
 		logSampler = &logmocks.LogSampler{}
 		logSamplerFactory.SamplerReturns(logSampler)
 
-		skipHandler = libkafka.NewUpdaterHandlerSkipErrors[string, string](innerHandler, logSamplerFactory)
+		skipHandler = libkafka.NewUpdaterHandlerSkipErrors[string, string](
+			innerHandler,
+			logSamplerFactory,
+		)
 	})
 
 	It("should implement UpdaterHandler interface", func() {

@@ -25,10 +25,12 @@ var _ = Describe("MessageHandlerFunc", func() {
 
 	It("should call the function when ConsumeMessage is called", func() {
 		called := false
-		handler := libkafka.MessageHandlerFunc(func(ctx context.Context, msg *sarama.ConsumerMessage) error {
-			called = true
-			return nil
-		})
+		handler := libkafka.MessageHandlerFunc(
+			func(ctx context.Context, msg *sarama.ConsumerMessage) error {
+				called = true
+				return nil
+			},
+		)
 
 		msg := &sarama.ConsumerMessage{
 			Topic:     "test-topic",
@@ -45,11 +47,13 @@ var _ = Describe("MessageHandlerFunc", func() {
 		var receivedCtx context.Context
 		var receivedMsg *sarama.ConsumerMessage
 
-		handler := libkafka.MessageHandlerFunc(func(ctx context.Context, msg *sarama.ConsumerMessage) error {
-			receivedCtx = ctx
-			receivedMsg = msg
-			return nil
-		})
+		handler := libkafka.MessageHandlerFunc(
+			func(ctx context.Context, msg *sarama.ConsumerMessage) error {
+				receivedCtx = ctx
+				receivedMsg = msg
+				return nil
+			},
+		)
 
 		ctx := context.WithValue(context.Background(), "test", "value")
 		msg := &sarama.ConsumerMessage{
@@ -67,9 +71,11 @@ var _ = Describe("MessageHandlerFunc", func() {
 
 	It("should return error from function", func() {
 		expectedErr := errors.New("test error")
-		handler := libkafka.MessageHandlerFunc(func(ctx context.Context, msg *sarama.ConsumerMessage) error {
-			return expectedErr
-		})
+		handler := libkafka.MessageHandlerFunc(
+			func(ctx context.Context, msg *sarama.ConsumerMessage) error {
+				return expectedErr
+			},
+		)
 
 		msg := &sarama.ConsumerMessage{
 			Topic:     "test-topic",

@@ -58,7 +58,11 @@ func (s *storeOffsetManager) FallbackOffset() Offset {
 }
 
 // NextOffset retrieves the next offset to consume for the given topic and partition from the store.
-func (s *storeOffsetManager) NextOffset(ctx context.Context, topic Topic, partition Partition) (Offset, error) {
+func (s *storeOffsetManager) NextOffset(
+	ctx context.Context,
+	topic Topic,
+	partition Partition,
+) (Offset, error) {
 	s.mux.Lock()
 	defer s.mux.Unlock()
 	if s.closed {
@@ -76,7 +80,12 @@ func (s *storeOffsetManager) NextOffset(ctx context.Context, topic Topic, partit
 }
 
 // MarkOffset persists the given offset as consumed for the specified topic and partition.
-func (s *storeOffsetManager) MarkOffset(ctx context.Context, topic Topic, partition Partition, nextOffset Offset) error {
+func (s *storeOffsetManager) MarkOffset(
+	ctx context.Context,
+	topic Topic,
+	partition Partition,
+	nextOffset Offset,
+) error {
 	s.mux.Lock()
 	defer s.mux.Unlock()
 	if s.closed {

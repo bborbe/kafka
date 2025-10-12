@@ -20,7 +20,11 @@ type Filter[KEY ~[]byte | ~string, OBJECT any] interface {
 type FilterFunc[KEY ~[]byte | ~string, OBJECT any] func(ctx context.Context, key KEY, object OBJECT) (bool, error)
 
 // Filtered implements the Filter interface.
-func (f FilterFunc[KEY, OBJECT]) Filtered(ctx context.Context, key KEY, object OBJECT) (bool, error) {
+func (f FilterFunc[KEY, OBJECT]) Filtered(
+	ctx context.Context,
+	key KEY,
+	object OBJECT,
+) (bool, error) {
 	return f(ctx, key, object)
 }
 

@@ -52,7 +52,11 @@ func (s *saramaOffsetManager) FallbackOffset() Offset {
 }
 
 // NextOffset retrieves the next offset to consume for the given topic and partition.
-func (s *saramaOffsetManager) NextOffset(ctx context.Context, topic Topic, partition Partition) (Offset, error) {
+func (s *saramaOffsetManager) NextOffset(
+	ctx context.Context,
+	topic Topic,
+	partition Partition,
+) (Offset, error) {
 	partitionOffsetManager, err := s.getPartitionManager(ctx, topic, partition)
 	if err != nil {
 		return 0, errors.Wrapf(ctx, err, "get partition manager failed")
@@ -66,7 +70,12 @@ func (s *saramaOffsetManager) NextOffset(ctx context.Context, topic Topic, parti
 }
 
 // MarkOffset marks the given offset as consumed for the specified topic and partition.
-func (s *saramaOffsetManager) MarkOffset(ctx context.Context, topic Topic, partition Partition, nextOffset Offset) error {
+func (s *saramaOffsetManager) MarkOffset(
+	ctx context.Context,
+	topic Topic,
+	partition Partition,
+	nextOffset Offset,
+) error {
 	partitionOffsetManager, err := s.getPartitionManager(ctx, topic, partition)
 	if err != nil {
 		return errors.Wrapf(ctx, err, "get partition manager failed")
@@ -92,7 +101,11 @@ func (s *saramaOffsetManager) Close() error {
 }
 
 // getPartitionManager retrieves or creates a partition offset manager for the given topic and partition.
-func (s *saramaOffsetManager) getPartitionManager(ctx context.Context, topic Topic, partition Partition) (sarama.PartitionOffsetManager, error) {
+func (s *saramaOffsetManager) getPartitionManager(
+	ctx context.Context,
+	topic Topic,
+	partition Partition,
+) (sarama.PartitionOffsetManager, error) {
 	s.mux.Lock()
 	defer s.mux.Unlock()
 

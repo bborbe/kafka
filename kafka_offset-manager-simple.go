@@ -52,7 +52,11 @@ func (s *simpleOffsetManager) FallbackOffset() Offset {
 }
 
 // NextOffset retrieves the next offset to consume for the given topic and partition.
-func (s *simpleOffsetManager) NextOffset(ctx context.Context, topic Topic, partition Partition) (Offset, error) {
+func (s *simpleOffsetManager) NextOffset(
+	ctx context.Context,
+	topic Topic,
+	partition Partition,
+) (Offset, error) {
 	s.mux.Lock()
 	defer s.mux.Unlock()
 	result, ok := s.offsets[TopicPartition{
@@ -66,7 +70,12 @@ func (s *simpleOffsetManager) NextOffset(ctx context.Context, topic Topic, parti
 }
 
 // MarkOffset marks the given offset as consumed for the specified topic and partition.
-func (s *simpleOffsetManager) MarkOffset(ctx context.Context, topic Topic, partition Partition, nextOffset Offset) error {
+func (s *simpleOffsetManager) MarkOffset(
+	ctx context.Context,
+	topic Topic,
+	partition Partition,
+	nextOffset Offset,
+) error {
 	s.mux.Lock()
 	defer s.mux.Unlock()
 	if s.closed {

@@ -20,15 +20,17 @@ func NewMessageHandlerBatchTxSkipErrors(
 	logSamplerFactory log.SamplerFactory,
 ) MessageHandlerBatchTx {
 	logSampler := logSamplerFactory.Sampler()
-	return MessageHandlerBatchTxFunc(func(ctx context.Context, tx libkv.Tx, msgs []*sarama.ConsumerMessage) error {
-		if err := handler.ConsumeMessages(ctx, tx, msgs); err != nil {
-			if logSampler.IsSample() {
-				data := errors.DataFromError(
-					err,
-				)
-				glog.Warningf("consume message with failed: %v %+v (sample)", err, data)
+	return MessageHandlerBatchTxFunc(
+		func(ctx context.Context, tx libkv.Tx, msgs []*sarama.ConsumerMessage) error {
+			if err := handler.ConsumeMessages(ctx, tx, msgs); err != nil {
+				if logSampler.IsSample() {
+					data := errors.DataFromError(
+						err,
+					)
+					glog.Warningf("consume message with failed: %v %+v (sample)", err, data)
+				}
 			}
-		}
-		return nil
-	})
+			return nil
+		},
+	)
 }

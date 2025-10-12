@@ -62,19 +62,23 @@ var _ = Describe("UpdaterHandlerFilter", func() {
 
 	Describe("FilterFunc", func() {
 		It("should implement Filter interface", func() {
-			filterFunc := libkafka.FilterFunc[string, string](func(ctx context.Context, key string, object string) (bool, error) {
-				return false, nil
-			})
+			filterFunc := libkafka.FilterFunc[string, string](
+				func(ctx context.Context, key string, object string) (bool, error) {
+					return false, nil
+				},
+			)
 			var f libkafka.Filter[string, string] = filterFunc
 			Expect(f).NotTo(BeNil())
 		})
 
 		It("should call the function", func() {
 			called := false
-			filterFunc := libkafka.FilterFunc[string, string](func(ctx context.Context, key string, object string) (bool, error) {
-				called = true
-				return true, nil
-			})
+			filterFunc := libkafka.FilterFunc[string, string](
+				func(ctx context.Context, key string, object string) (bool, error) {
+					called = true
+					return true, nil
+				},
+			)
 
 			filtered, err := filterFunc.Filtered(ctx, "key", "object")
 			Expect(err).To(BeNil())

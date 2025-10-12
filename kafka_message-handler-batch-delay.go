@@ -20,13 +20,15 @@ func NewMessageHandlerBatchDelay(
 	waiterDuration libtime.WaiterDuration,
 	delay libtime.Duration,
 ) MessageHandlerBatch {
-	return MessageHandlerBatchFunc(func(ctx context.Context, messages []*sarama.ConsumerMessage) error {
-		if err := messageHandlerBatch.ConsumeMessages(ctx, messages); err != nil {
-			return errors.Wrapf(ctx, err, "consume messages failed")
-		}
-		if err := waiterDuration.Wait(ctx, delay); err != nil {
-			return errors.Wrapf(ctx, err, "wait failed")
-		}
-		return nil
-	})
+	return MessageHandlerBatchFunc(
+		func(ctx context.Context, messages []*sarama.ConsumerMessage) error {
+			if err := messageHandlerBatch.ConsumeMessages(ctx, messages); err != nil {
+				return errors.Wrapf(ctx, err, "consume messages failed")
+			}
+			if err := waiterDuration.Wait(ctx, delay); err != nil {
+				return errors.Wrapf(ctx, err, "wait failed")
+			}
+			return nil
+		},
+	)
 }

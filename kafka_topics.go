@@ -57,6 +57,8 @@ func (t Topics) Strings() []string {
 	return result
 }
 
-func (t Topics) Len() int           { return len(t) }
+func (t Topics) Len() int { return len(t) }
+
 func (t Topics) Less(i, j int) bool { return strings.Compare(t[i].String(), t[j].String()) < 1 }
-func (t Topics) Swap(i, j int)      { t[i], t[j] = t[j], t[i] }
+
+func (t Topics) Swap(i, j int) { t[i], t[j] = t[j], t[i] }

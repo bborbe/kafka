@@ -28,7 +28,10 @@ type syncProducerMetrics struct {
 }
 
 // SendMessage sends a single message while recording metrics.
-func (s *syncProducerMetrics) SendMessage(ctx context.Context, msg *sarama.ProducerMessage) (int32, int64, error) {
+func (s *syncProducerMetrics) SendMessage(
+	ctx context.Context,
+	msg *sarama.ProducerMessage,
+) (int32, int64, error) {
 	start := time.Now()
 	s.metricsSyncProducer.SyncProducerTotalCounterInc(Topic(msg.Topic))
 	partition, offset, err := s.syncProducer.SendMessage(ctx, msg)
@@ -42,7 +45,10 @@ func (s *syncProducerMetrics) SendMessage(ctx context.Context, msg *sarama.Produ
 }
 
 // SendMessages sends multiple messages while recording metrics.
-func (s *syncProducerMetrics) SendMessages(ctx context.Context, msgs []*sarama.ProducerMessage) error {
+func (s *syncProducerMetrics) SendMessages(
+	ctx context.Context,
+	msgs []*sarama.ProducerMessage,
+) error {
 	start := time.Now()
 	for _, msg := range msgs {
 		s.metricsSyncProducer.SyncProducerTotalCounterInc(Topic(msg.Topic))
@@ -55,7 +61,10 @@ func (s *syncProducerMetrics) SendMessages(ctx context.Context, msgs []*sarama.P
 	}
 	for _, msg := range msgs {
 		s.metricsSyncProducer.SyncProducerSuccessCounterInc(Topic(msg.Topic))
-		s.metricsSyncProducer.SyncProducerDurationMeasure(Topic(msg.Topic), time.Since(start)/time.Duration(len(msgs)))
+		s.metricsSyncProducer.SyncProducerDurationMeasure(
+			Topic(msg.Topic),
+			time.Since(start)/time.Duration(len(msgs)),
+		)
 	}
 	return nil
 }

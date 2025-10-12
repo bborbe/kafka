@@ -21,7 +21,12 @@ type FilterTx[KEY ~[]byte | ~string, OBJECT any] interface {
 type FilterTxFunc[KEY ~[]byte | ~string, OBJECT any] func(ctx context.Context, tx libkv.Tx, key KEY, object OBJECT) (bool, error)
 
 // Filtered implements the FilterTx interface.
-func (f FilterTxFunc[KEY, OBJECT]) Filtered(ctx context.Context, tx libkv.Tx, key KEY, object OBJECT) (bool, error) {
+func (f FilterTxFunc[KEY, OBJECT]) Filtered(
+	ctx context.Context,
+	tx libkv.Tx,
+	key KEY,
+	object OBJECT,
+) (bool, error) {
 	return f(ctx, tx, key, object)
 }
 

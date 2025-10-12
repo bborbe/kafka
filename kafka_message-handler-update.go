@@ -13,7 +13,9 @@ import (
 )
 
 // NewMessageHandlerUpdate creates a generic message handler that processes JSON messages for CRUD operations.
-func NewMessageHandlerUpdate[KEY ~[]byte | ~string, OBJECT any](updateHandler UpdaterHandler[KEY, OBJECT]) MessageHandler {
+func NewMessageHandlerUpdate[KEY ~[]byte | ~string, OBJECT any](
+	updateHandler UpdaterHandler[KEY, OBJECT],
+) MessageHandler {
 	return MessageHandlerFunc(func(ctx context.Context, msg *sarama.ConsumerMessage) error {
 		var objectID = KEY(msg.Key)
 		if len(msg.Value) == 0 {

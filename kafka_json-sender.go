@@ -76,7 +76,13 @@ type JsonSenderOptions struct {
 
 // JsonSender provides methods for sending JSON-encoded messages to Kafka topics.
 type JsonSender interface {
-	SendUpdate(ctx context.Context, topic Topic, key Key, value Value, headers ...sarama.RecordHeader) error
+	SendUpdate(
+		ctx context.Context,
+		topic Topic,
+		key Key,
+		value Value,
+		headers ...sarama.RecordHeader,
+	) error
 	SendUpdates(ctx context.Context, entries Entries) error
 	SendDelete(ctx context.Context, topic Topic, key Key, headers ...sarama.RecordHeader) error
 	SendDeletes(ctx context.Context, entries Entries) error
@@ -107,12 +113,23 @@ type jsonSender struct {
 	options          JsonSenderOptions
 }
 
-func (j *jsonSender) SendUpdate(ctx context.Context, topic Topic, key Key, value Value, headers ...sarama.RecordHeader) error {
+func (j *jsonSender) SendUpdate(
+	ctx context.Context,
+	topic Topic,
+	key Key,
+	value Value,
+	headers ...sarama.RecordHeader,
+) error {
 	glog.V(4).Infof("sendUpdate %s to %s started", key, topic)
 
 	if glog.V(4) {
 		v, _ := json.Marshal(value)
-		glog.Infof("send update message to %s key %s value %s", topic, string(key.Bytes()), string(v))
+		glog.Infof(
+			"send update message to %s key %s value %s",
+			topic,
+			string(key.Bytes()),
+			string(v),
+		)
 	}
 
 	msg, err := j.createUpdateMessage(ctx, topic, key, value, headers...)
@@ -125,7 +142,8 @@ func (j *jsonSender) SendUpdate(ctx context.Context, topic Topic, key Key, value
 		return errors.Wrapf(ctx, err, "send update message failed")
 	}
 	if j.logSamplerUpdate.IsSample() {
-		glog.V(3).Infof("send update message successful to %s with partition %d offset %d (sample)", topic, partition, offset)
+		glog.V(3).
+			Infof("send update message successful to %s with partition %d offset %d (sample)", topic, partition, offset)
 	}
 	glog.V(4).Infof("sendUpdate %s to %s completed", key, topic)
 	return nil
@@ -136,7 +154,12 @@ func (j *jsonSender) SendUpdates(ctx context.Context, entries Entries) error {
 	msgs := make([]*sarama.ProducerMessage, len(entries))
 	var err error
 	for i, entry := range entries {
-		msgs[i], err = j.createUpdateMessage(ctx, entry.Topic, entry.Key, entry.Value, entry.Headers...)
+		msgs[i], err = j.createUpdateMessage(
+			ctx,
+			entry.Topic,
+			entry.Key,
+			entry.Value,
+			entry.Headers...)
 		if err != nil {
 			return errors.Wrapf(ctx, err, "create update message failed")
 		}
@@ -151,16 +174,33 @@ func (j *jsonSender) SendUpdates(ctx context.Context, entries Entries) error {
 	return nil
 }
 
-func (j *jsonSender) createUpdateMessage(ctx context.Context, topic Topic, key Key, value Value, headers ...sarama.RecordHeader) (*sarama.ProducerMessage, error) {
+func (j *jsonSender) createUpdateMessage(
+	ctx context.Context,
+	topic Topic,
+	key Key,
+	value Value,
+	headers ...sarama.RecordHeader,
+) (*sarama.ProducerMessage, error) {
 	if err := j.validateValue(ctx, value); err != nil {
 		if glog.V(4) {
 			content := &bytes.Buffer{}
 			encoder := json.NewEncoder(content)
 			encoder.SetIndent("", "   ")
 			_ = encoder.Encode(value)
-			glog.Infof("validate value failed for topic %s with key %s and value %s", topic, key, content.String())
+			glog.Infof(
+				"validate value failed for topic %s with key %s and value %s",
+				topic,
+				key,
+				content.String(),
+			)
 		}
-		return nil, errors.Wrapf(ctx, err, "validate value failed for topic %s with key %s failed", topic, key)
+		return nil, errors.Wrapf(
+			ctx,
+			err,
+			"validate value failed for topic %s with key %s failed",
+			topic,
+			key,
+		)
 	}
 
 	valueEncoder, err := NewJsonEncoder(ctx, value)
@@ -176,19 +216,28 @@ func (j *jsonSender) createUpdateMessage(ctx context.Context, topic Topic, key K
 	}, nil
 }
 
-func (j *jsonSender) SendDelete(ctx context.Context, topic Topic, key Key, headers ...sarama.RecordHeader) error {
+func (j *jsonSender) SendDelete(
+	ctx context.Context,
+	topic Topic,
+	key Key,
+	headers ...sarama.RecordHeader,
+) error {
 	glog.V(3).Infof("SendDelete %s to %s started", key, topic)
 
 	if glog.V(4) {
 		glog.Infof("send delete message to %s key %s", topic, string(key.Bytes()))
 	}
 
-	partition, offset, err := j.producer.SendMessage(ctx, j.createDeleteMessage(topic, key, headers))
+	partition, offset, err := j.producer.SendMessage(
+		ctx,
+		j.createDeleteMessage(topic, key, headers),
+	)
 	if err != nil {
 		return errors.Wrapf(ctx, err, "send delete message failed")
 	}
 	if j.logSamplerDelete.IsSample() {
-		glog.V(3).Infof("send delete message to %s with partition %d offset %d successful (sample)", topic, partition, offset)
+		glog.V(3).
+			Infof("send delete message to %s with partition %d offset %d successful (sample)", topic, partition, offset)
 	}
 	return nil
 }
@@ -209,7 +258,11 @@ func (j *jsonSender) SendDeletes(ctx context.Context, entries Entries) error {
 	return nil
 }
 
-func (j *jsonSender) createDeleteMessage(topic Topic, key Key, headers []sarama.RecordHeader) *sarama.ProducerMessage {
+func (j *jsonSender) createDeleteMessage(
+	topic Topic,
+	key Key,
+	headers []sarama.RecordHeader,
+) *sarama.ProducerMessage {
 	return &sarama.ProducerMessage{
 		Headers: headers,
 		Topic:   topic.String(),

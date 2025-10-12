@@ -78,7 +78,12 @@ func (o *offsetStore) Get(ctx context.Context, topic Topic, partition Partition)
 	return result, nil
 }
 
-func (o *offsetStore) Set(ctx context.Context, topic Topic, partition Partition, offset Offset) error {
+func (o *offsetStore) Set(
+	ctx context.Context,
+	topic Topic,
+	partition Partition,
+	offset Offset,
+) error {
 	err := o.db.Update(ctx, func(ctx context.Context, tx libkv.Tx) error {
 		bucket, err := tx.CreateBucketIfNotExists(ctx, o.bucket)
 		if err != nil {

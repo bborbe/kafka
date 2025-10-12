@@ -125,7 +125,8 @@ func combineConsumerGroupAndHighwaterMark(
 		}
 
 		if consumerGroupOffset == highwaterMarkOffset {
-			glog.V(3).Infof("currentOffset(%d) == highwaterMarkOffset(%d) => skip", consumerGroupOffset, highwaterMarkOffset)
+			glog.V(3).
+				Infof("currentOffset(%d) == highwaterMarkOffset(%d) => skip", consumerGroupOffset, highwaterMarkOffset)
 			continue
 		}
 

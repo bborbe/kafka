@@ -206,7 +206,10 @@ func (m *metrics) ConsumePartitionCreateOutOfRangeErrorInc(topic Topic, partitio
 	}).Inc()
 }
 
-func (m *metrics) ConsumePartitionCreateOutOfRangeErrorInitialize(topic Topic, partition Partition) {
+func (m *metrics) ConsumePartitionCreateOutOfRangeErrorInitialize(
+	topic Topic,
+	partition Partition,
+) {
 	consumePartitionCreateOutOfRangeErrorCounter.With(prometheus.Labels{
 		"topic":     topic.String(),
 		"partition": partition.String(),
@@ -273,7 +276,11 @@ func (m *metrics) MessageHandlerFailureCounterInc(topic Topic, partition Partiti
 	}).Inc()
 }
 
-func (m *metrics) MessageHandlerDurationMeasure(topic Topic, partition Partition, duration time.Duration) {
+func (m *metrics) MessageHandlerDurationMeasure(
+	topic Topic,
+	partition Partition,
+	duration time.Duration,
+) {
 	messageHandlerDurationMeasure.With(prometheus.Labels{
 		"topic":     topic.String(),
 		"partition": partition.String(),

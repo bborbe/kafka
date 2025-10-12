@@ -33,7 +33,14 @@ func NewMessageHandlerSkipErrors(
 						},
 					),
 				)
-				glog.Warningf("consume message with offset %d in partition %d in topic %s failed: %v %+v (sample)", msg.Offset, msg.Partition, msg.Topic, err, data)
+				glog.Warningf(
+					"consume message with offset %d in partition %d in topic %s failed: %v %+v (sample)",
+					msg.Offset,
+					msg.Partition,
+					msg.Topic,
+					err,
+					data,
+				)
 			}
 		}
 		return nil

@@ -29,7 +29,11 @@ func NewMessageHandlerBatchMetrics(
 		}
 		for _, msg := range msgs {
 			metrics.MessageHandlerSuccessCounterInc(Topic(msg.Topic), Partition(msg.Partition))
-			metrics.MessageHandlerDurationMeasure(Topic(msg.Topic), Partition(msg.Partition), time.Since(start))
+			metrics.MessageHandlerDurationMeasure(
+				Topic(msg.Topic),
+				Partition(msg.Partition),
+				time.Since(start),
+			)
 		}
 		return nil
 	})

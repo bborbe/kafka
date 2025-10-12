@@ -14,7 +14,9 @@ import (
 )
 
 var invalidTopicCharRegexp = regexp.MustCompile(`[^a-zA-Z0-9\._-]+`)
+
 var dashRegexp = regexp.MustCompile(`-+`)
+
 var validateTopic = regexp.MustCompile(`^[a-zA-Z0-9\._-]*$`)
 
 // TopicFromStrings creates a valid Kafka topic name from multiple string values by joining and sanitizing them.
