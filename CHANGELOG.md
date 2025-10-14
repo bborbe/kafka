@@ -8,6 +8,13 @@ Please choose versions by [Semantic Versioning](http://semver.org/).
 * MINOR version when you add functionality in a backwards-compatible manner, and
 * PATCH version when you make backwards-compatible bug fixes.
 
+## v1.16.0
+
+- Add NewGzipEncoder for gzip compression with default compression level
+- Add NewGzipEncoderWithLevel for gzip compression with configurable compression levels
+- Add GzipDecoder for gzip decompression
+- Add comprehensive test coverage for gzip encoder and decoder
+
 ## v1.15.0
 
 - Add golangci-lint configuration with multiple linters enabled
