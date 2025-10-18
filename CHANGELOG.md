@@ -8,6 +8,15 @@ Please choose versions by [Semantic Versioning](http://semver.org/).
 * MINOR version when you add functionality in a backwards-compatible manner, and
 * PATCH version when you make backwards-compatible bug fixes.
 
+## v1.17.1
+
+- Remove deprecated golang.org/x/lint/golint from tools.go
+- Fix README code examples to match actual API signatures
+- Update godoc.org badge to pkg.go.dev
+- Update Go version from 1.25.2 to 1.25.3
+- Add CI badge to README
+- Add table of contents to README for better navigation
+
 ## v1.17.0
 
 - Add encoding.TextUnmarshaler support for Broker type

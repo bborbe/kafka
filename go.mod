@@ -1,6 +1,6 @@
 module github.com/bborbe/kafka
 
-go 1.25.2
+go 1.25.3
 
 require (
 	github.com/IBM/sarama v1.45.2
@@ -27,7 +27,6 @@ require (
 	github.com/prometheus/client_golang v1.22.0
 	github.com/securego/gosec/v2 v2.22.9
 	github.com/segmentio/golines v0.13.0
-	golang.org/x/lint v0.0.0-20241112194109-818c5a804067
 	golang.org/x/vuln v1.1.4
 )
 
@@ -385,6 +384,7 @@ require (
 	golang.org/x/crypto v0.42.0 // indirect
 	golang.org/x/exp v0.0.0-20250711185948-6ae5c78190dc // indirect
 	golang.org/x/exp/typeparams v0.0.0-20250210185358-939b2ce775ac // indirect
+	golang.org/x/lint v0.0.0-20241112194109-818c5a804067 // indirect
 	golang.org/x/mod v0.28.0 // indirect
 	golang.org/x/net v0.44.0 // indirect
 	golang.org/x/oauth2 v0.30.0 // indirect
