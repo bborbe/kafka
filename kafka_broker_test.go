@@ -81,3 +81,20 @@ var _ = DescribeTable(
 		libkafka.Broker("plain://kafka.example.com:9092"),
 	),
 )
+
+var _ = DescribeTable(
+	"Broker MarshalText",
+	func(broker libkafka.Broker, expectedOutput string) {
+		result, err := broker.MarshalText()
+		Expect(err).To(BeNil())
+		Expect(string(result)).To(Equal(expectedOutput))
+	},
+	Entry("plain", libkafka.Broker("plain://localhost:9092"), "plain://localhost:9092"),
+	Entry("tls", libkafka.Broker("tls://localhost:9093"), "tls://localhost:9093"),
+	Entry("ip address", libkafka.Broker("plain://127.0.0.1:9092"), "plain://127.0.0.1:9092"),
+	Entry(
+		"hostname",
+		libkafka.Broker("tls://kafka.example.com:9092"),
+		"tls://kafka.example.com:9092",
+	),
+)

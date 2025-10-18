@@ -243,12 +243,6 @@ func (fake *KafkaSyncProducer) SendMessagesReturnsOnCall(i int, result1 error) {
 func (fake *KafkaSyncProducer) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
-	fake.closeMutex.RLock()
-	defer fake.closeMutex.RUnlock()
-	fake.sendMessageMutex.RLock()
-	defer fake.sendMessageMutex.RUnlock()
-	fake.sendMessagesMutex.RLock()
-	defer fake.sendMessagesMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

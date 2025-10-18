@@ -498,24 +498,6 @@ func (fake *KafkaSaramaConsumer) TopicsReturnsOnCall(i int, result1 []string, re
 func (fake *KafkaSaramaConsumer) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
-	fake.closeMutex.RLock()
-	defer fake.closeMutex.RUnlock()
-	fake.consumePartitionMutex.RLock()
-	defer fake.consumePartitionMutex.RUnlock()
-	fake.highWaterMarksMutex.RLock()
-	defer fake.highWaterMarksMutex.RUnlock()
-	fake.partitionsMutex.RLock()
-	defer fake.partitionsMutex.RUnlock()
-	fake.pauseMutex.RLock()
-	defer fake.pauseMutex.RUnlock()
-	fake.pauseAllMutex.RLock()
-	defer fake.pauseAllMutex.RUnlock()
-	fake.resumeMutex.RLock()
-	defer fake.resumeMutex.RUnlock()
-	fake.resumeAllMutex.RLock()
-	defer fake.resumeAllMutex.RUnlock()
-	fake.topicsMutex.RLock()
-	defer fake.topicsMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

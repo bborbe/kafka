@@ -97,8 +97,6 @@ func (fake *KafkaHighwaterMarkProvider) HighWaterMarkReturnsOnCall(i int, result
 func (fake *KafkaHighwaterMarkProvider) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
-	fake.highWaterMarkMutex.RLock()
-	defer fake.highWaterMarkMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

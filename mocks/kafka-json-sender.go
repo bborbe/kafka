@@ -323,14 +323,6 @@ func (fake *KafkaJsonSender) SendUpdatesReturnsOnCall(i int, result1 error) {
 func (fake *KafkaJsonSender) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
-	fake.sendDeleteMutex.RLock()
-	defer fake.sendDeleteMutex.RUnlock()
-	fake.sendDeletesMutex.RLock()
-	defer fake.sendDeletesMutex.RUnlock()
-	fake.sendUpdateMutex.RLock()
-	defer fake.sendUpdateMutex.RUnlock()
-	fake.sendUpdatesMutex.RLock()
-	defer fake.sendUpdatesMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

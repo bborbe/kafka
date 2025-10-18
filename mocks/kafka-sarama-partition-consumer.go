@@ -415,22 +415,6 @@ func (fake *KafkaSaramaPartitionConsumer) ResumeCalls(stub func()) {
 func (fake *KafkaSaramaPartitionConsumer) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
-	fake.asyncCloseMutex.RLock()
-	defer fake.asyncCloseMutex.RUnlock()
-	fake.closeMutex.RLock()
-	defer fake.closeMutex.RUnlock()
-	fake.errorsMutex.RLock()
-	defer fake.errorsMutex.RUnlock()
-	fake.highWaterMarkOffsetMutex.RLock()
-	defer fake.highWaterMarkOffsetMutex.RUnlock()
-	fake.isPausedMutex.RLock()
-	defer fake.isPausedMutex.RUnlock()
-	fake.messagesMutex.RLock()
-	defer fake.messagesMutex.RUnlock()
-	fake.pauseMutex.RLock()
-	defer fake.pauseMutex.RUnlock()
-	fake.resumeMutex.RLock()
-	defer fake.resumeMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

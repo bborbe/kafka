@@ -703,26 +703,6 @@ func (fake *KafkaSaramaSyncProducer) TxnStatusReturnsOnCall(i int, result1 saram
 func (fake *KafkaSaramaSyncProducer) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
-	fake.abortTxnMutex.RLock()
-	defer fake.abortTxnMutex.RUnlock()
-	fake.addMessageToTxnMutex.RLock()
-	defer fake.addMessageToTxnMutex.RUnlock()
-	fake.addOffsetsToTxnMutex.RLock()
-	defer fake.addOffsetsToTxnMutex.RUnlock()
-	fake.beginTxnMutex.RLock()
-	defer fake.beginTxnMutex.RUnlock()
-	fake.closeMutex.RLock()
-	defer fake.closeMutex.RUnlock()
-	fake.commitTxnMutex.RLock()
-	defer fake.commitTxnMutex.RUnlock()
-	fake.isTransactionalMutex.RLock()
-	defer fake.isTransactionalMutex.RUnlock()
-	fake.sendMessageMutex.RLock()
-	defer fake.sendMessageMutex.RUnlock()
-	fake.sendMessagesMutex.RLock()
-	defer fake.sendMessagesMutex.RUnlock()
-	fake.txnStatusMutex.RLock()
-	defer fake.txnStatusMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

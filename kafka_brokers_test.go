@@ -71,3 +71,32 @@ var _ = DescribeTable("Brokers UnmarshalText",
 		},
 	),
 )
+
+var _ = DescribeTable("Brokers MarshalText",
+	func(brokers libkafka.Brokers, expectedOutput string) {
+		result, err := brokers.MarshalText()
+		Expect(err).To(BeNil())
+		Expect(string(result)).To(Equal(expectedOutput))
+	},
+	Entry("single plain", libkafka.Brokers{"plain://my-cluster:9092"}, "plain://my-cluster:9092"),
+	Entry("single tls", libkafka.Brokers{"tls://my-cluster:9092"}, "tls://my-cluster:9092"),
+	Entry(
+		"multi plain",
+		libkafka.Brokers{"plain://my-cluster-a:9092", "plain://my-cluster-b:9092"},
+		"plain://my-cluster-a:9092,plain://my-cluster-b:9092",
+	),
+	Entry(
+		"multi tls",
+		libkafka.Brokers{"tls://my-cluster-a:9092", "tls://my-cluster-b:9092"},
+		"tls://my-cluster-a:9092,tls://my-cluster-b:9092",
+	),
+	Entry(
+		"multi mixed schemas",
+		libkafka.Brokers{
+			"plain://my-cluster-a:9092",
+			"tls://my-cluster-b:9092",
+			"plain://my-cluster-c:9092",
+		},
+		"plain://my-cluster-a:9092,tls://my-cluster-b:9092,plain://my-cluster-c:9092",
+	),
+)

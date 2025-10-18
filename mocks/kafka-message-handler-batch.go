@@ -96,8 +96,6 @@ func (fake *KafkaMessageHandlerBatch) ConsumeMessagesReturnsOnCall(i int, result
 func (fake *KafkaMessageHandlerBatch) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
-	fake.consumeMessagesMutex.RLock()
-	defer fake.consumeMessagesMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

@@ -8,6 +8,12 @@ Please choose versions by [Semantic Versioning](http://semver.org/).
 * MINOR version when you add functionality in a backwards-compatible manner, and
 * PATCH version when you make backwards-compatible bug fixes.
 
+## v1.17.2
+
+- Add encoding.TextMarshaler support for Broker type
+- Add encoding.TextMarshaler support for Brokers type
+- Add comprehensive test coverage for MarshalText methods
+
 ## v1.17.1
 
 - Remove deprecated golang.org/x/lint/golint from tools.go
