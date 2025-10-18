@@ -42,3 +42,9 @@ func (b Broker) Host() string {
 	}
 	return parts[1]
 }
+
+// UnmarshalText implements encoding.TextUnmarshaler for Broker.
+func (b *Broker) UnmarshalText(text []byte) error {
+	*b = ParseBroker(string(text))
+	return nil
+}

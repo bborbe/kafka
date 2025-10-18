@@ -58,3 +58,9 @@ func (b Brokers) Strings() []string {
 	}
 	return result
 }
+
+// UnmarshalText implements encoding.TextUnmarshaler for Brokers.
+func (b *Brokers) UnmarshalText(text []byte) error {
+	*b = ParseBrokersFromString(string(text))
+	return nil
+}

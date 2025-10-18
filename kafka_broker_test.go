@@ -61,3 +61,23 @@ var _ = DescribeTable("Broker Host",
 	Entry("invalid format", libkafka.Broker("invalid"), ""),
 	Entry("empty", libkafka.Broker(""), ""),
 )
+
+var _ = DescribeTable(
+	"Broker UnmarshalText",
+	func(input string, expectedBroker libkafka.Broker) {
+		var broker libkafka.Broker
+		err := broker.UnmarshalText([]byte(input))
+		Expect(err).To(BeNil())
+		Expect(broker).To(Equal(expectedBroker))
+	},
+	Entry("without schema", "localhost:9092", libkafka.Broker("plain://localhost:9092")),
+	Entry("plain schema", "plain://localhost:9092", libkafka.Broker("plain://localhost:9092")),
+	Entry("tls schema", "tls://localhost:9093", libkafka.Broker("tls://localhost:9093")),
+	Entry("ip without schema", "127.0.0.1:9092", libkafka.Broker("plain://127.0.0.1:9092")),
+	Entry("ip with schema", "plain://127.0.0.1:9092", libkafka.Broker("plain://127.0.0.1:9092")),
+	Entry(
+		"hostname with port",
+		"kafka.example.com:9092",
+		libkafka.Broker("plain://kafka.example.com:9092"),
+	),
+)

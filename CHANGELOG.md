@@ -8,6 +8,12 @@ Please choose versions by [Semantic Versioning](http://semver.org/).
 * MINOR version when you add functionality in a backwards-compatible manner, and
 * PATCH version when you make backwards-compatible bug fixes.
 
+## v1.17.0
+
+- Add encoding.TextUnmarshaler support for Broker type
+- Add encoding.TextUnmarshaler support for Brokers type
+- Add comprehensive test coverage for UnmarshalText methods
+
 ## v1.16.0
 
 - Add NewGzipEncoder for gzip compression with default compression level
