@@ -8,12 +8,6 @@ Please choose versions by [Semantic Versioning](http://semver.org/).
 * MINOR version when you add functionality in a backwards-compatible manner, and
 * PATCH version when you make backwards-compatible bug fixes.
 
-## v1.17.3
-
-- Remove encoding.TextMarshaler support for Broker type
-- Remove encoding.TextMarshaler support for Brokers type
-- Remove comprehensive test coverage for MarshalText methods
-
 ## v1.17.2
 
 - Add encoding.TextMarshaler support for Broker type
