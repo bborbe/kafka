@@ -35,3 +35,6 @@ issues:
     - linters:
         - revive
       text: "unused-parameter"
+    - linters:
+        - dupl
+      path: "_test\\.go$"
