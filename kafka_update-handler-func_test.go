@@ -15,6 +15,8 @@ import (
 )
 
 var _ = Describe("UpdaterHandlerFunc", func() {
+	type contextKey string
+
 	var (
 		ctx          context.Context
 		updateCalled bool
@@ -84,7 +86,7 @@ var _ = Describe("UpdaterHandlerFunc", func() {
 			}
 			handler = libkafka.UpdaterHandlerFunc(updateFunc, deleteFunc)
 
-			ctx = context.WithValue(context.Background(), "test", "value")
+			ctx = context.WithValue(context.Background(), contextKey("test"), "value")
 			err := handler.Update(ctx, "test-key", "test-object")
 			Expect(err).To(BeNil())
 			Expect(receivedCtx).To(Equal(ctx))
@@ -132,7 +134,7 @@ var _ = Describe("UpdaterHandlerFunc", func() {
 			}
 			handler = libkafka.UpdaterHandlerFunc(updateFunc, deleteFunc)
 
-			ctx = context.WithValue(context.Background(), "test", "value")
+			ctx = context.WithValue(context.Background(), contextKey("test"), "value")
 			err := handler.Delete(ctx, "test-key")
 			Expect(err).To(BeNil())
 			Expect(receivedCtx).To(Equal(ctx))

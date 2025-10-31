@@ -18,6 +18,8 @@ import (
 )
 
 var _ = Describe("MessageHandlerBatchTxFunc", func() {
+	type contextKey string
+
 	var (
 		ctx      context.Context
 		tx       *kvmocks.Tx
@@ -71,7 +73,7 @@ var _ = Describe("MessageHandlerBatchTxFunc", func() {
 			},
 		)
 
-		ctx = context.WithValue(context.Background(), "test", "value")
+		ctx = context.WithValue(context.Background(), contextKey("test"), "value")
 		messages = []*sarama.ConsumerMessage{
 			{
 				Topic:     "test-topic",

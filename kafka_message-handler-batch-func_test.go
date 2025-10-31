@@ -16,6 +16,8 @@ import (
 )
 
 var _ = Describe("MessageHandlerBatchFunc", func() {
+	type contextKey string
+
 	It("should implement MessageHandlerBatch interface", func() {
 		var handler libkafka.MessageHandlerBatch = libkafka.MessageHandlerBatchFunc(func(ctx context.Context, messages []*sarama.ConsumerMessage) error {
 			return nil
@@ -57,7 +59,7 @@ var _ = Describe("MessageHandlerBatchFunc", func() {
 			},
 		)
 
-		ctx := context.WithValue(context.Background(), "test", "value")
+		ctx := context.WithValue(context.Background(), contextKey("test"), "value")
 		messages := []*sarama.ConsumerMessage{
 			{
 				Topic:     "test-topic",

@@ -15,6 +15,8 @@ import (
 )
 
 var _ = Describe("ConsumerFunc", func() {
+	type contextKey string
+
 	It("should implement Consumer interface", func() {
 		var consumer libkafka.Consumer = libkafka.ConsumerFunc(func(ctx context.Context) error {
 			return nil
@@ -41,7 +43,7 @@ var _ = Describe("ConsumerFunc", func() {
 			return nil
 		})
 
-		ctx := context.WithValue(context.Background(), "test", "value")
+		ctx := context.WithValue(context.Background(), contextKey("test"), "value")
 		err := consumer.Consume(ctx)
 		Expect(err).To(BeNil())
 		Expect(receivedCtx).To(Equal(ctx))

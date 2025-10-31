@@ -16,6 +16,8 @@ import (
 )
 
 var _ = Describe("MessageHandlerFunc", func() {
+	type contextKey string
+
 	It("should implement MessageHandler interface", func() {
 		var handler libkafka.MessageHandler = libkafka.MessageHandlerFunc(func(ctx context.Context, msg *sarama.ConsumerMessage) error {
 			return nil
@@ -55,7 +57,7 @@ var _ = Describe("MessageHandlerFunc", func() {
 			},
 		)
 
-		ctx := context.WithValue(context.Background(), "test", "value")
+		ctx := context.WithValue(context.Background(), contextKey("test"), "value")
 		msg := &sarama.ConsumerMessage{
 			Topic:     "test-topic",
 			Partition: 0,
