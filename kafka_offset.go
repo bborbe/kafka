@@ -36,7 +36,7 @@ func (o Offset) Int64() int64 {
 // Bytes representation for the offset.
 func (o Offset) Bytes() []byte {
 	result := &bytes.Buffer{}
-	binary.Write(result, binary.BigEndian, o.Int64())
+	_ = binary.Write(result, binary.BigEndian, o.Int64())
 	return result.Bytes()
 }
 

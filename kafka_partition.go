@@ -51,7 +51,7 @@ func (p Partition) String() string {
 // Bytes representation for the partion.
 func (p Partition) Bytes() []byte {
 	result := &bytes.Buffer{}
-	binary.Write(result, binary.BigEndian, p.Int32())
+	_ = binary.Write(result, binary.BigEndian, p.Int32())
 	return result.Bytes()
 }
 
