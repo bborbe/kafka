@@ -15,9 +15,9 @@ import (
 // SaramaClientProvider provides Sarama Kafka clients and manages their lifecycle.
 // It creates clients on demand and tracks them for proper cleanup via Close().
 type SaramaClientProvider interface {
-	// Client creates and returns a Sarama client with the specified configuration options.
+	// Client creates and returns a Sarama client.
 	// The behavior depends on the implementation - it may return a new client or reuse an existing one.
-	Client(ctx context.Context, opts ...SaramaConfigOptions) (SaramaClient, error)
+	Client(ctx context.Context) (SaramaClient, error)
 	// Close closes all Sarama clients that were created by this provider.
 	// This method is safe to call multiple times and safe to defer immediately after creation.
 	Close() error

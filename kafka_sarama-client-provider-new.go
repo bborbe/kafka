@@ -13,29 +13,28 @@ import (
 
 // NewSaramaClientProviderNew creates a SaramaClientProvider that creates a new client for each call.
 // All created clients are tracked and closed when Close() is called.
-// Default options can be provided which will be applied to all clients unless overridden.
+// The provided options will be applied to all created clients.
 func NewSaramaClientProviderNew(
 	brokers Brokers,
 	opts ...SaramaConfigOptions,
 ) SaramaClientProvider {
 	return &saramaClientProviderNew{
-		brokers:     brokers,
-		defaultOpts: opts,
-		clients:     make([]SaramaClient, 0),
+		brokers: brokers,
+		opts:    opts,
+		clients: make([]SaramaClient, 0),
 	}
 }
 
 type saramaClientProviderNew struct {
-	brokers     Brokers
-	defaultOpts []SaramaConfigOptions
-	clients     []SaramaClient
-	mu          sync.Mutex
-	closed      bool
+	brokers Brokers
+	opts    []SaramaConfigOptions
+	clients []SaramaClient
+	mu      sync.Mutex
+	closed  bool
 }
 
 func (s *saramaClientProviderNew) Client(
 	ctx context.Context,
-	opts ...SaramaConfigOptions,
 ) (SaramaClient, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -44,11 +43,7 @@ func (s *saramaClientProviderNew) Client(
 		return nil, errors.Errorf(ctx, "provider is closed")
 	}
 
-	// Merge default options with provided options
-	allOpts := append([]SaramaConfigOptions{}, s.defaultOpts...)
-	allOpts = append(allOpts, opts...)
-
-	client, err := CreateSaramaClient(ctx, s.brokers, allOpts...)
+	client, err := CreateSaramaClient(ctx, s.brokers, s.opts...)
 	if err != nil {
 		return nil, errors.Wrapf(ctx, err, "create sarama client failed")
 	}

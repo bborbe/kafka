@@ -11,7 +11,6 @@ import (
 // NewSaramaClientProviderExisting creates a SaramaClientProvider that wraps an existing Sarama client.
 // This adapter allows existing Sarama clients to be used with the provider pattern without breaking backward compatibility.
 // The provider returns the same client instance on every call to Client() and delegates Close() to the wrapped client.
-// Configuration options passed to Client() are ignored since the client is already configured.
 func NewSaramaClientProviderExisting(
 	saramaClient SaramaClient,
 ) SaramaClientProvider {
@@ -24,10 +23,7 @@ type saramaClientProviderExisting struct {
 	saramaClient SaramaClient
 }
 
-func (s *saramaClientProviderExisting) Client(
-	ctx context.Context,
-	opts ...SaramaConfigOptions,
-) (SaramaClient, error) {
+func (s *saramaClientProviderExisting) Client(_ context.Context) (SaramaClient, error) {
 	return s.saramaClient, nil
 }
 

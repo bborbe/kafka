@@ -8,6 +8,12 @@ Please choose versions by [Semantic Versioning](http://semver.org/).
 * MINOR version when you add functionality in a backwards-compatible manner, and
 * PATCH version when you make backwards-compatible bug fixes.
 
+## v1.19.2
+
+- Remove configuration options parameter from `SaramaClientProvider.Client()` method
+- Configuration options now set once during provider creation for cleaner API
+- Update GoDoc comments to reflect simplified API
+
 ## v1.19.1
 
 - Rename `ClosedError` to `ErrClosed` following Go naming conventions (ST1012)

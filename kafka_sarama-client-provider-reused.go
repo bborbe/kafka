@@ -13,29 +13,26 @@ import (
 
 // NewSaramaClientProviderReused creates a SaramaClientProvider that reuses a single client for all calls.
 // The client is created lazily on the first call to Client().
-// Default options can be provided which will be applied to all clients unless overridden.
+// The provided options will be applied when creating the client.
 func NewSaramaClientProviderReused(
 	brokers Brokers,
 	opts ...SaramaConfigOptions,
 ) SaramaClientProvider {
 	return &saramaClientProviderReused{
-		brokers:     brokers,
-		defaultOpts: opts,
+		brokers: brokers,
+		opts:    opts,
 	}
 }
 
 type saramaClientProviderReused struct {
-	brokers     Brokers
-	defaultOpts []SaramaConfigOptions
-	client      SaramaClient
-	mu          sync.Mutex
-	closed      bool
+	brokers Brokers
+	opts    []SaramaConfigOptions
+	client  SaramaClient
+	mu      sync.Mutex
+	closed  bool
 }
 
-func (s *saramaClientProviderReused) Client(
-	ctx context.Context,
-	opts ...SaramaConfigOptions,
-) (SaramaClient, error) {
+func (s *saramaClientProviderReused) Client(ctx context.Context) (SaramaClient, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -47,11 +44,7 @@ func (s *saramaClientProviderReused) Client(
 		return s.client, nil
 	}
 
-	// Merge default options with provided options
-	allOpts := append([]SaramaConfigOptions{}, s.defaultOpts...)
-	allOpts = append(allOpts, opts...)
-
-	client, err := CreateSaramaClient(ctx, s.brokers, allOpts...)
+	client, err := CreateSaramaClient(ctx, s.brokers, s.opts...)
 	if err != nil {
 		return nil, errors.Wrapf(ctx, err, "create sarama client failed")
 	}

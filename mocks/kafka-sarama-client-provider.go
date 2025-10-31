@@ -9,11 +9,10 @@ import (
 )
 
 type KafkaSaramaClientProvider struct {
-	ClientStub        func(context.Context, ...kafka.SaramaConfigOptions) (kafka.SaramaClient, error)
+	ClientStub        func(context.Context) (kafka.SaramaClient, error)
 	clientMutex       sync.RWMutex
 	clientArgsForCall []struct {
 		arg1 context.Context
-		arg2 []kafka.SaramaConfigOptions
 	}
 	clientReturns struct {
 		result1 kafka.SaramaClient
@@ -37,19 +36,18 @@ type KafkaSaramaClientProvider struct {
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *KafkaSaramaClientProvider) Client(arg1 context.Context, arg2 ...kafka.SaramaConfigOptions) (kafka.SaramaClient, error) {
+func (fake *KafkaSaramaClientProvider) Client(arg1 context.Context) (kafka.SaramaClient, error) {
 	fake.clientMutex.Lock()
 	ret, specificReturn := fake.clientReturnsOnCall[len(fake.clientArgsForCall)]
 	fake.clientArgsForCall = append(fake.clientArgsForCall, struct {
 		arg1 context.Context
-		arg2 []kafka.SaramaConfigOptions
-	}{arg1, arg2})
+	}{arg1})
 	stub := fake.ClientStub
 	fakeReturns := fake.clientReturns
-	fake.recordInvocation("Client", []interface{}{arg1, arg2})
+	fake.recordInvocation("Client", []interface{}{arg1})
 	fake.clientMutex.Unlock()
 	if stub != nil {
-		return stub(arg1, arg2...)
+		return stub(arg1)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
@@ -63,17 +61,17 @@ func (fake *KafkaSaramaClientProvider) ClientCallCount() int {
 	return len(fake.clientArgsForCall)
 }
 
-func (fake *KafkaSaramaClientProvider) ClientCalls(stub func(context.Context, ...kafka.SaramaConfigOptions) (kafka.SaramaClient, error)) {
+func (fake *KafkaSaramaClientProvider) ClientCalls(stub func(context.Context) (kafka.SaramaClient, error)) {
 	fake.clientMutex.Lock()
 	defer fake.clientMutex.Unlock()
 	fake.ClientStub = stub
 }
 
-func (fake *KafkaSaramaClientProvider) ClientArgsForCall(i int) (context.Context, []kafka.SaramaConfigOptions) {
+func (fake *KafkaSaramaClientProvider) ClientArgsForCall(i int) context.Context {
 	fake.clientMutex.RLock()
 	defer fake.clientMutex.RUnlock()
 	argsForCall := fake.clientArgsForCall[i]
-	return argsForCall.arg1, argsForCall.arg2
+	return argsForCall.arg1
 }
 
 func (fake *KafkaSaramaClientProvider) ClientReturns(result1 kafka.SaramaClient, result2 error) {
