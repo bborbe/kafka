@@ -8,6 +8,13 @@ Please choose versions by [Semantic Versioning](http://semver.org/).
 * MINOR version when you add functionality in a backwards-compatible manner, and
 * PATCH version when you make backwards-compatible bug fixes.
 
+## v1.18.0
+
+- Add SaramaClientProvider interface for flexible Sarama client lifecycle management
+- Add NewSaramaClientProvider for creating new clients per consumer
+- Add ReusedSaramaClientProvider for sharing single client across consumers
+- Add comprehensive test coverage for client provider implementations
+
 ## v1.17.5
 
 - Fix naming convention for JSON-related types and functions (JsonSender → JSONSender, NewJsonEncoder → NewJSONEncoder)
