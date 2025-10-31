@@ -67,15 +67,22 @@ type Value interface {
 	validation.HasValidation
 }
 
-// JsonSenderOptions defines configuration options for JsonSender behavior.
-type JsonSenderOptions struct {
+// JSONSenderOptions defines configuration options for JSONSender behavior.
+type JSONSenderOptions struct {
 	ValidationDisabled bool
 }
 
-//counterfeiter:generate -o mocks/kafka-json-sender.go --fake-name KafkaJsonSender . JsonSender
+// JsonSenderOptions defines configuration options for JsonSender behavior.
+//
+// Deprecated: Use JSONSenderOptions instead.
+//
+//nolint:revive
+type JsonSenderOptions = JSONSenderOptions
 
-// JsonSender provides methods for sending JSON-encoded messages to Kafka topics.
-type JsonSender interface {
+//counterfeiter:generate -o mocks/kafka-json-sender.go --fake-name KafkaJSONSender . JSONSender
+
+// JSONSender provides methods for sending JSON-encoded messages to Kafka topics.
+type JSONSender interface {
 	SendUpdate(
 		ctx context.Context,
 		topic Topic,
@@ -88,13 +95,20 @@ type JsonSender interface {
 	SendDeletes(ctx context.Context, entries Entries) error
 }
 
-// NewJsonSender creates a new JsonSender with the provided producer and options.
-func NewJsonSender(
+// JsonSender provides methods for sending JSON-encoded messages to Kafka topics.
+//
+// Deprecated: Use JSONSender instead.
+//
+//nolint:revive
+type JsonSender = JSONSender
+
+// NewJSONSender creates a new JSONSender with the provided producer and options.
+func NewJSONSender(
 	producer SyncProducer,
 	logSamplerFactory log.SamplerFactory,
-	optionsFns ...func(options *JsonSenderOptions),
-) JsonSender {
-	options := JsonSenderOptions{}
+	optionsFns ...func(options *JSONSenderOptions),
+) JSONSender {
+	options := JSONSenderOptions{}
 	for _, fn := range optionsFns {
 		fn(&options)
 	}
@@ -106,11 +120,24 @@ func NewJsonSender(
 	}
 }
 
+// NewJsonSender creates a new JSONSender with the provided producer and options.
+//
+// Deprecated: Use NewJSONSender instead.
+//
+//nolint:revive
+func NewJsonSender(
+	producer SyncProducer,
+	logSamplerFactory log.SamplerFactory,
+	optionsFns ...func(options *JSONSenderOptions),
+) JSONSender {
+	return NewJSONSender(producer, logSamplerFactory, optionsFns...)
+}
+
 type jsonSender struct {
 	producer         SyncProducer
 	logSamplerUpdate log.Sampler
 	logSamplerDelete log.Sampler
-	options          JsonSenderOptions
+	options          JSONSenderOptions
 }
 
 func (j *jsonSender) SendUpdate(
@@ -203,7 +230,7 @@ func (j *jsonSender) createUpdateMessage(
 		)
 	}
 
-	valueEncoder, err := NewJsonEncoder(ctx, value)
+	valueEncoder, err := NewJSONEncoder(ctx, value)
 	if err != nil {
 		return nil, errors.Wrapf(ctx, err, "encode value failed")
 	}

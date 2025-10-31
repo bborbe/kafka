@@ -12,11 +12,20 @@ import (
 	"github.com/bborbe/errors"
 )
 
-// NewJsonEncoder creates a new JSON encoder that marshals the given value into a Sarama encoder.
-func NewJsonEncoder(ctx context.Context, value interface{}) (sarama.Encoder, error) {
+// NewJSONEncoder creates a new JSON encoder that marshals the given value into a Sarama encoder.
+func NewJSONEncoder(ctx context.Context, value interface{}) (sarama.Encoder, error) {
 	bytes, err := json.Marshal(value)
 	if err != nil {
 		return nil, errors.Wrapf(ctx, err, "marshal failed")
 	}
 	return sarama.ByteEncoder(bytes), nil
+}
+
+// NewJsonEncoder creates a new JSON encoder that marshals the given value into a Sarama encoder.
+//
+// Deprecated: Use NewJSONEncoder instead.
+//
+//nolint:revive
+func NewJsonEncoder(ctx context.Context, value interface{}) (sarama.Encoder, error) {
+	return NewJSONEncoder(ctx, value)
 }
