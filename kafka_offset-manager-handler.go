@@ -34,7 +34,7 @@ func NewOffsetManagerHandler(
 				if err != nil {
 					return errors.Wrapf(ctx, err, "get offset failed")
 				}
-				libhttp.WriteAndGlog(
+				_, _ = libhttp.WriteAndGlog(
 					resp,
 					"next offset is %s for topic(%s) and partition(%s)",
 					offset,
@@ -59,7 +59,7 @@ func NewOffsetManagerHandler(
 			}
 			_ = offsetManager.Close()
 			defer cancel()
-			libhttp.WriteAndGlog(
+			_, _ = libhttp.WriteAndGlog(
 				resp,
 				"set offset(%d) for topic(%s) and partition(%s) completed",
 				offset.Int64(),
