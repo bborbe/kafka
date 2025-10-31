@@ -11,35 +11,35 @@ import (
 	libkv "github.com/bborbe/kv"
 )
 
-// UpdaterHandlerTxFunc creates an UpdaterHandlerTx from separate update and delete functions.
+// UpdaterHandlerTxFunc creates an UpdaterHandlerTx from separate updateFn and delete functions.
 func UpdaterHandlerTxFunc[KEY ~[]byte | ~string, OBJECT any](
-	update func(ctx context.Context, tx libkv.Tx, key KEY, object OBJECT) error,
-	delete func(ctx context.Context, tx libkv.Tx, key KEY) error,
+	updateFn func(ctx context.Context, tx libkv.Tx, key KEY, object OBJECT) error,
+	deleteFn func(ctx context.Context, tx libkv.Tx, key KEY) error,
 ) UpdaterHandlerTx[KEY, OBJECT] {
 	return &updaterHandlerTxFunc[KEY, OBJECT]{
-		update: update,
-		delete: delete,
+		updateFn: updateFn,
+		deleteFn: deleteFn,
 	}
 }
 
 // updaterHandlerTxFunc implements UpdaterHandlerTx using function pointers.
 type updaterHandlerTxFunc[KEY ~[]byte | ~string, OBJECT any] struct {
-	update func(ctx context.Context, tx libkv.Tx, key KEY, object OBJECT) error
-	delete func(ctx context.Context, tx libkv.Tx, OBJECT KEY) error
+	updateFn func(ctx context.Context, tx libkv.Tx, key KEY, object OBJECT) error
+	deleteFn func(ctx context.Context, tx libkv.Tx, OBJECT KEY) error
 }
 
-// Update executes the update function within a transaction if provided.
+// Update executes the updateFn function within a transaction if provided.
 func (e *updaterHandlerTxFunc[KEY, OBJECT]) Update(
 	ctx context.Context,
 	tx libkv.Tx,
 	key KEY,
 	object OBJECT,
 ) error {
-	if e.update == nil {
+	if e.updateFn == nil {
 		return nil
 	}
-	if err := e.update(ctx, tx, key, object); err != nil {
-		return errors.Wrapf(ctx, err, "update failed")
+	if err := e.updateFn(ctx, tx, key, object); err != nil {
+		return errors.Wrapf(ctx, err, "updateFn failed")
 	}
 	return nil
 }
@@ -50,10 +50,10 @@ func (e *updaterHandlerTxFunc[KEY, OBJECT]) Delete(
 	tx libkv.Tx,
 	key KEY,
 ) error {
-	if e.delete == nil {
+	if e.deleteFn == nil {
 		return nil
 	}
-	if err := e.delete(ctx, tx, key); err != nil {
+	if err := e.deleteFn(ctx, tx, key); err != nil {
 		return errors.Wrapf(ctx, err, "delete failed")
 	}
 	return nil
