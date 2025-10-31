@@ -8,6 +8,19 @@ Please choose versions by [Semantic Versioning](http://semver.org/).
 * MINOR version when you add functionality in a backwards-compatible manner, and
 * PATCH version when you make backwards-compatible bug fixes.
 
+## v1.19.0
+
+- Add `NewSaramaClientProviderExisting` adapter to wrap existing Sarama clients with provider pattern
+- Add `NewOffsetConsumerWithProvider` for provider-based offset consumer creation
+- Add `NewOffsetConsumerBatchWithProvider` for provider-based batch offset consumer creation
+- Add `NewOffsetConsumerHighwaterMarksWithProvider` for provider-based highwater marks consumer creation
+- Add `NewOffsetConsumerHighwaterMarksBatchWithProvider` for provider-based batch highwater marks consumer creation
+- Add `NewSyncProducerFromSaramaClient` to create producer from existing client
+- Add `NewSyncProducerFromSaramaClientProvider` for provider-based producer creation
+- Refactor existing consumer constructors to use adapter pattern internally (zero breaking changes)
+- Fix missing parameter initialization bug in `NewSaramaClientProviderExisting`
+- Add comprehensive GoDoc comments for all new exported functions
+
 ## v1.18.0
 
 - Add SaramaClientProvider interface for flexible Sarama client lifecycle management

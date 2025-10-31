@@ -30,8 +30,28 @@ func NewOffsetConsumer(
 	logSamplerFactory log.SamplerFactory,
 	options ...func(*ConsumerOptions),
 ) Consumer {
-	return NewOffsetConsumerBatch(
-		saramaClient,
+	saramaClientProvider := NewSaramaClientProviderExisting(saramaClient)
+	return NewOffsetConsumerWithProvider(
+		saramaClientProvider,
+		topic,
+		offsetManager,
+		messageHandler,
+		logSamplerFactory,
+		options...,
+	)
+}
+
+// NewOffsetConsumerWithProvider creates a new offset-based consumer that processes messages one at a time.
+func NewOffsetConsumerWithProvider(
+	saramaClientProvider SaramaClientProvider,
+	topic Topic,
+	offsetManager OffsetManager,
+	messageHandler MessageHandler,
+	logSamplerFactory log.SamplerFactory,
+	options ...func(*ConsumerOptions),
+) Consumer {
+	return NewOffsetConsumerBatchWithProvider(
+		saramaClientProvider,
 		topic,
 		offsetManager,
 		NewMessageHandlerBatch(messageHandler),
@@ -51,6 +71,28 @@ func NewOffsetConsumerBatch(
 	logSamplerFactory log.SamplerFactory,
 	options ...func(*ConsumerOptions),
 ) Consumer {
+	saramaClientProvider := NewSaramaClientProviderExisting(saramaClient)
+	return NewOffsetConsumerBatchWithProvider(
+		saramaClientProvider,
+		topic,
+		offsetManager,
+		messageHandlerBatch,
+		batchSize,
+		logSamplerFactory,
+		options...,
+	)
+}
+
+// NewOffsetConsumerBatchWithProvider creates a new offset-based consumer that processes messages in batches.
+func NewOffsetConsumerBatchWithProvider(
+	saramaClientProvider SaramaClientProvider,
+	topic Topic,
+	offsetManager OffsetManager,
+	messageHandlerBatch MessageHandlerBatch,
+	batchSize BatchSize,
+	logSamplerFactory log.SamplerFactory,
+	options ...func(*ConsumerOptions),
+) Consumer {
 	consumerOptions := ConsumerOptions{
 		TargetLag: 0,
 		Delay:     0,
@@ -59,15 +101,15 @@ func NewOffsetConsumerBatch(
 		option(&consumerOptions)
 	}
 	return &offsetConsumer{
-		batchSize:           batchSize,
-		saramaClient:        saramaClient,
-		offsetManager:       offsetManager,
-		messageHandlerBatch: messageHandlerBatch,
-		topic:               topic,
-		logSampler:          logSamplerFactory.Sampler(),
-		consumerOptions:     consumerOptions,
-		waiter:              libtime.NewWaiterDuration(),
-		metrics:             NewMetrics(),
+		batchSize:            batchSize,
+		saramaClientProvider: saramaClientProvider,
+		offsetManager:        offsetManager,
+		messageHandlerBatch:  messageHandlerBatch,
+		topic:                topic,
+		logSampler:           logSamplerFactory.Sampler(),
+		consumerOptions:      consumerOptions,
+		waiter:               libtime.NewWaiterDuration(),
+		metrics:              NewMetrics(),
 		errorHandler: NewConsumerErrorHandler(
 			NewMetrics(),
 		),
@@ -75,13 +117,13 @@ func NewOffsetConsumerBatch(
 }
 
 type offsetConsumer struct {
-	saramaClient        sarama.Client
-	topic               Topic
-	offsetManager       OffsetManager
-	messageHandlerBatch MessageHandlerBatch
-	batchSize           BatchSize
-	logSampler          log.Sampler
-	metrics             interface {
+	saramaClientProvider SaramaClientProvider
+	topic                Topic
+	offsetManager        OffsetManager
+	messageHandlerBatch  MessageHandlerBatch
+	batchSize            BatchSize
+	logSampler           log.Sampler
+	metrics              interface {
 		MetricsConsumer
 		MetricsPartitionConsumer
 	}
@@ -91,13 +133,18 @@ type offsetConsumer struct {
 }
 
 func (c *offsetConsumer) Consume(ctx context.Context) error {
-	consumerFromClient, err := sarama.NewConsumerFromClient(c.saramaClient)
+	saramaClient, err := c.saramaClientProvider.Client(ctx)
+	if err != nil {
+		return errors.Wrapf(ctx, err, "get saramaClient from saramaClientProvider failed")
+	}
+
+	consumerFromClient, err := sarama.NewConsumerFromClient(saramaClient)
 	if err != nil {
 		return errors.Wrapf(ctx, err, "create consumer failed")
 	}
 	defer consumerFromClient.Close()
 
-	partitions, err := c.saramaClient.Partitions(c.topic.String())
+	partitions, err := saramaClient.Partitions(c.topic.String())
 	if err != nil {
 		return errors.Wrapf(ctx, err, "get partition for topic %s failed", c.topic)
 	}

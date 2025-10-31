@@ -43,6 +43,34 @@ func NewSyncProducer(
 	return NewSyncProducerFromSaramaSyncProducer(saramaSyncProducer), nil
 }
 
+// NewSyncProducerFromSaramaClient creates a new SyncProducer from an existing Sarama client.
+// This is useful when you already have a configured Sarama client and want to create a producer from it.
+func NewSyncProducerFromSaramaClient(
+	ctx context.Context,
+	saramaClient SaramaClient,
+) (SyncProducer, error) {
+	saramaSyncProducer, err := sarama.NewSyncProducerFromClient(saramaClient)
+	if err != nil {
+		return nil, errors.Wrapf(ctx, err, "create sync producer failed")
+	}
+	return NewSyncProducerFromSaramaSyncProducer(saramaSyncProducer), nil
+}
+
+// NewSyncProducerFromSaramaClientProvider creates a new SyncProducer using a SaramaClientProvider.
+// It obtains a client from the provider with the specified options and creates a sync producer from it.
+// This enables flexible client lifecycle management strategies (reused, new per call, etc.).
+func NewSyncProducerFromSaramaClientProvider(
+	ctx context.Context,
+	saramaClientProvider SaramaClientProvider,
+	opts ...SaramaConfigOptions,
+) (SyncProducer, error) {
+	saramaClient, err := saramaClientProvider.Client(ctx, opts...)
+	if err != nil {
+		return nil, errors.Wrapf(ctx, err, "get saramaClient from saramaClientProvider failed")
+	}
+	return NewSyncProducerFromSaramaClient(ctx, saramaClient)
+}
+
 // NewSyncProducerFromSaramaSyncProducer creates a new SyncProducer wrapper around an existing Sarama SyncProducer.
 func NewSyncProducerFromSaramaSyncProducer(saramaSyncProducer sarama.SyncProducer) SyncProducer {
 	return &syncProducer{

@@ -36,6 +36,28 @@ func NewOffsetConsumerHighwaterMarks(
 	)
 }
 
+// NewOffsetConsumerHighwaterMarksWithProvider creates a consumer that processes messages up to high watermarks.
+func NewOffsetConsumerHighwaterMarksWithProvider(
+	saramaClientProvider SaramaClientProvider,
+	topic Topic,
+	offsetManager OffsetManager,
+	messageHandler MessageHandler,
+	trigger run.Fire,
+	logSamplerFactory log.SamplerFactory,
+	options ...func(*ConsumerOptions),
+) Consumer {
+	return NewOffsetConsumerHighwaterMarksBatchWithProvider(
+		saramaClientProvider,
+		topic,
+		offsetManager,
+		NewMessageHandlerBatch(messageHandler),
+		1,
+		trigger,
+		logSamplerFactory,
+		options...,
+	)
+}
+
 // NewOffsetConsumerHighwaterMarksBatch creates a batch consumer that processes messages up to high watermarks.
 func NewOffsetConsumerHighwaterMarksBatch(
 	saramaClient sarama.Client,
@@ -47,9 +69,37 @@ func NewOffsetConsumerHighwaterMarksBatch(
 	logSamplerFactory log.SamplerFactory,
 	options ...func(*ConsumerOptions),
 ) Consumer {
+	return NewOffsetConsumerHighwaterMarksBatchWithProvider(
+		NewSaramaClientProviderExisting(saramaClient),
+		topic,
+		offsetManager,
+		messageHandlerBatch,
+		batchSize,
+		trigger,
+		logSamplerFactory,
+		options...,
+	)
+}
+
+// NewOffsetConsumerHighwaterMarksBatchWithProvider creates a batch consumer that processes messages up to high watermarks.
+func NewOffsetConsumerHighwaterMarksBatchWithProvider(
+	saramaClientProvider SaramaClientProvider,
+	topic Topic,
+	offsetManager OffsetManager,
+	messageHandlerBatch MessageHandlerBatch,
+	batchSize BatchSize,
+	trigger run.Fire,
+	logSamplerFactory log.SamplerFactory,
+	options ...func(*ConsumerOptions),
+) Consumer {
 	return ConsumerFunc(func(ctx context.Context) error {
 		ctx, cancel := context.WithCancel(ctx)
 		defer cancel()
+
+		saramaClient, err := saramaClientProvider.Client(ctx)
+		if err != nil {
+			return errors.Wrapf(ctx, err, "get saramaClient from saramaClientProvider failed")
+		}
 
 		triggerOffsets, err := createTriggerOffsets(ctx, saramaClient, topic, offsetManager)
 		if err != nil {
