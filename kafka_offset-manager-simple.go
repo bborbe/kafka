@@ -79,7 +79,7 @@ func (s *simpleOffsetManager) MarkOffset(
 	s.mux.Lock()
 	defer s.mux.Unlock()
 	if s.closed {
-		return errors.Wrapf(ctx, ClosedError, "offsetManager is closed")
+		return errors.Wrapf(ctx, ErrClosed, "offsetManager is closed")
 	}
 	s.offsets[TopicPartition{
 		Topic:     topic,

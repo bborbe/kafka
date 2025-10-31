@@ -13,8 +13,11 @@ import (
 	libkv "github.com/bborbe/kv"
 )
 
-// ClosedError is returned when operations are attempted on a closed offset manager.
-var ClosedError = stderrors.New("closed")
+// ErrClosed is returned when operations are attempted on a closed offset manager.
+var ErrClosed = stderrors.New("closed")
+
+// ClosedError is deprecated: Use ErrClosed instead.
+var ClosedError = ErrClosed
 
 // NewStoreOffsetManager creates a new offset manager that persists offsets using a store.
 func NewStoreOffsetManager(
@@ -66,7 +69,7 @@ func (s *storeOffsetManager) NextOffset(
 	s.mux.Lock()
 	defer s.mux.Unlock()
 	if s.closed {
-		return 0, errors.Wrapf(ctx, ClosedError, "offsetManager is closed")
+		return 0, errors.Wrapf(ctx, ErrClosed, "offsetManager is closed")
 	}
 
 	offset, err := s.offsetStore.Get(ctx, topic, partition)
@@ -89,7 +92,7 @@ func (s *storeOffsetManager) MarkOffset(
 	s.mux.Lock()
 	defer s.mux.Unlock()
 	if s.closed {
-		return errors.Wrapf(ctx, ClosedError, "offsetManager is closed")
+		return errors.Wrapf(ctx, ErrClosed, "offsetManager is closed")
 	}
 	if err := s.offsetStore.Set(ctx, topic, partition, nextOffset); err != nil {
 		return errors.Wrapf(ctx, err, "set offset failed")
