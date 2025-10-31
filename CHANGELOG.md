@@ -8,6 +8,14 @@ Please choose versions by [Semantic Versioning](http://semver.org/).
 * MINOR version when you add functionality in a backwards-compatible manner, and
 * PATCH version when you make backwards-compatible bug fixes.
 
+## v1.17.5
+
+- Fix naming convention for JSON-related types and functions (JsonSender → JSONSender, NewJsonEncoder → NewJSONEncoder)
+- Add deprecated aliases for backward compatibility (JsonSender, JsonSenderOptions, NewJsonEncoder)
+- Improve error handling in update handler functions
+- Add comprehensive test coverage for message handler functions
+- Configure golangci-lint to exclude duplicate code warnings in test files
+
 ## v1.17.4
 
 - Restore encoding.TextMarshaler support for Broker type
