@@ -31,6 +31,7 @@ A production-ready Kafka abstraction library for Go, built on top of IBM's Saram
   - [Batch Processing](#batch-processing)
   - [Metrics Integration](#metrics-integration)
   - [Transaction Support](#transaction-support)
+  - [Performance Tuning](#performance-tuning)
 - [Architecture](#architecture)
 - [Testing](#testing)
 - [Development](#development)
@@ -227,6 +228,57 @@ txHandler := kafka.NewMessageHandlerTx(ctx, handler, db)
 
 consumer, err := kafka.NewSimpleConsumer(ctx, brokers, "my-topic", txHandler)
 ```
+
+### Performance Tuning
+
+For high-throughput scenarios, customize the Sarama configuration when creating the client provider:
+
+```go
+package main
+
+import (
+    "context"
+    "log"
+    "time"
+
+    "github.com/bborbe/kafka"
+    "github.com/bborbe/errors"
+    "github.com/IBM/sarama"
+)
+
+func main() {
+    ctx := context.Background()
+    brokers := kafka.ParseBrokers("localhost:9092")
+
+    // Create high-performance client provider with tuned configuration
+    saramaClientProvider, err := kafka.NewSaramaClientProviderByType(
+        ctx,
+        kafka.SaramaClientProviderTypeReused,
+        brokers,
+        func(config *sarama.Config) {
+            config.Consumer.MaxWaitTime = 1000 * time.Millisecond  // Increase from 500ms for larger batches
+            config.Consumer.Fetch.Default = 10 * 1024 * 1024       // 10MB (from 1MB default)
+            config.Consumer.Fetch.Max = 50 * 1024 * 1024           // 50MB max fetch size
+            config.ChannelBufferSize = 1000                         // Buffer 1000 messages (from 256 default)
+        },
+    )
+    if err != nil {
+        log.Fatal(errors.Wrapf(ctx, err, "create sarama client provider failed"))
+    }
+    defer saramaClientProvider.Close()
+
+    // Use the provider with your consumer...
+}
+```
+
+**Configuration Parameters:**
+
+- **`Consumer.MaxWaitTime`**: Maximum time broker waits before responding (higher = larger batches but higher latency; default: 500ms)
+- **`Consumer.Fetch.Default`**: Target data to fetch per request (higher = fewer requests, better throughput; default: 1MB)
+- **`Consumer.Fetch.Max`**: Maximum data broker can return (protects against excessive memory usage; default: varies)
+- **`ChannelBufferSize`**: Internal channel buffer size (higher = better throughput under load, more memory; default: 256)
+
+**Trade-offs:** This configuration optimizes for **throughput over latency**. Larger fetch sizes, longer wait times, and bigger buffers increase memory usage and per-message latency but significantly improve overall throughput. Use for high-volume scenarios where batch processing efficiency matters more than individual message latency.
 
 ## Architecture
 
