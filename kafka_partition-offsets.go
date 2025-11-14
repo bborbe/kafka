@@ -42,7 +42,7 @@ func (o PartitionOffsets) Bytes() ([]byte, error) {
 
 // OffsetPartitions converts the map to a slice of PartitionOffsetItem.
 func (o PartitionOffsets) OffsetPartitions() PartitionOffsetItems {
-	var result []PartitionOffsetItem
+	result := make([]PartitionOffsetItem, 0, len(o))
 	for partition, offset := range o {
 		result = append(result, PartitionOffsetItem{
 			Offset:    offset,

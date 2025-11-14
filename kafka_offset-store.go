@@ -11,6 +11,8 @@ import (
 	libkv "github.com/bborbe/kv"
 )
 
+const DefaultOffsetStoreBucket = "offset-store"
+
 //counterfeiter:generate -o mocks/kafka-offset-store.go --fake-name KafkaOffsetStore . OffsetStore
 
 // OffsetStore provides persistent storage for Kafka topic partition offsets.
@@ -25,7 +27,7 @@ func NewOffsetStore(
 ) OffsetStore {
 	return &offsetStore{
 		db:     db,
-		bucket: libkv.NewBucketName("offset-store"),
+		bucket: libkv.NewBucketName(DefaultOffsetStoreBucket),
 	}
 }
 
@@ -36,7 +38,7 @@ func NewOffsetStoreGroup(
 ) OffsetStore {
 	return &offsetStore{
 		db:     db,
-		bucket: libkv.BucketFromStrings("offset-store", group.String()),
+		bucket: libkv.BucketFromStrings(DefaultOffsetStoreBucket, group.String()),
 	}
 }
 

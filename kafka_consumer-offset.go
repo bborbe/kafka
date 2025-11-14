@@ -132,6 +132,7 @@ type offsetConsumer struct {
 	errorHandler    ConsumerErrorHandler
 }
 
+//nolint:gocognit,funlen // Complex consumer logic, refactoring would reduce readability
 func (c *offsetConsumer) Consume(ctx context.Context) error {
 	saramaClient, err := c.saramaClientProvider.Client(ctx)
 	if err != nil {
@@ -152,7 +153,7 @@ func (c *offsetConsumer) Consume(ctx context.Context) error {
 	glog.V(2).
 		Infof("consume topic %s with %d partitions %+v started", c.topic, len(partitions), c.consumerOptions)
 
-	var runs []run.Func
+	runs := make([]run.Func, 0, len(partitions))
 	for _, partition := range partitions {
 		runs = append(runs, func(ctx context.Context) error {
 

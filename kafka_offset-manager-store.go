@@ -17,6 +17,8 @@ import (
 var ErrClosed = stderrors.New("closed")
 
 // ClosedError is deprecated: Use ErrClosed instead.
+//
+//nolint:errname // Deprecated alias for backward compatibility
 var ClosedError = ErrClosed
 
 // NewStoreOffsetManager creates a new offset manager that persists offsets using a store.

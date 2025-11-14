@@ -8,6 +8,16 @@ Please choose versions by [Semantic Versioning](http://semver.org/).
 * MINOR version when you add functionality in a backwards-compatible manner, and
 * PATCH version when you make backwards-compatible bug fixes.
 
+## v1.19.3
+
+- Add `DefaultOffsetStoreBucket` constant for offset store bucket name
+- Pre-allocate slices in consumer and partition offset methods for better performance
+- Add nolint directives for deprecated `ClosedError` alias and complex consumer logic
+- Exclude unparam linter for test files in golangci-lint configuration
+- Update Go version to 1.25.4
+- Update dependencies (collection, http, run, containerd, sentry-go, and others)
+- Improve linter configuration with additional rules and settings
+
 ## v1.19.2
 
 - Remove configuration options parameter from `SaramaClientProvider.Client()` method

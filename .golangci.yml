@@ -4,6 +4,7 @@ run:
 
 linters:
   enable:
+    # Core
     - govet
     - errcheck
     - staticcheck
@@ -15,19 +16,58 @@ linters:
     - depguard
     - dupl
 
+    # SRP & maintainability
+    - funlen
+    - gocognit
+    - nestif
+    - maintidx
+
+    # Readability & style
+    - gofmt
+    - goimports
+    - errname
+    - unparam
+
+    # Safety / defensive coding
+    - bodyclose
+    - forcetypeassert
+    - asasalint
+    - prealloc
+
 linters-settings:
   depguard:
     rules:
       Main:
         deny:
-          - pkg: "github.com/pkg/erros"
-            desc: "use github.com/bborbe/erros instead"
+          - pkg: "github.com/pkg/errors"
+            desc: "use github.com/bborbe/errors instead"
+          - pkg: "github.com/bborbe/argument"
+            desc: "use github.com/bborbe/argument/v2 instead"
+          - pkg: "golang.org/x/net/context"
+            desc: "use context from standard library instead"
+          - pkg: "golang.org/x/lint/golint"
+            desc: "deprecated, use revive or staticcheck instead"
+          - pkg: "io/ioutil"
+            desc: "deprecated since Go 1.16, use io and os packages instead"
+
+  funlen:
+    lines: 80
+    statements: 50
+
+  gocognit:
+    min-complexity: 20
+
+  nestif:
+    min-complexity: 4
+
+  maintidx:
+    min-maintainability-index: 20
 
 issues:
   exclude-rules:
     - linters:
         - staticcheck
-      text: "SA1019" # allow deprecated in specific cases
+      text: "SA1019"
     - linters:
         - revive
       path: "_test\\.go$"
@@ -37,4 +77,7 @@ issues:
       text: "unused-parameter"
     - linters:
         - dupl
+      path: "_test\\.go$"
+    - linters:
+        - unparam
       path: "_test\\.go$"
