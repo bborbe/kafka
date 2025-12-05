@@ -26,7 +26,9 @@ var _ = Describe("SaramaClientProvider", func() {
 		var provider kafka.SaramaClientProvider
 
 		BeforeEach(func() {
-			provider = kafka.NewSaramaClientProviderReused(brokers)
+			provider = kafka.NewSaramaClientProviderReused(
+				brokers,
+			)
 		})
 
 		It("returns the same client on multiple calls", func() {
