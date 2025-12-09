@@ -8,6 +8,10 @@ Please choose versions by [Semantic Versioning](http://semver.org/).
 * MINOR version when you add functionality in a backwards-compatible manner, and
 * PATCH version when you make backwards-compatible bug fixes.
 
+## v1.20.1
+
+- Fix type compatibility: change map[string]string to map[string]any in error data
+
 ## v1.20.0
 
 - update go and deps

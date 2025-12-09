@@ -28,7 +28,7 @@ func NewMessageHandlerTxSkipErrors(
 					data := errors.DataFromError(
 						errors.AddDataToError(
 							err,
-							map[string]string{
+							map[string]any{
 								"topic":     msg.Topic,
 								"partition": fmt.Sprintf("%d", msg.Partition),
 								"offset":    fmt.Sprintf("%d", msg.Offset),

@@ -5,16 +5,16 @@ go 1.25.5
 require (
 	github.com/IBM/sarama v1.46.3
 	github.com/bborbe/boltkv v1.11.0
-	github.com/bborbe/collection v1.19.0
-	github.com/bborbe/errors v1.3.1
-	github.com/bborbe/http v1.24.0
+	github.com/bborbe/collection v1.20.0
+	github.com/bborbe/errors v1.5.0
+	github.com/bborbe/http v1.26.0
 	github.com/bborbe/kv v1.18.0
-	github.com/bborbe/log v1.5.0
-	github.com/bborbe/memorykv v1.3.6
-	github.com/bborbe/parse v1.9.1
-	github.com/bborbe/run v1.8.3
-	github.com/bborbe/time v1.20.0
-	github.com/bborbe/validation v1.3.3
+	github.com/bborbe/log v1.6.0
+	github.com/bborbe/memorykv v1.4.0
+	github.com/bborbe/parse v1.10.0
+	github.com/bborbe/run v1.9.0
+	github.com/bborbe/time v1.21.0
+	github.com/bborbe/validation v1.4.0
 	github.com/golang/glog v1.2.5
 	github.com/golangci/golangci-lint v1.64.8
 	github.com/google/addlicense v1.2.0
@@ -22,8 +22,8 @@ require (
 	github.com/incu6us/goimports-reviser/v3 v3.11.0
 	github.com/kisielk/errcheck v1.9.0
 	github.com/maxbrunsfeld/counterfeiter/v6 v6.12.1
-	github.com/onsi/ginkgo/v2 v2.27.2
-	github.com/onsi/gomega v1.38.2
+	github.com/onsi/ginkgo/v2 v2.27.3
+	github.com/onsi/gomega v1.38.3
 	github.com/prometheus/client_golang v1.23.2
 	github.com/securego/gosec/v2 v2.22.10
 	github.com/segmentio/golines v0.13.0
@@ -80,8 +80,8 @@ require (
 	github.com/atotto/clipboard v0.1.4 // indirect
 	github.com/aymanbagabas/go-osc52/v2 v2.0.1 // indirect
 	github.com/aymerick/douceur v0.2.0 // indirect
-	github.com/bborbe/math v1.2.1 // indirect
-	github.com/bborbe/sentry v1.8.5 // indirect
+	github.com/bborbe/math v1.3.0 // indirect
+	github.com/bborbe/sentry v1.9.1 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/bkielbasa/cyclop v1.2.3 // indirect
 	github.com/blizzy78/varnamelen v0.8.0 // indirect
@@ -401,7 +401,7 @@ require (
 	go.yaml.in/yaml/v2 v2.4.3 // indirect
 	go.yaml.in/yaml/v3 v3.0.2 // indirect
 	golang.org/x/crypto v0.45.0 // indirect
-	golang.org/x/exp v0.0.0-20251009144603-d2f985daa21b // indirect
+	golang.org/x/exp v0.0.0-20251125195548-87e1e737ad39 // indirect
 	golang.org/x/exp/typeparams v0.0.0-20250210185358-939b2ce775ac // indirect
 	golang.org/x/lint v0.0.0-20241112194109-818c5a804067 // indirect
 	golang.org/x/mod v0.30.0 // indirect

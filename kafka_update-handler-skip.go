@@ -25,7 +25,7 @@ func NewUpdaterHandlerSkipErrors[KEY ~[]byte | ~string, OBJECT any](
 					data := errors.DataFromError(
 						errors.AddDataToError(
 							err,
-							map[string]string{
+							map[string]any{
 								"key": string(key),
 							},
 						),
@@ -41,7 +41,7 @@ func NewUpdaterHandlerSkipErrors[KEY ~[]byte | ~string, OBJECT any](
 					data := errors.DataFromError(
 						errors.AddDataToError(
 							err,
-							map[string]string{
+							map[string]any{
 								"key": string(key),
 							},
 						),
