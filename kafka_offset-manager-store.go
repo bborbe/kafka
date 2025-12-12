@@ -101,3 +101,12 @@ func (s *storeOffsetManager) MarkOffset(
 	}
 	return nil
 }
+
+func (s *storeOffsetManager) ResetOffset(
+	ctx context.Context,
+	topic Topic,
+	partition Partition,
+	nextOffset Offset,
+) error {
+	return s.MarkOffset(ctx, topic, partition, nextOffset)
+}

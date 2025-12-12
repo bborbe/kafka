@@ -54,8 +54,11 @@ func NewOffsetManagerHandler(
 				glog.V(2).Infof("offset(%d) < 0 => use %d", offset.Int64(), newOffset)
 				offset = newOffset.Ptr()
 			}
+			if err := offsetManager.ResetOffset(ctx, topic, *partition, *offset); err != nil {
+				return errors.Wrapf(ctx, err, "reset offset failed")
+			}
 			if err := offsetManager.MarkOffset(ctx, topic, *partition, *offset); err != nil {
-				return errors.Wrapf(ctx, err, "set offset failed")
+				return errors.Wrapf(ctx, err, "mark offset failed")
 			}
 			_ = offsetManager.Close()
 			defer cancel()

@@ -87,3 +87,12 @@ func (s *simpleOffsetManager) MarkOffset(
 	}] = nextOffset
 	return nil
 }
+
+func (s *simpleOffsetManager) ResetOffset(
+	ctx context.Context,
+	topic Topic,
+	partition Partition,
+	nextOffset Offset,
+) error {
+	return s.MarkOffset(ctx, topic, partition, nextOffset)
+}

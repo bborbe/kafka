@@ -158,4 +158,139 @@ var _ = Describe("StoreOffsetManager", func() {
 			})
 		})
 	})
+	Context("MarkOffset", func() {
+		BeforeEach(func() {
+			storeOffsetManager = libkafka.NewStoreOffsetManager(
+				libkafka.NewOffsetStore(db),
+				libkafka.OffsetOldest,
+				libkafka.OffsetOldest,
+			)
+		})
+		JustBeforeEach(func() {
+			err = storeOffsetManager.MarkOffset(ctx, topic, partition, 42)
+		})
+		It("returns no error", func() {
+			Expect(err).To(BeNil())
+		})
+		It("stores offset in database", func() {
+			offset, err := storeOffsetManager.NextOffset(ctx, topic, partition)
+			Expect(err).To(BeNil())
+			Expect(offset).To(Equal(libkafka.Offset(42)))
+		})
+	})
+	Context("ResetOffset", func() {
+		BeforeEach(func() {
+			storeOffsetManager = libkafka.NewStoreOffsetManager(
+				libkafka.NewOffsetStore(db),
+				libkafka.OffsetOldest,
+				libkafka.OffsetOldest,
+			)
+		})
+		Context("forward movement", func() {
+			JustBeforeEach(func() {
+				err = storeOffsetManager.MarkOffset(ctx, topic, partition, 100)
+				Expect(err).To(BeNil())
+				err = storeOffsetManager.ResetOffset(ctx, topic, partition, 200)
+			})
+			It("returns no error", func() {
+				Expect(err).To(BeNil())
+			})
+			It("updates offset forward", func() {
+				offset, err := storeOffsetManager.NextOffset(ctx, topic, partition)
+				Expect(err).To(BeNil())
+				Expect(offset).To(Equal(libkafka.Offset(200)))
+			})
+		})
+		Context("backward movement", func() {
+			JustBeforeEach(func() {
+				err = storeOffsetManager.MarkOffset(ctx, topic, partition, 100)
+				Expect(err).To(BeNil())
+				err = storeOffsetManager.ResetOffset(ctx, topic, partition, 50)
+			})
+			It("returns no error", func() {
+				Expect(err).To(BeNil())
+			})
+			It("updates offset backward", func() {
+				offset, err := storeOffsetManager.NextOffset(ctx, topic, partition)
+				Expect(err).To(BeNil())
+				Expect(offset).To(Equal(libkafka.Offset(50)))
+			})
+		})
+	})
+	Context("InitialOffset", func() {
+		Context("with OffsetOldest", func() {
+			BeforeEach(func() {
+				storeOffsetManager = libkafka.NewStoreOffsetManager(
+					libkafka.NewOffsetStore(db),
+					libkafka.OffsetOldest,
+					libkafka.OffsetNewest,
+				)
+			})
+			It("returns OffsetOldest", func() {
+				Expect(storeOffsetManager.InitialOffset()).To(Equal(libkafka.OffsetOldest))
+			})
+		})
+		Context("with OffsetNewest", func() {
+			BeforeEach(func() {
+				storeOffsetManager = libkafka.NewStoreOffsetManager(
+					libkafka.NewOffsetStore(db),
+					libkafka.OffsetNewest,
+					libkafka.OffsetOldest,
+				)
+			})
+			It("returns OffsetNewest", func() {
+				Expect(storeOffsetManager.InitialOffset()).To(Equal(libkafka.OffsetNewest))
+			})
+		})
+		Context("with custom offset", func() {
+			BeforeEach(func() {
+				storeOffsetManager = libkafka.NewStoreOffsetManager(
+					libkafka.NewOffsetStore(db),
+					1337,
+					9999,
+				)
+			})
+			It("returns custom offset", func() {
+				Expect(storeOffsetManager.InitialOffset()).To(Equal(libkafka.Offset(1337)))
+			})
+		})
+	})
+	Context("FallbackOffset", func() {
+		Context("with OffsetOldest", func() {
+			BeforeEach(func() {
+				storeOffsetManager = libkafka.NewStoreOffsetManager(
+					libkafka.NewOffsetStore(db),
+					libkafka.OffsetNewest,
+					libkafka.OffsetOldest,
+				)
+			})
+			It("returns OffsetOldest", func() {
+				Expect(storeOffsetManager.FallbackOffset()).To(Equal(libkafka.OffsetOldest))
+			})
+		})
+		Context("with OffsetNewest", func() {
+			BeforeEach(func() {
+				storeOffsetManager = libkafka.NewStoreOffsetManager(
+					libkafka.NewOffsetStore(db),
+					libkafka.OffsetOldest,
+					libkafka.OffsetNewest,
+				)
+			})
+			It("returns OffsetNewest", func() {
+				Expect(storeOffsetManager.FallbackOffset()).To(Equal(libkafka.OffsetNewest))
+			})
+		})
+		Context("with custom offset", func() {
+			BeforeEach(func() {
+				storeOffsetManager = libkafka.NewStoreOffsetManager(
+					libkafka.NewOffsetStore(db),
+					1337,
+					9999,
+				)
+			})
+			It("returns custom offset", func() {
+				Expect(storeOffsetManager.FallbackOffset()).To(Equal(libkafka.Offset(9999)))
+			})
+		})
+	})
 })

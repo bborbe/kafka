@@ -8,6 +8,16 @@ Please choose versions by [Semantic Versioning](http://semver.org/).
 * MINOR version when you add functionality in a backwards-compatible manner, and
 * PATCH version when you make backwards-compatible bug fixes.
 
+## v1.21.0
+
+- Add `ResetOffset` method to `OffsetManager` interface for backward offset movement
+- Implement `ResetOffset` in all offset manager implementations (sarama, simple, store)
+- Update offset manager HTTP handler to call `ResetOffset` before `MarkOffset`
+- Add comprehensive GoDoc comments to `OffsetManager` interface methods
+- Add counterfeiter mock generation for `OffsetManager` interface
+- Add comprehensive test coverage for offset managers (simple, store, sarama, handler)
+- Update dependencies (osv-scanner, gosec, anthropic-sdk-go, and others)
+
 ## v1.20.1
 
 - Fix type compatibility: change map[string]string to map[string]any in error data

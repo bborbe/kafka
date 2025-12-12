@@ -85,6 +85,21 @@ func (s *saramaOffsetManager) MarkOffset(
 	return nil
 }
 
+func (s *saramaOffsetManager) ResetOffset(
+	ctx context.Context,
+	topic Topic,
+	partition Partition,
+	nextOffset Offset,
+) error {
+	partitionOffsetManager, err := s.getPartitionManager(ctx, topic, partition)
+	if err != nil {
+		return errors.Wrapf(ctx, err, "get partition manager failed")
+	}
+	partitionOffsetManager.ResetOffset(nextOffset.Int64(), DefaultMetadata.String())
+	glog.V(3).Infof("reset offset to %d", nextOffset)
+	return nil
+}
+
 // Close releases all resources associated with this offset manager.
 func (s *saramaOffsetManager) Close() error {
 	s.mux.Lock()
