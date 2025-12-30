@@ -35,6 +35,8 @@ func NewSaramaClientProviderByType(
 		return NewSaramaClientProviderReused(brokers, opts...), nil
 	case SaramaClientProviderTypeNew:
 		return NewSaramaClientProviderNew(brokers, opts...), nil
+	case SaramaClientProviderTypePool:
+		return NewSaramaClientProviderPool(brokers, SaramaClientPoolOptions{}, opts...), nil
 	default:
 		return nil, errors.Errorf(ctx, "unknown sarama client provider type: %s", providerType)
 	}

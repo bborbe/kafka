@@ -17,12 +17,15 @@ const (
 	SaramaClientProviderTypeReused SaramaClientProviderType = "reused"
 	// SaramaClientProviderTypeNew creates a provider that creates a new client for each call.
 	SaramaClientProviderTypeNew SaramaClientProviderType = "new"
+	// SaramaClientProviderTypePool creates a provider that uses a connection pool with health checks.
+	SaramaClientProviderTypePool SaramaClientProviderType = "pool"
 )
 
 // AvailableSaramaClientProviderTypes contains all valid SaramaClientProviderType values.
 var AvailableSaramaClientProviderTypes = SaramaClientProviderTypes{
 	SaramaClientProviderTypeReused,
 	SaramaClientProviderTypeNew,
+	SaramaClientProviderTypePool,
 }
 
 // ParseSaramaClientProviderType parses a value into a SaramaClientProviderType.

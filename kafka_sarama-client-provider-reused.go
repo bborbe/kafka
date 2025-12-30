@@ -41,7 +41,7 @@ func (s *saramaClientProviderReused) Client(ctx context.Context) (SaramaClient, 
 	}
 
 	if s.client != nil {
-		return s.client, nil
+		return newReusedClient(s.client), nil
 	}
 
 	client, err := CreateSaramaClient(ctx, s.brokers, s.opts...)
@@ -50,7 +50,7 @@ func (s *saramaClientProviderReused) Client(ctx context.Context) (SaramaClient, 
 	}
 
 	s.client = client
-	return s.client, nil
+	return newReusedClient(s.client), nil
 }
 
 func (s *saramaClientProviderReused) Close() error {
@@ -69,5 +69,24 @@ func (s *saramaClientProviderReused) Close() error {
 		}
 	}
 
+	return nil
+}
+
+// newReusedClient creates a wrapper around a shared client that ignores Close() calls.
+func newReusedClient(client SaramaClient) SaramaClient {
+	return &reusedClient{
+		SaramaClient: client,
+	}
+}
+
+// reusedClient wraps a shared SaramaClient and ignores Close() calls.
+// This prevents callers from accidentally closing the shared client.
+type reusedClient struct {
+	SaramaClient
+}
+
+func (r *reusedClient) Close() error {
+	// NO-OP - don't actually close the shared client
+	// The provider manages the lifecycle of the shared client
 	return nil
 }

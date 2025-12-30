@@ -8,6 +8,16 @@ Please choose versions by [Semantic Versioning](http://semver.org/).
 * MINOR version when you add functionality in a backwards-compatible manner, and
 * PATCH version when you make backwards-compatible bug fixes.
 
+## v1.22.0
+
+- Add `SaramaClientPool` interface with Acquire/Release pattern for connection pooling
+- Add `SaramaClientProviderTypePool` provider type with automatic health checks
+- Add `DefaultSaramaClientPoolOptions` for default pool configuration
+- Add `reusedClient` wrapper to prevent accidental Close() of shared client
+- Fix context propagation in pool health checks (accept ctx instead of Background())
+- Fix race condition in pool provider with eager initialization
+- Add comprehensive test coverage for pool implementation
+
 ## v1.21.0
 
 - Add `ResetOffset` method to `OffsetManager` interface for backward offset movement
