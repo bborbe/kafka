@@ -2,9 +2,13 @@ module github.com/bborbe/kafka
 
 go 1.25.5
 
+replace (
+	k8s.io/kube-openapi => k8s.io/kube-openapi v0.0.0-20250701173324-9bd5c66d9911
+)
+
 require (
 	github.com/IBM/sarama v1.46.3
-	github.com/bborbe/boltkv v1.11.0
+	github.com/bborbe/boltkv v1.11.1
 	github.com/bborbe/collection v1.20.0
 	github.com/bborbe/errors v1.5.0
 	github.com/bborbe/http v1.26.0
@@ -12,7 +16,7 @@ require (
 	github.com/bborbe/log v1.6.0
 	github.com/bborbe/memorykv v1.4.0
 	github.com/bborbe/parse v1.10.0
-	github.com/bborbe/run v1.9.0
+	github.com/bborbe/run v1.9.1
 	github.com/bborbe/time v1.21.0
 	github.com/bborbe/validation v1.4.0
 	github.com/golang/glog v1.2.5
@@ -22,11 +26,12 @@ require (
 	github.com/incu6us/goimports-reviser/v3 v3.11.0
 	github.com/kisielk/errcheck v1.9.0
 	github.com/maxbrunsfeld/counterfeiter/v6 v6.12.1
-	github.com/onsi/ginkgo/v2 v2.27.3
-	github.com/onsi/gomega v1.38.3
+	github.com/onsi/ginkgo/v2 v2.27.5
+	github.com/onsi/gomega v1.39.0
 	github.com/prometheus/client_golang v1.23.2
 	github.com/securego/gosec/v2 v2.22.11
 	github.com/segmentio/golines v0.13.0
+	github.com/shoenig/go-modtool v0.5.0
 	golang.org/x/vuln v1.1.4
 )
 
@@ -325,7 +330,6 @@ require (
 	github.com/secDre4mer/pkcs7 v0.0.0-20240322103146-665324a4461d // indirect
 	github.com/sergi/go-diff v1.4.0 // indirect
 	github.com/shirou/gopsutil v3.21.11+incompatible // indirect
-	github.com/shoenig/go-modtool v0.5.0 // indirect
 	github.com/shoenig/regexplus v0.3.0 // indirect
 	github.com/shoenig/semantic v1.2.1 // indirect
 	github.com/sirupsen/logrus v1.9.4-0.20230606125235-dd1b4c2e81af // indirect
@@ -401,19 +405,19 @@ require (
 	go.uber.org/zap v1.24.0 // indirect
 	go.yaml.in/yaml/v2 v2.4.3 // indirect
 	go.yaml.in/yaml/v3 v3.0.2 // indirect
-	golang.org/x/crypto v0.45.0 // indirect
+	golang.org/x/crypto v0.47.0 // indirect
 	golang.org/x/exp v0.0.0-20251125195548-87e1e737ad39 // indirect
 	golang.org/x/exp/typeparams v0.0.0-20250210185358-939b2ce775ac // indirect
 	golang.org/x/lint v0.0.0-20241112194109-818c5a804067 // indirect
-	golang.org/x/mod v0.30.0 // indirect
-	golang.org/x/net v0.47.0 // indirect
+	golang.org/x/mod v0.31.0 // indirect
+	golang.org/x/net v0.48.0 // indirect
 	golang.org/x/oauth2 v0.32.0 // indirect
 	golang.org/x/sync v0.19.0 // indirect
-	golang.org/x/sys v0.39.0 // indirect
-	golang.org/x/telemetry v0.0.0-20251111182119-bc8e575c7b54 // indirect
-	golang.org/x/term v0.38.0 // indirect
-	golang.org/x/text v0.31.0 // indirect
-	golang.org/x/tools v0.37.0 // indirect
+	golang.org/x/sys v0.40.0 // indirect
+	golang.org/x/telemetry v0.0.0-20251203150158-8fff8a5912fc // indirect
+	golang.org/x/term v0.39.0 // indirect
+	golang.org/x/text v0.33.0 // indirect
+	golang.org/x/tools v0.40.0 // indirect
 	golang.org/x/xerrors v0.0.0-20240903120638-7835f813f4da // indirect
 	google.golang.org/genai v1.37.0 // indirect
 	google.golang.org/genproto v0.0.0-20250707201910-8d1bb00bc6a7 // indirect
@@ -440,65 +444,41 @@ require (
 
 exclude (
 	cloud.google.com/go v0.26.0
-	golang.org/x/tools v0.38.0
-	golang.org/x/tools v0.39.0
-)
-
-exclude (
 	github.com/go-logr/glogr v1.0.0-rc1
 	github.com/go-logr/glogr v1.0.0
-)
-
-exclude (
 	github.com/go-logr/logr v1.0.0-rc1
 	github.com/go-logr/logr v1.0.0
-)
-
-exclude (
 	go.yaml.in/yaml/v3 v3.0.3
 	go.yaml.in/yaml/v3 v3.0.4
-)
-
-exclude (
+	golang.org/x/tools v0.38.0
+	golang.org/x/tools v0.39.0
 	k8s.io/api v0.34.0
 	k8s.io/api v0.34.1
 	k8s.io/api v0.34.2
 	k8s.io/api v0.34.3
-)
-
-exclude (
+	k8s.io/api v0.35.0
 	k8s.io/apiextensions-apiserver v0.34.0
 	k8s.io/apiextensions-apiserver v0.34.1
 	k8s.io/apiextensions-apiserver v0.34.2
 	k8s.io/apiextensions-apiserver v0.34.3
-)
-
-exclude (
+	k8s.io/apiextensions-apiserver v0.35.0
 	k8s.io/apimachinery v0.34.0
 	k8s.io/apimachinery v0.34.1
 	k8s.io/apimachinery v0.34.2
 	k8s.io/apimachinery v0.34.3
-)
-
-exclude (
+	k8s.io/apimachinery v0.35.0
 	k8s.io/client-go v0.34.0
 	k8s.io/client-go v0.34.1
 	k8s.io/client-go v0.34.2
 	k8s.io/client-go v0.34.3
-)
-
-exclude (
+	k8s.io/client-go v0.35.0
 	k8s.io/code-generator v0.34.0
 	k8s.io/code-generator v0.34.1
 	k8s.io/code-generator v0.34.2
 	k8s.io/code-generator v0.34.3
-)
-
-exclude (
+	k8s.io/code-generator v0.35.0
 	sigs.k8s.io/structured-merge-diff/v6 v6.0.0
 	sigs.k8s.io/structured-merge-diff/v6 v6.1.0
 	sigs.k8s.io/structured-merge-diff/v6 v6.2.0
 	sigs.k8s.io/structured-merge-diff/v6 v6.3.0
 )
-
-replace k8s.io/kube-openapi => k8s.io/kube-openapi v0.0.0-20250701173324-9bd5c66d9911
