@@ -8,6 +8,14 @@ Please choose versions by [Semantic Versioning](http://semver.org/).
 * MINOR version when you add functionality in a backwards-compatible manner, and
 * PATCH version when you make backwards-compatible bug fixes.
 
+## v1.22.2
+
+- Update Go 1.25.6
+- Update bborbe dependencies (collection, errors, http, kv, log, memorykv, parse, time, validation)
+- Update test frameworks (ginkgo v2.28.1, gomega v1.39.1)
+- Update security tools (osv-scanner v2.3.2, gosec)
+- Update Google, protobuf, and gRPC dependencies
+
 ## v1.22.1
 
 - Update Go to 1.25.5
