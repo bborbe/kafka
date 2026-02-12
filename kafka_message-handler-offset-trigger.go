@@ -34,16 +34,14 @@ func NewOffsetTriggerMessageHandler(
 	return MessageHandlerFunc(func(ctx context.Context, msg *sarama.ConsumerMessage) error {
 		mux.Lock()
 		triggerOffset, ok := clonedTriggerOffset[Partition(msg.Partition)]
-		mux.Unlock()
-		if ok {
-			if triggerOffset <= Offset(msg.Offset) {
-				glog.V(2).
-					Infof("partiton %d reached highwater mark offset of %d for %s", msg.Partition, msg.Offset, msg.Topic)
-				mux.Lock()
-				delete(clonedTriggerOffset, Partition(msg.Partition))
-				mux.Unlock()
-				wg.Done()
-			}
+		if ok && triggerOffset <= Offset(msg.Offset) {
+			delete(clonedTriggerOffset, Partition(msg.Partition))
+			mux.Unlock()
+			glog.V(2).
+				Infof("partition %d reached highwater mark offset of %d for %s", msg.Partition, msg.Offset, msg.Topic)
+			wg.Done()
+		} else {
+			mux.Unlock()
 		}
 		return nil
 	})
