@@ -20,21 +20,16 @@ func NewOffsetManagerHandler(
 ) libhttp.WithError {
 	return libhttp.WithErrorFunc(
 		func(ctx context.Context, resp http.ResponseWriter, req *http.Request) error {
-			partition, err := ParsePartition(
-				ctx,
-				req.FormValue("partition"),
-			) // #nosec G120 -- internal admin handler
+			req.Body = http.MaxBytesReader(resp, req.Body, 1<<20)
+			partition, err := ParsePartition(ctx, req.FormValue("partition"))
 			if err != nil {
 				return errors.Wrapf(ctx, err, "parse partition failed")
 			}
-			topic := Topic(req.FormValue("topic")) // #nosec G120 -- internal admin handler
+			topic := Topic(req.FormValue("topic"))
 			if topic == "" {
 				return errors.Errorf(ctx, "parameter topic missing")
 			}
-			offset, err := ParseOffset(
-				ctx,
-				req.FormValue("offset"),
-			) // #nosec G120 -- internal admin handler
+			offset, err := ParseOffset(ctx, req.FormValue("offset"))
 			if err != nil {
 				offset, err := offsetManager.NextOffset(ctx, topic, *partition)
 				if err != nil {
