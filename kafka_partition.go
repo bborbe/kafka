@@ -15,7 +15,7 @@ import (
 
 // PartitionsFromInt32 converts a slice of int32 values to Partitions.
 func PartitionsFromInt32(partitions []int32) Partitions {
-	var result Partitions
+	var result Partitions //nolint:prealloc
 	for _, partition := range partitions {
 		result = append(result, Partition(partition))
 	}

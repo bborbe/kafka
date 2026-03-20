@@ -8,6 +8,12 @@ Please choose versions by [Semantic Versioning](http://semver.org/).
 * MINOR version when you add functionality in a backwards-compatible manner, and
 * PATCH version when you make backwards-compatible bug fixes.
 
+## v1.22.6
+
+- chore: update dependencies and golangci-lint config
+- fix: preallocate error slice in saramaOffsetManager.Close
+- fix: suppress prealloc lint warning for PartitionsFromInt32
+
 ## v1.22.5
 
 - go mod update

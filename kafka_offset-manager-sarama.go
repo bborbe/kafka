@@ -105,7 +105,7 @@ func (s *saramaOffsetManager) Close() error {
 	s.mux.Lock()
 	defer s.mux.Unlock()
 	if s.offsetManager != nil {
-		var errs []error
+		errs := make([]error, 0, len(s.partitionOffsetManagers)+1)
 		for _, p := range s.partitionOffsetManagers {
 			errs = append(errs, p.Close())
 		}
