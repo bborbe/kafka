@@ -8,6 +8,11 @@ Please choose versions by [Semantic Versioning](http://semver.org/).
 * MINOR version when you add functionality in a backwards-compatible manner, and
 * PATCH version when you make backwards-compatible bug fixes.
 
+## v1.22.9
+
+- update bborbe/* deps (collection, errors, http, kv, log, parse, run, time, validation)
+- update go-modtool to v0.6.0
+
 ## v1.22.8
 
 - fix: exclude golangci-lint v1, update memorykv and boltkv deps

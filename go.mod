@@ -5,16 +5,16 @@ go 1.26.1
 require (
 	github.com/IBM/sarama v1.47.0
 	github.com/bborbe/boltkv v1.11.6
-	github.com/bborbe/collection v1.20.5
-	github.com/bborbe/errors v1.5.5
-	github.com/bborbe/http v1.26.5
-	github.com/bborbe/kv v1.18.6
-	github.com/bborbe/log v1.6.5
+	github.com/bborbe/collection v1.20.7
+	github.com/bborbe/errors v1.5.7
+	github.com/bborbe/http v1.26.7
+	github.com/bborbe/kv v1.19.2
+	github.com/bborbe/log v1.6.8
 	github.com/bborbe/memorykv v1.4.7
-	github.com/bborbe/parse v1.10.5
-	github.com/bborbe/run v1.9.8
-	github.com/bborbe/time v1.25.1
-	github.com/bborbe/validation v1.4.6
+	github.com/bborbe/parse v1.10.8
+	github.com/bborbe/run v1.9.11
+	github.com/bborbe/time v1.25.3
+	github.com/bborbe/validation v1.4.7
 	github.com/golang/glog v1.2.5
 	github.com/golangci/golangci-lint/v2 v2.11.3
 	github.com/google/addlicense v1.2.0
@@ -27,7 +27,7 @@ require (
 	github.com/prometheus/client_golang v1.23.2
 	github.com/securego/gosec/v2 v2.25.0
 	github.com/segmentio/golines v0.13.0
-	github.com/shoenig/go-modtool v0.5.0
+	github.com/shoenig/go-modtool v0.6.0
 	golang.org/x/vuln v1.1.4
 )
 
