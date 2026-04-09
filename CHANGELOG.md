@@ -8,6 +8,14 @@ Please choose versions by [Semantic Versioning](http://semver.org/).
 * MINOR version when you add functionality in a backwards-compatible manner, and
 * PATCH version when you make backwards-compatible bug fixes.
 
+## v1.22.11
+
+- Update bborbe/* dependencies to latest versions
+- Update golangci-lint to v2.11.4
+- Update OpenTelemetry to v1.42.0
+- Update go directive to 1.26.2
+- Update various indirect dependencies
+
 ## v1.22.10
 
 - update dependencies (docker, containerd, otel, moby, go-git)
