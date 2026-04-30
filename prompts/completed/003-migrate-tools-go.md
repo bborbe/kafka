@@ -1,11 +1,12 @@
 ---
-status: committing
+status: completed
 summary: Migrated bborbe/kafka from tools.go to tools.env + Makefile @version pattern; go.mod reduced from 466 to 65 lines, replace block eliminated, all build checks pass.
 container: kafka-003-migrate-tools-go
 dark-factory-version: dev
 created: "2026-04-30T21:46:28Z"
 queued: "2026-04-30T21:46:28Z"
 started: "2026-04-30T21:46:29Z"
+completed: "2026-04-30T22:06:12Z"
 ---
 
 # Migrate from tools.go to tools.env + Makefile @version pattern
