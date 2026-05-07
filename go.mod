@@ -1,20 +1,20 @@
 module github.com/bborbe/kafka
 
-go 1.26.2
+go 1.26.3
 
 require (
-	github.com/IBM/sarama v1.47.0
-	github.com/bborbe/boltkv v1.12.5
-	github.com/bborbe/collection v1.20.11
-	github.com/bborbe/errors v1.5.11
+	github.com/IBM/sarama v1.48.0
+	github.com/bborbe/boltkv v1.12.6
+	github.com/bborbe/collection v1.20.12
+	github.com/bborbe/errors v1.5.13
 	github.com/bborbe/http v1.26.11
-	github.com/bborbe/kv v1.19.6
-	github.com/bborbe/log v1.6.12
-	github.com/bborbe/memorykv v1.4.11
-	github.com/bborbe/parse v1.10.11
-	github.com/bborbe/run v1.9.23
-	github.com/bborbe/time v1.25.10
-	github.com/bborbe/validation v1.4.12
+	github.com/bborbe/kv v1.19.8
+	github.com/bborbe/log v1.6.13
+	github.com/bborbe/memorykv v1.4.12
+	github.com/bborbe/parse v1.10.12
+	github.com/bborbe/run v1.9.24
+	github.com/bborbe/time v1.25.11
+	github.com/bborbe/validation v1.4.13
 	github.com/golang/glog v1.2.5
 	github.com/onsi/ginkgo/v2 v2.28.3
 	github.com/onsi/gomega v1.40.0
@@ -24,13 +24,13 @@ require (
 require (
 	github.com/Masterminds/semver/v3 v3.4.0 // indirect
 	github.com/bborbe/math v1.3.9 // indirect
-	github.com/bborbe/sentry v1.9.16 // indirect
+	github.com/bborbe/sentry v1.9.17 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/eapache/go-resiliency v1.7.0 // indirect
 	github.com/eapache/queue v1.1.0 // indirect
-	github.com/getsentry/sentry-go v0.46.1 // indirect
+	github.com/getsentry/sentry-go v0.46.2 // indirect
 	github.com/go-logr/logr v1.4.3 // indirect
 	github.com/go-task/slim-sprig/v3 v3.0.0 // indirect
 	github.com/google/go-cmp v0.7.0 // indirect
@@ -44,7 +44,7 @@ require (
 	github.com/jcmturner/rpc/v2 v2.0.3 // indirect
 	github.com/klauspost/compress v1.18.5 // indirect
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
-	github.com/pierrec/lz4/v4 v4.1.25 // indirect
+	github.com/pierrec/lz4/v4 v4.1.26 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/prometheus/client_model v0.6.2 // indirect
 	github.com/prometheus/common v0.66.1 // indirect
@@ -54,7 +54,7 @@ require (
 	go.yaml.in/yaml/v2 v2.4.3 // indirect
 	go.yaml.in/yaml/v3 v3.0.4 // indirect
 	golang.org/x/crypto v0.50.0 // indirect
-	golang.org/x/exp v0.0.0-20260312153236-7ab1446f8b90 // indirect
+	golang.org/x/exp v0.0.0-20260410095643-746e56fc9e2f // indirect
 	golang.org/x/mod v0.35.0 // indirect
 	golang.org/x/net v0.53.0 // indirect
 	golang.org/x/sync v0.20.0 // indirect

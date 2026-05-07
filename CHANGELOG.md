@@ -8,6 +8,13 @@ Please choose versions by [Semantic Versioning](http://semver.org/).
 * MINOR version when you add functionality in a backwards-compatible manner, and
 * PATCH version when you make backwards-compatible bug fixes.
 
+## v1.22.13
+
+- bump go 1.26.3
+- bump github.com/IBM/sarama v1.48.0
+- bump bborbe/* deps
+- bump indirect deps (sentry, lz4, golang.org/x/exp)
+
 ## v1.22.12
 
 - chore: Migrate to tools.env + Makefile @version pattern; remove tools.go and obsolete replace block. go.mod reduced from 466 to 65 lines.
