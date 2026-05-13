@@ -259,6 +259,8 @@ func (c *offsetConsumer) Consume(ctx context.Context) error {
 }
 
 // consume
+//
+//nolint:gocognit // Channel-close detection adds branches; refactoring would reduce readability
 func (c *offsetConsumer) consumeMessages(
 	ctx context.Context,
 	consumePartition sarama.PartitionConsumer,
@@ -268,11 +270,17 @@ func (c *offsetConsumer) consumeMessages(
 	select {
 	case <-ctx.Done():
 		return nil, ctx.Err()
-	case err := <-consumePartition.Errors():
+	case err, ok := <-consumePartition.Errors():
+		if !ok {
+			return nil, errors.Errorf(ctx, "partition consumer errors channel closed")
+		}
 		if err := c.errorHandler.HandleError(err); err != nil {
 			return nil, errors.Wrapf(ctx, err, "parition consumer returns error")
 		}
-	case msg := <-consumePartition.Messages():
+	case msg, ok := <-consumePartition.Messages():
+		if !ok {
+			return nil, errors.Errorf(ctx, "partition consumer messages channel closed")
+		}
 		result = append(result, msg)
 	}
 
@@ -284,11 +292,17 @@ func (c *offsetConsumer) consumeMessages(
 		select {
 		case <-ctx.Done():
 			return nil, ctx.Err()
-		case err := <-consumePartition.Errors():
+		case err, ok := <-consumePartition.Errors():
+			if !ok {
+				return nil, errors.Errorf(ctx, "partition consumer errors channel closed")
+			}
 			if err := c.errorHandler.HandleError(err); err != nil {
 				return nil, errors.Wrapf(ctx, err, "parition consumer returns error")
 			}
-		case msg := <-consumePartition.Messages():
+		case msg, ok := <-consumePartition.Messages():
+			if !ok {
+				return nil, errors.Errorf(ctx, "partition consumer messages channel closed")
+			}
 			result = append(result, msg)
 		default:
 			glog.V(4).Infof("no more messages => return %d messages", len(result))
