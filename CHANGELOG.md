@@ -8,6 +8,14 @@ Please choose versions by [Semantic Versioning](http://semver.org/).
 * MINOR version when you add functionality in a backwards-compatible manner, and
 * PATCH version when you make backwards-compatible bug fixes.
 
+## v1.22.14
+
+- bump github.com/IBM/sarama v1.48.0 -> v1.48.1
+- bump github.com/bborbe/http v1.26.11 -> v1.26.12
+- bump github.com/bborbe/time v1.25.11 -> v1.27.0
+- bump golang.org/x/{crypto,net,sys,text} to latest
+- bump github.com/klauspost/compress v1.18.5 -> v1.18.6
+
 ## v1.22.13
 
 - bump go 1.26.3
