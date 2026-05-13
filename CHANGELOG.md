@@ -8,6 +8,10 @@ Please choose versions by [Semantic Versioning](http://semver.org/).
 * MINOR version when you add functionality in a backwards-compatible manner, and
 * PATCH version when you make backwards-compatible bug fixes.
 
+## v1.22.15
+
+- fix(consumer): detect closed errors/messages channels in offsetConsumer.consumeMessages and return an explicit error instead of spinning on nil deliveries
+
 ## v1.22.14
 
 - bump github.com/IBM/sarama v1.48.0 -> v1.48.1
