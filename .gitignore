@@ -9,3 +9,6 @@
 /.dark-factory.log
 /prompts/log
 /specs/log
+
+# Go compiled test binaries
+*.test

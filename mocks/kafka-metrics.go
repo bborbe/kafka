@@ -39,6 +39,12 @@ type KafkaMetrics struct {
 		arg1 kafka.Topic
 		arg2 kafka.Partition
 	}
+	CorruptBatchSkippedCounterIncStub        func(kafka.Topic, kafka.Partition)
+	corruptBatchSkippedCounterIncMutex       sync.RWMutex
+	corruptBatchSkippedCounterIncArgsForCall []struct {
+		arg1 kafka.Topic
+		arg2 kafka.Partition
+	}
 	CurrentOffsetStub        func(kafka.Topic, kafka.Partition, kafka.Offset)
 	currentOffsetMutex       sync.RWMutex
 	currentOffsetArgsForCall []struct {
@@ -271,6 +277,39 @@ func (fake *KafkaMetrics) ConsumePartitionCreateTotalIncArgsForCall(i int) (kafk
 	fake.consumePartitionCreateTotalIncMutex.RLock()
 	defer fake.consumePartitionCreateTotalIncMutex.RUnlock()
 	argsForCall := fake.consumePartitionCreateTotalIncArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2
+}
+
+func (fake *KafkaMetrics) CorruptBatchSkippedCounterInc(arg1 kafka.Topic, arg2 kafka.Partition) {
+	fake.corruptBatchSkippedCounterIncMutex.Lock()
+	fake.corruptBatchSkippedCounterIncArgsForCall = append(fake.corruptBatchSkippedCounterIncArgsForCall, struct {
+		arg1 kafka.Topic
+		arg2 kafka.Partition
+	}{arg1, arg2})
+	stub := fake.CorruptBatchSkippedCounterIncStub
+	fake.recordInvocation("CorruptBatchSkippedCounterInc", []interface{}{arg1, arg2})
+	fake.corruptBatchSkippedCounterIncMutex.Unlock()
+	if stub != nil {
+		fake.CorruptBatchSkippedCounterIncStub(arg1, arg2)
+	}
+}
+
+func (fake *KafkaMetrics) CorruptBatchSkippedCounterIncCallCount() int {
+	fake.corruptBatchSkippedCounterIncMutex.RLock()
+	defer fake.corruptBatchSkippedCounterIncMutex.RUnlock()
+	return len(fake.corruptBatchSkippedCounterIncArgsForCall)
+}
+
+func (fake *KafkaMetrics) CorruptBatchSkippedCounterIncCalls(stub func(kafka.Topic, kafka.Partition)) {
+	fake.corruptBatchSkippedCounterIncMutex.Lock()
+	defer fake.corruptBatchSkippedCounterIncMutex.Unlock()
+	fake.CorruptBatchSkippedCounterIncStub = stub
+}
+
+func (fake *KafkaMetrics) CorruptBatchSkippedCounterIncArgsForCall(i int) (kafka.Topic, kafka.Partition) {
+	fake.corruptBatchSkippedCounterIncMutex.RLock()
+	defer fake.corruptBatchSkippedCounterIncMutex.RUnlock()
+	argsForCall := fake.corruptBatchSkippedCounterIncArgsForCall[i]
 	return argsForCall.arg1, argsForCall.arg2
 }
 

@@ -8,6 +8,22 @@ Please choose versions by [Semantic Versioning](http://semver.org/).
 * MINOR version when you add functionality in a backwards-compatible manner, and
 * PATCH version when you make backwards-compatible bug fixes.
 
+## Unreleased
+
+- feat(consumer): add opt-in CRC corruption skip mode to offset consumer via `WithSkipCorruptBatches(bool)` option
+- fix(consumer): skipAndAdvance now recreates partition consumer at healthy offset (was closing without recreating)
+- fix(consumer): thread ctx through binary search in corruption skip path (was using context.Background)
+- fix(consumer): replace fmt.Errorf sentinel with stderrors.New for errSkipCorruptBatch
+- fix(consumer): binarySearchEndOfCorruption confirms result with isOffsetGood before returning (was returning unverified offset)
+- fix(consumer): skipAndAdvance creates new partition consumer BEFORE closing old one (was closing first, causing nil-consumer panic on create failure)
+- fix(consumer): consumeMessages returns accumulated messages before surfacing errSkipCorruptBatch (was silently dropping messages)
+- fix(consumer): skip log lines use glog.V(1).Infof instead of Warningf
+- fix(consumer): probe timeout in isOffsetGood is now a named constant `probeTimeout`
+- test(consumer): add tests for skipAndAdvance error/fallback paths (FindNextHealthyOffset error, CreatePartitionConsumer failure, newOffset<0 to HWM)
+- test(consumer): add tests for defaultCorruptionSkipper isOffsetGood (good message, corruption error, non-corruption error propagates)
+- test(consumer): add highWaterMarkOffset field to fakePartitionConsumer
+- test(consumer): set metrics field in newOffsetConsumerForTest (was nil causing panic on CorruptBatchSkippedCounterInc)
+
 ## v1.22.15
 
 - fix(consumer): detect closed errors/messages channels in offsetConsumer.consumeMessages and return an explicit error instead of spinning on nil deliveries

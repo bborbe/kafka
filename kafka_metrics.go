@@ -36,6 +36,7 @@ type MetricsConsumer interface {
 	CurrentOffset(topic Topic, partition Partition, offset Offset)
 	HighWaterMarkOffset(topic Topic, partition Partition, offset Offset)
 	ErrorCounterInc(topic Topic, partition Partition)
+	CorruptBatchSkippedCounterInc(topic Topic, partition Partition)
 }
 
 // MetricsPartitionConsumer provides metrics collection methods for partition consumer creation operations.
@@ -77,6 +78,12 @@ var (
 		Subsystem: "consumer",
 		Name:      "highwater_mark_offset",
 		Help:      "Highest offset in the current topic",
+	}, []string{"topic", "partition"})
+	consumerCorruptBatchSkippedCounter = prometheus.NewGaugeVec(prometheus.GaugeOpts{
+		Namespace: metricsNamespace,
+		Subsystem: "consumer",
+		Name:      "corrupt_batch_skipped_total",
+		Help:      "Kafka Consumer Corrupt Batch Skipped Counter",
 	}, []string{"topic", "partition"})
 )
 
@@ -169,6 +176,7 @@ func init() {
 		consumePartitionCreateOutOfRangeErrorCounter,
 		consumePartitionCreateSuccessCounter,
 		consumePartitionCreateTotalCounter,
+		consumerCorruptBatchSkippedCounter,
 		consumerCurrentOffset,
 		consumerErrorCounter,
 		consumerHighWaterMarkOffset,
@@ -194,6 +202,13 @@ type metrics struct {
 
 func (m *metrics) ErrorCounterInc(topic Topic, partition Partition) {
 	consumerErrorCounter.With(prometheus.Labels{
+		"topic":     topic.String(),
+		"partition": partition.String(),
+	}).Inc()
+}
+
+func (m *metrics) CorruptBatchSkippedCounterInc(topic Topic, partition Partition) {
+	consumerCorruptBatchSkippedCounter.With(prometheus.Labels{
 		"topic":     topic.String(),
 		"partition": partition.String(),
 	}).Inc()
