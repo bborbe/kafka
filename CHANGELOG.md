@@ -8,7 +8,7 @@ Please choose versions by [Semantic Versioning](http://semver.org/).
 * MINOR version when you add functionality in a backwards-compatible manner, and
 * PATCH version when you make backwards-compatible bug fixes.
 
-## Unreleased
+## v1.23.0
 
 - feat(consumer): add opt-in CRC corruption skip mode to offset consumer via `WithSkipCorruptBatches(bool)` option
 - fix(consumer): skipAndAdvance now recreates partition consumer at healthy offset (was closing without recreating)
