@@ -57,7 +57,7 @@ Implement a first-healthy-offset search in the `kafka` package using LOCAL types
 
 This algorithm is ported from a proven production implementation (the trading scanner). The full algorithm is specified here — you do NOT need to (and cannot, inside the container) read any external file:
 
-**`FindNextHealthyOffset(ctx, consumer sarama.Consumer, topic, partition, corruptOffset Offset, maxOffset int64) int64`** — returns the first good offset after the corrupt range, or `-1` if corruption extends to the end of the partition:
+**`FindNextHealthyOffset(ctx, consumer sarama.Consumer, topic, partition, corruptOffset Offset, maxOffset int64) (int64, error)`** — returns the first good offset after the corrupt range, or `-1` if corruption extends to the end of the partition. Returns a non-nil error only if a probe hits a genuine broker/partition failure (non-corruption), which the caller must propagate (not silently advance):
   1. Exponential probe: for `jump` in `[10, 100, 1000, 10000, 100000]`, test `candidate = corruptOffset + jump`. If `candidate >= maxOffset`, corruption runs to the end → return `-1`. If `isOffsetGood(candidate)` is true, corruption ends before `candidate` → binary-search between `corruptOffset` and `candidate` for the exact first-good offset and return it.
   2. (OPTIONAL refinement — you MAY skip this branch.) If all jumps still corrupt, probe near the end (`maxOffset - 10000`) to distinguish a long corrupt run from a massive compaction gap; if that reads cleanly, search forward a bounded window (e.g. 1000 offsets) from `corruptOffset` for the actual end, else jump to near-end. This handles massive compaction gaps; the exponential+binary-search path in step 1 is the primary case and is sufficient for the tick/candle topics this targets. If you omit this branch, step 1 returning `-1` (corruption-to-end) is the acceptable fallback — do NOT block on implementing it.
 
@@ -66,7 +66,13 @@ This algorithm is ported from a proven production implementation (the trading sc
 
 **`binarySearchEndOfCorruption(corruptOffset, goodOffset)`** — standard binary search: while `corruptOffset+1 < goodOffset`, test `mid`; if good, `goodOffset = mid`, else `corruptOffset = mid`. Return `goodOffset` (first good).
 
-**`isOffsetGood(ctx, consumer, topic, partition, offset) bool`** — open a short-lived partition consumer at `offset` via `consumer.ConsumePartition(...)` (on error return false); `defer pc.Close()`. Then `select` on: `ctx.Done()` → false; a message on `pc.Messages()` → true (a higher returned offset due to compaction is still "good"); an error on `pc.Errors()` → false if `IsCorruptionError(err)` else false (non-corruption error also not good here); and a **bounded read timeout** (~5s `time.NewTimer`) → false (end of partition / massive gap). The timeout / `ctx` cancellation MUST be honored so a probe never blocks forever.
+**`isOffsetGood(ctx, consumer, topic, partition, offset) (bool, error)`** — open a short-lived partition consumer at `offset` via `consumer.ConsumePartition(...)`; `defer pc.Close()`. Then `select` on:
+  - `ctx.Done()` → return `ctx.Err()`;
+  - a message on `pc.Messages()` → `(true, nil)` (a higher returned offset due to compaction is still "good");
+  - an error on `pc.Errors()` → if `IsCorruptionError(err)` then `(false, nil)` (still corrupt → keep probing); **otherwise return `(false, err)` so a genuine broker/partition failure propagates** rather than being mistaken for corruption (per the spec Failure Mode "Broker/partition unavailable while probing → error propagates");
+  - a **bounded read timeout** (~5s `time.NewTimer`) → `(false, nil)` (end of partition / massive gap).
+
+The timeout / `ctx` cancellation MUST be honored so a probe never blocks forever. Propagate the non-corruption error up through `FindNextHealthyOffset` so the `Consume()` loop surfaces it (the skip path must NOT silently advance the offset on a broker error).
 
 Bound the forward probe by the partition high-water mark (`maxOffset`) so a fully-corrupt tail resolves to the partition end rather than looping forever.
 
