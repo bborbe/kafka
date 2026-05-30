@@ -11,6 +11,10 @@ Please choose versions by [Semantic Versioning](http://semver.org/).
 ## Unreleased
 
 - feat(consumer): add opt-in CRC corruption skip mode to offset consumer via `WithSkipCorruptBatches(bool)` option
+- fix(consumer): skipAndAdvance now recreates partition consumer at healthy offset (was closing without recreating)
+- fix(consumer): thread ctx through binary search in corruption skip path (was using context.Background)
+- fix(consumer): replace fmt.Errorf sentinel with stderrors.New for errSkipCorruptBatch
+- test(consumer): add end-to-end test for skip-and-recreate path that verifies ConsumePartition called at advanced offset
 
 ## v1.22.15
 

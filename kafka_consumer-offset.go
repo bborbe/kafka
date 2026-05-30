@@ -6,7 +6,7 @@ package kafka
 
 import (
 	"context"
-	"fmt"
+	stderrors "errors"
 	"strings"
 	"time"
 
@@ -60,7 +60,7 @@ type corruptionSkipper interface {
 }
 
 // errSkipCorruptBatch is a sentinel error indicating a corrupt batch was detected and skipped.
-var errSkipCorruptBatch = fmt.Errorf("skip corrupt batch")
+var errSkipCorruptBatch = stderrors.New("skip corrupt batch")
 
 // defaultCorruptionSkipper implements corruptionSkipper using exponential probe + binary search.
 type defaultCorruptionSkipper struct{}
@@ -88,6 +88,7 @@ func (s *defaultCorruptionSkipper) FindNextHealthyOffset(
 		if good {
 			return Offset(
 				s.binarySearchEndOfCorruption(
+					ctx,
 					corruptOffset.Int64(),
 					candidate,
 					consumer,
@@ -102,6 +103,7 @@ func (s *defaultCorruptionSkipper) FindNextHealthyOffset(
 }
 
 func (s *defaultCorruptionSkipper) binarySearchEndOfCorruption(
+	ctx context.Context,
 	corruptOffset int64,
 	goodOffset int64,
 	consumer sarama.Consumer,
@@ -113,7 +115,7 @@ func (s *defaultCorruptionSkipper) binarySearchEndOfCorruption(
 
 	for low < high {
 		mid := (low + high) / 2
-		good, err := s.isOffsetGood(context.Background(), consumer, topic, partition, Offset(mid))
+		good, err := s.isOffsetGood(ctx, consumer, topic, partition, Offset(mid))
 		if err != nil || !good {
 			low = mid + 1
 		} else {
@@ -341,9 +343,18 @@ func (c *offsetConsumer) Consume(ctx context.Context) error {
 				messages, err := c.consumeMessages(ctx, consumePartition)
 				if err != nil {
 					if c.consumerOptions.SkipCorruptBatches && errors.Is(err, errSkipCorruptBatch) {
-						if skipErr := c.skipAndAdvance(ctx, consumerFromClient, consumePartition, Partition(partition), nextOffset); skipErr != nil {
+						newPC, newOff, skipErr := c.skipAndAdvance(
+							ctx,
+							consumerFromClient,
+							consumePartition,
+							Partition(partition),
+							nextOffset,
+						)
+						if skipErr != nil {
 							return errors.Wrapf(ctx, skipErr, "skip and advance failed")
 						}
+						consumePartition = newPC
+						nextOffset = newOff
 						continue
 					}
 					return errors.Wrapf(ctx, err, "consume failed")
@@ -477,7 +488,7 @@ func (c *offsetConsumer) skipAndAdvance(
 	oldPartitionConsumer sarama.PartitionConsumer,
 	partition Partition,
 	corruptOffset Offset,
-) error {
+) (sarama.PartitionConsumer, Offset, error) {
 	highWaterMark := oldPartitionConsumer.HighWaterMarkOffset()
 
 	glog.Warningf(
@@ -496,7 +507,7 @@ func (c *offsetConsumer) skipAndAdvance(
 		highWaterMark,
 	)
 	if err != nil {
-		return errors.Wrapf(ctx, err, "find next healthy offset failed")
+		return nil, Offset(0), errors.Wrapf(ctx, err, "find next healthy offset failed")
 	}
 
 	if err := oldPartitionConsumer.Close(); err != nil {
@@ -512,7 +523,27 @@ func (c *offsetConsumer) skipAndAdvance(
 			partition,
 			highWaterMark,
 		)
-		return nil
+		newOffset = Offset(highWaterMark)
+	}
+
+	newPC, err := CreatePartitionConsumer(
+		ctx,
+		consumer,
+		c.metrics,
+		c.topic,
+		partition,
+		c.offsetManager.FallbackOffset(),
+		newOffset,
+	)
+	if err != nil {
+		return nil, Offset(
+				0,
+			), errors.Wrapf(
+				ctx,
+				err,
+				"create partition consumer at offset %s failed",
+				newOffset,
+			)
 	}
 
 	glog.Warningf(
@@ -522,5 +553,5 @@ func (c *offsetConsumer) skipAndAdvance(
 		corruptOffset,
 		newOffset,
 	)
-	return nil
+	return newPC, newOffset, nil
 }
