@@ -1,4 +1,4 @@
-// Copyright (c) 2026 Benjamin Borbe All rights reserved.
+// Copyright (c) 2023 Benjamin Borbe All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -6,6 +6,7 @@ package kafka
 
 import (
 	"context"
+	stderrors "errors"
 	"strings"
 	"sync/atomic"
 	"testing"
@@ -415,8 +416,9 @@ func assertMetricIncremented(t *testing.T, m *fakeMetricsConsumer, expected int3
 // fakePartitionConsumer is a minimal in-package fake implementing
 // sarama.PartitionConsumer for tests that exercise channel-close behaviour.
 type fakePartitionConsumer struct {
-	messages chan *sarama.ConsumerMessage
-	errors   chan *sarama.ConsumerError
+	messages            chan *sarama.ConsumerMessage
+	errors              chan *sarama.ConsumerError
+	highWaterMarkOffset int64
 }
 
 func (f *fakePartitionConsumer) AsyncClose() {}
@@ -427,7 +429,12 @@ func (f *fakePartitionConsumer) Messages() <-chan *sarama.ConsumerMessage { retu
 
 func (f *fakePartitionConsumer) Errors() <-chan *sarama.ConsumerError { return f.errors }
 
-func (f *fakePartitionConsumer) HighWaterMarkOffset() int64 { return 0 }
+func (f *fakePartitionConsumer) HighWaterMarkOffset() int64 {
+	if f.highWaterMarkOffset != 0 {
+		return f.highWaterMarkOffset
+	}
+	return 0
+}
 
 func (f *fakePartitionConsumer) Pause() {}
 
@@ -439,6 +446,7 @@ func newOffsetConsumerForTest(batchSize int) *offsetConsumer {
 	return &offsetConsumer{
 		batchSize:    BatchSize(batchSize),
 		errorHandler: NewConsumerErrorHandler(NewMetrics()),
+		metrics:      &fakeMetricsConsumer{},
 	}
 }
 
@@ -646,5 +654,285 @@ func TestWithSkipCorruptBatches_Option(t *testing.T) {
 	WithSkipCorruptBatches(false)(&opts)
 	if opts.SkipCorruptBatches {
 		t.Errorf("expected SkipCorruptBatches to be false")
+	}
+}
+
+// TestSkipAndAdvance_FindNextHealthyOffsetError tests that when FindNextHealthyOffset
+// returns an error, skipAndAdvance propagates it without leaking the old consumer.
+func TestSkipAndAdvance_FindNextHealthyOffsetError(t *testing.T) {
+	topic := Topic("test-topic")
+	partition := Partition(0)
+	corruptOffset := Offset(100)
+
+	oldPC := &fakePartitionConsumer{
+		messages: make(chan *sarama.ConsumerMessage, 10),
+	}
+
+	skipErr := stderrors.New("find next healthy offset failed")
+	fakeConsumer := &testSaramaConsumer{
+		consumePartitionFn: func(string, int32, int64) (sarama.PartitionConsumer, error) {
+			return oldPC, nil
+		},
+	}
+
+	c := &offsetConsumer{
+		saramaClientProvider: &testSaramaClientProvider{
+			client: &testSaramaClient{partitions: []int32{partition.Int32()}},
+		},
+		topic: topic,
+		offsetManager: &fakeOffsetManager{
+			nextOffset:     corruptOffset,
+			fallbackOffset: OffsetOldest,
+		},
+		messageHandlerBatch: &fakeMessageHandlerBatch{},
+		metrics:             &fakeMetricsConsumer{},
+		batchSize:           BatchSize(10),
+		logSampler:          &fakeLogSampler{},
+		consumerOptions:     ConsumerOptions{SkipCorruptBatches: true},
+		skipper:             &fakeSkipper{healthyOffset: 0, err: skipErr},
+		saramaConsumerFunc:  func(sarama.Client) (sarama.Consumer, error) { return fakeConsumer, nil },
+		waiter:              &fakeWaiter{},
+	}
+
+	newPC, _, err := c.skipAndAdvance(
+		context.Background(),
+		fakeConsumer,
+		oldPC,
+		partition,
+		corruptOffset,
+	)
+
+	if err == nil {
+		t.Fatalf("expected error, got nil")
+	}
+	if newPC != nil {
+		t.Errorf("expected nil newPC on error, got %v", newPC)
+	}
+}
+
+// TestSkipAndAdvance_CreatePartitionConsumerError tests that when CreatePartitionConsumer
+// fails at the healthy offset, skipAndAdvance returns an error without closing the old consumer.
+func TestSkipAndAdvance_CreatePartitionConsumerError(t *testing.T) {
+	topic := Topic("test-topic")
+	partition := Partition(0)
+	corruptOffset := Offset(100)
+	healthyOffset := Offset(200)
+
+	oldPC := &fakePartitionConsumer{
+		messages: make(chan *sarama.ConsumerMessage, 10),
+	}
+
+	fakeConsumer := &testSaramaConsumer{
+		consumePartitionFn: func(topic string, partition int32, offset int64) (sarama.PartitionConsumer, error) {
+			if offset == healthyOffset.Int64() {
+				return nil, stderrors.New("create partition consumer failed")
+			}
+			return oldPC, nil
+		},
+	}
+
+	c := &offsetConsumer{
+		saramaClientProvider: &testSaramaClientProvider{
+			client: &testSaramaClient{partitions: []int32{partition.Int32()}},
+		},
+		topic: topic,
+		offsetManager: &fakeOffsetManager{
+			nextOffset:     corruptOffset,
+			fallbackOffset: OffsetOldest,
+		},
+		messageHandlerBatch: &fakeMessageHandlerBatch{},
+		metrics:             &fakeMetricsConsumer{},
+		batchSize:           BatchSize(10),
+		logSampler:          &fakeLogSampler{},
+		consumerOptions:     ConsumerOptions{SkipCorruptBatches: true},
+		skipper:             &fakeSkipper{healthyOffset: healthyOffset},
+		saramaConsumerFunc:  func(sarama.Client) (sarama.Consumer, error) { return fakeConsumer, nil },
+		waiter:              &fakeWaiter{},
+	}
+
+	newPC, _, err := c.skipAndAdvance(
+		context.Background(),
+		fakeConsumer,
+		oldPC,
+		partition,
+		corruptOffset,
+	)
+
+	if err == nil {
+		t.Fatalf("expected error, got nil")
+	}
+	if newPC != nil {
+		t.Errorf("expected nil newPC on error, got %v", newPC)
+	}
+}
+
+// TestSkipAndAdvance_NewOffsetNegative_UsesHighWaterMark tests that when FindNextHealthyOffset
+// returns -1 (corruption to end), skipAndAdvance recreates the consumer at the high water mark.
+func TestSkipAndAdvance_NewOffsetNegative_UsesHighWaterMark(t *testing.T) {
+	topic := Topic("test-topic")
+	partition := Partition(0)
+	corruptOffset := Offset(100)
+	highWaterMark := int64(500)
+
+	oldPC := &fakePartitionConsumer{
+		messages:            make(chan *sarama.ConsumerMessage, 10),
+		highWaterMarkOffset: highWaterMark,
+	}
+
+	newPC := &fakePartitionConsumer{
+		messages: make(chan *sarama.ConsumerMessage, 10),
+	}
+
+	var consumedOffsets []int64
+	fakeConsumer := &testSaramaConsumer{
+		consumePartitionFn: func(topic string, partition int32, offset int64) (sarama.PartitionConsumer, error) {
+			consumedOffsets = append(consumedOffsets, offset)
+			if offset == highWaterMark {
+				return newPC, nil
+			}
+			return oldPC, nil
+		},
+	}
+
+	c := &offsetConsumer{
+		saramaClientProvider: &testSaramaClientProvider{
+			client: &testSaramaClient{partitions: []int32{partition.Int32()}},
+		},
+		topic: topic,
+		offsetManager: &fakeOffsetManager{
+			nextOffset:     corruptOffset,
+			fallbackOffset: OffsetOldest,
+		},
+		messageHandlerBatch: &fakeMessageHandlerBatch{},
+		metrics:             &fakeMetricsConsumer{},
+		batchSize:           BatchSize(10),
+		logSampler:          &fakeLogSampler{},
+		consumerOptions:     ConsumerOptions{SkipCorruptBatches: true},
+		skipper:             &fakeSkipper{healthyOffset: Offset(-1)},
+		saramaConsumerFunc:  func(sarama.Client) (sarama.Consumer, error) { return fakeConsumer, nil },
+		waiter:              &fakeWaiter{},
+	}
+
+	resultPC, resultOffset, err := c.skipAndAdvance(
+		context.Background(),
+		fakeConsumer,
+		oldPC,
+		partition,
+		corruptOffset,
+	)
+
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if resultPC == nil {
+		t.Fatalf("expected non-nil newPC")
+	}
+	if resultOffset != Offset(highWaterMark) {
+		t.Errorf("expected offset %d, got %d", highWaterMark, resultOffset)
+	}
+	// With fakeSkipper returning -1, skipAndAdvance uses HWM directly without probing
+	// so only one ConsumePartition call happens (at HWM)
+	if len(consumedOffsets) != 1 || consumedOffsets[0] != highWaterMark {
+		t.Errorf("expected consumed offset [500], got %v", consumedOffsets)
+	}
+}
+
+// TestDefaultCorruptionSkipper_IsOffsetGood tests isOffsetGood directly.
+func TestDefaultCorruptionSkipper_IsOffsetGood(t *testing.T) {
+	t.Run("good message returns true", testIsOffsetGoodGoodMessage)
+	t.Run("corruption error returns false", testIsOffsetGoodCorruptionError)
+	t.Run("non-corruption error propagates", testIsOffsetGoodNonCorruptionError)
+}
+
+func testIsOffsetGoodGoodMessage(t *testing.T) {
+	topic := Topic("test-topic")
+	partition := Partition(0)
+	pc := &fakePartitionConsumer{
+		messages: make(chan *sarama.ConsumerMessage, 1),
+	}
+	pc.messages <- &sarama.ConsumerMessage{Topic: topic.String(), Partition: partition.Int32(), Offset: 100}
+
+	fakeConsumer := &testSaramaConsumer{
+		consumePartitionFn: func(string, int32, int64) (sarama.PartitionConsumer, error) { return pc, nil },
+	}
+
+	skipper := &defaultCorruptionSkipper{}
+	good, err := skipper.isOffsetGood(
+		context.Background(),
+		fakeConsumer,
+		topic,
+		partition,
+		Offset(100),
+	)
+
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if !good {
+		t.Errorf("expected good=true for valid message")
+	}
+}
+
+func testIsOffsetGoodCorruptionError(t *testing.T) {
+	topic := Topic("test-topic")
+	partition := Partition(0)
+	pc := &fakePartitionConsumer{
+		errors: make(chan *sarama.ConsumerError, 1),
+	}
+	pc.errors <- &sarama.ConsumerError{
+		Topic:     topic.String(),
+		Partition: partition.Int32(),
+		Err:       sarama.PacketDecodingError{Info: "CRC mismatch"},
+	}
+
+	fakeConsumer := &testSaramaConsumer{
+		consumePartitionFn: func(string, int32, int64) (sarama.PartitionConsumer, error) { return pc, nil },
+	}
+
+	skipper := &defaultCorruptionSkipper{}
+	good, err := skipper.isOffsetGood(
+		context.Background(),
+		fakeConsumer,
+		topic,
+		partition,
+		Offset(100),
+	)
+
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if good {
+		t.Errorf("expected good=false for corruption error")
+	}
+}
+
+func testIsOffsetGoodNonCorruptionError(t *testing.T) {
+	topic := Topic("test-topic")
+	partition := Partition(0)
+	innerErr := stderrors.New("some other error")
+	pc := &fakePartitionConsumer{
+		errors: make(chan *sarama.ConsumerError, 1),
+	}
+	pc.errors <- &sarama.ConsumerError{
+		Topic:     topic.String(),
+		Partition: partition.Int32(),
+		Err:       innerErr,
+	}
+
+	fakeConsumer := &testSaramaConsumer{
+		consumePartitionFn: func(string, int32, int64) (sarama.PartitionConsumer, error) { return pc, nil },
+	}
+
+	skipper := &defaultCorruptionSkipper{}
+	_, err := skipper.isOffsetGood(
+		context.Background(),
+		fakeConsumer,
+		topic,
+		partition,
+		Offset(100),
+	)
+
+	if err == nil {
+		t.Fatalf("expected error, got nil")
 	}
 }

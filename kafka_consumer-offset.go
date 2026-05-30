@@ -62,6 +62,8 @@ type corruptionSkipper interface {
 // errSkipCorruptBatch is a sentinel error indicating a corrupt batch was detected and skipped.
 var errSkipCorruptBatch = stderrors.New("skip corrupt batch")
 
+const probeTimeout = 5 * time.Second
+
 // defaultCorruptionSkipper implements corruptionSkipper using exponential probe + binary search.
 type defaultCorruptionSkipper struct{}
 
@@ -86,16 +88,18 @@ func (s *defaultCorruptionSkipper) FindNextHealthyOffset(
 			return Offset(-1), err
 		}
 		if good {
-			return Offset(
-				s.binarySearchEndOfCorruption(
-					ctx,
-					corruptOffset.Int64(),
-					candidate,
-					consumer,
-					topic,
-					partition,
-				),
-			), nil
+			result, err := s.binarySearchEndOfCorruption(
+				ctx,
+				corruptOffset.Int64(),
+				candidate,
+				consumer,
+				topic,
+				partition,
+			)
+			if err != nil {
+				return Offset(-1), err
+			}
+			return Offset(result), nil
 		}
 	}
 
@@ -109,7 +113,7 @@ func (s *defaultCorruptionSkipper) binarySearchEndOfCorruption(
 	consumer sarama.Consumer,
 	topic Topic,
 	partition Partition,
-) int64 {
+) (int64, error) {
 	low := corruptOffset + 1
 	high := goodOffset
 
@@ -122,7 +126,14 @@ func (s *defaultCorruptionSkipper) binarySearchEndOfCorruption(
 			high = mid
 		}
 	}
-	return low
+	good, err := s.isOffsetGood(ctx, consumer, topic, partition, Offset(low))
+	if err != nil {
+		return -1, err
+	}
+	if !good {
+		return -1, nil
+	}
+	return low, nil
 }
 
 func (s *defaultCorruptionSkipper) isOffsetGood(
@@ -141,7 +152,7 @@ func (s *defaultCorruptionSkipper) isOffsetGood(
 	}
 	defer pc.Close()
 
-	timer := time.NewTimer(5 * time.Second)
+	timer := time.NewTimer(probeTimeout)
 	defer timer.Stop()
 
 	select {
@@ -439,6 +450,9 @@ func (c *offsetConsumer) consumeMessages(
 			return nil, errors.Errorf(ctx, "partition consumer errors channel closed")
 		}
 		if c.consumerOptions.SkipCorruptBatches && IsCorruptionError(err.Err) {
+			if len(result) > 0 {
+				return result, nil
+			}
 			return nil, errSkipCorruptBatch
 		}
 		if err := c.errorHandler.HandleError(err); err != nil {
@@ -464,6 +478,9 @@ func (c *offsetConsumer) consumeMessages(
 				return nil, errors.Errorf(ctx, "partition consumer errors channel closed")
 			}
 			if c.consumerOptions.SkipCorruptBatches && IsCorruptionError(err.Err) {
+				if len(result) > 0 {
+					return result, nil
+				}
 				return nil, errSkipCorruptBatch
 			}
 			if err := c.errorHandler.HandleError(err); err != nil {
@@ -491,7 +508,7 @@ func (c *offsetConsumer) skipAndAdvance(
 ) (sarama.PartitionConsumer, Offset, error) {
 	highWaterMark := oldPartitionConsumer.HighWaterMarkOffset()
 
-	glog.Warningf(
+	glog.V(1).Infof(
 		"detected corrupt batch at offset %s in topic %s partition %d, searching for next healthy offset",
 		corruptOffset,
 		c.topic,
@@ -510,14 +527,8 @@ func (c *offsetConsumer) skipAndAdvance(
 		return nil, Offset(0), errors.Wrapf(ctx, err, "find next healthy offset failed")
 	}
 
-	if err := oldPartitionConsumer.Close(); err != nil {
-		glog.V(4).Infof("closing old partition consumer returned error: %v", err)
-	}
-
-	c.metrics.CorruptBatchSkippedCounterInc(c.topic, partition)
-
 	if newOffset < 0 {
-		glog.Warningf(
+		glog.V(1).Infof(
 			"corrupt range extends to end of partition %s (topic %s, partition %d), resuming at high water mark %d",
 			c.topic,
 			partition,
@@ -546,7 +557,13 @@ func (c *offsetConsumer) skipAndAdvance(
 			)
 	}
 
-	glog.Warningf(
+	if err := oldPartitionConsumer.Close(); err != nil {
+		glog.V(4).Infof("closing old partition consumer returned error: %v", err)
+	}
+
+	c.metrics.CorruptBatchSkippedCounterInc(c.topic, partition)
+
+	glog.V(1).Infof(
 		"skipped corrupt batch in topic %s partition %d: range %s -> %s",
 		c.topic,
 		partition,

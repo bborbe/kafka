@@ -14,7 +14,15 @@ Please choose versions by [Semantic Versioning](http://semver.org/).
 - fix(consumer): skipAndAdvance now recreates partition consumer at healthy offset (was closing without recreating)
 - fix(consumer): thread ctx through binary search in corruption skip path (was using context.Background)
 - fix(consumer): replace fmt.Errorf sentinel with stderrors.New for errSkipCorruptBatch
-- test(consumer): add end-to-end test for skip-and-recreate path that verifies ConsumePartition called at advanced offset
+- fix(consumer): binarySearchEndOfCorruption confirms result with isOffsetGood before returning (was returning unverified offset)
+- fix(consumer): skipAndAdvance creates new partition consumer BEFORE closing old one (was closing first, causing nil-consumer panic on create failure)
+- fix(consumer): consumeMessages returns accumulated messages before surfacing errSkipCorruptBatch (was silently dropping messages)
+- fix(consumer): skip log lines use glog.V(1).Infof instead of Warningf
+- fix(consumer): probe timeout in isOffsetGood is now a named constant `probeTimeout`
+- test(consumer): add tests for skipAndAdvance error/fallback paths (FindNextHealthyOffset error, CreatePartitionConsumer failure, newOffset<0 to HWM)
+- test(consumer): add tests for defaultCorruptionSkipper isOffsetGood (good message, corruption error, non-corruption error propagates)
+- test(consumer): add highWaterMarkOffset field to fakePartitionConsumer
+- test(consumer): set metrics field in newOffsetConsumerForTest (was nil causing panic on CorruptBatchSkippedCounterInc)
 
 ## v1.22.15
 

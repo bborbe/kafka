@@ -1,8 +1,12 @@
 ---
-tags:
-  - dark-factory
-  - prompt
-status: draft
+status: completed
+summary: 'Fixed CRC skip PR #13 review findings: binary search confirmation, close-order in skipAndAdvance, consumeMessages message retention, log levels, probe timeout constant, and added tests'
+container: kafka-crc-skip-exec-006-crc-skip-review-fixes
+dark-factory-version: v0.173.0
+created: "2026-05-30T20:25:53Z"
+queued: "2026-05-30T20:25:53Z"
+started: "2026-05-30T20:26:16Z"
+completed: "2026-05-30T20:42:32Z"
 ---
 
 # Fix CRC Skip — PR #13 Review Findings
