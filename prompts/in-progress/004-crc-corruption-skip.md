@@ -1,8 +1,7 @@
 ---
-tags:
-  - dark-factory
-  - prompt
-status: draft
+status: approved
+created: "2026-05-30T11:11:48Z"
+queued: "2026-05-30T11:11:48Z"
 ---
 
 # Opt-in CRC Corruption Skip in Offset Consumer

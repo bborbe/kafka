@@ -1,9 +1,11 @@
 ---
-status: approved
+status: prompted
 tags:
     - dark-factory
     - spec
 approved: "2026-05-30T10:44:42Z"
+generating: "2026-05-30T11:11:48Z"
+prompted: "2026-05-30T11:11:48Z"
 branch: dark-factory/crc-corruption-skip
 ---
 
