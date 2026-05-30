@@ -51,6 +51,7 @@ Add `kafka_consumer_corrupt_batch_skipped_total` to `kafka_metrics.go`, followin
   - implement it on the `metrics` struct
   - register the GaugeVec in the `init()` `prometheus.MustRegister(...)` block (keep the alphabetical-ish ordering already present)
   - the metric is incremented once per corrupt batch skipped (within a single consume pass)
+  - NOTE: despite the `_total` suffix, use a `GaugeVec` with `.Inc()` to match this repo's established consumer-metric pattern exactly (all existing consumer metrics are GaugeVec, not CounterVec) — do not introduce a `CounterVec`
 
 ### 5. First-healthy-offset search (algorithm inlined below)
 Implement a first-healthy-offset search in the `kafka` package using LOCAL types `Topic` (`kafka_topic.go`), `Partition` (`kafka_partition.go`), `Offset` (`kafka_offset.go`). Do NOT import the trading `libkafka` package.
