@@ -8,6 +8,10 @@ Please choose versions by [Semantic Versioning](http://semver.org/).
 * MINOR version when you add functionality in a backwards-compatible manner, and
 * PATCH version when you make backwards-compatible bug fixes.
 
+## Unreleased
+
+- feat(consumer): add opt-in CRC corruption skip mode to offset consumer via `WithSkipCorruptBatches(bool)` option
+
 ## v1.22.15
 
 - fix(consumer): detect closed errors/messages channels in offsetConsumer.consumeMessages and return an explicit error instead of spinning on nil deliveries

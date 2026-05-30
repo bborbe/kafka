@@ -1,7 +1,12 @@
 ---
-status: approved
+status: completed
+summary: Added opt-in CRC corruption skip mode to offset consumer via WithSkipCorruptBatches(bool) option, new metric, corruption detection helper, and exponential probe + binary search for finding next healthy offset
+container: kafka-crc-skip-exec-004-crc-corruption-skip
+dark-factory-version: v0.173.0
 created: "2026-05-30T11:11:48Z"
 queued: "2026-05-30T11:11:48Z"
+started: "2026-05-30T11:39:52Z"
+completed: "2026-05-30T11:48:14Z"
 ---
 
 # Opt-in CRC Corruption Skip in Offset Consumer

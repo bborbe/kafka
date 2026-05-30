@@ -144,3 +144,107 @@ func TestConsumeMessages_SingleMessageThenDefault(t *testing.T) {
 		t.Errorf("expected 1 message, got %d", len(result))
 	}
 }
+
+func TestConsumeMessages_PacketDecodingError_SkipOff_PropagatesError(t *testing.T) {
+	pc := &fakePartitionConsumer{}
+	errCh := make(chan *sarama.ConsumerError, 1)
+	errCh <- &sarama.ConsumerError{
+		Topic:     "test-topic",
+		Partition: 0,
+		Err:       sarama.PacketDecodingError{Info: "CRC mismatch"},
+	}
+	pc.errors = errCh
+
+	consumer := newOffsetConsumerForTest(1)
+	consumer.consumerOptions.SkipCorruptBatches = false
+
+	result, err := consumer.consumeMessages(context.Background(), pc)
+
+	if err == nil {
+		t.Fatalf("expected error, got nil")
+	}
+	if result != nil {
+		t.Errorf("expected nil result, got %v", result)
+	}
+}
+
+func TestConsumeMessages_PacketDecodingError_SkipOn_ReturnsSentinel(t *testing.T) {
+	pc := &fakePartitionConsumer{}
+	errCh := make(chan *sarama.ConsumerError, 1)
+	errCh <- &sarama.ConsumerError{
+		Topic:     "test-topic",
+		Partition: 0,
+		Err:       sarama.PacketDecodingError{Info: "CRC mismatch"},
+	}
+	pc.errors = errCh
+
+	consumer := newOffsetConsumerForTest(1)
+	consumer.consumerOptions.SkipCorruptBatches = true
+
+	result, err := consumer.consumeMessages(context.Background(), pc)
+
+	if err == nil {
+		t.Fatalf("expected error, got nil")
+	}
+	if !strings.Contains(err.Error(), "skip corrupt batch") {
+		t.Errorf("expected sentinel error 'skip corrupt batch', got: %v", err)
+	}
+	if result != nil {
+		t.Errorf("expected nil result, got %v", result)
+	}
+}
+
+func TestConsumerErrorHandler_HandleError_ReturnsNonNil(t *testing.T) {
+	handler := NewConsumerErrorHandler(NewMetrics())
+
+	err := handler.HandleError(&sarama.ConsumerError{
+		Topic:     "test-topic",
+		Partition: 0,
+		Err:       sarama.PacketDecodingError{Info: "CRC mismatch"},
+	})
+
+	if err == nil {
+		t.Errorf("expected non-nil error, got nil")
+	}
+}
+
+func TestIsCorruptionError_PacketDecodingError(t *testing.T) {
+	err := sarama.PacketDecodingError{Info: "CRC mismatch"}
+	if !IsCorruptionError(&err) {
+		t.Errorf("expected IsCorruptionError to return true for PacketDecodingError")
+	}
+}
+
+func TestIsCorruptionError_CRCInMessage(t *testing.T) {
+	err := sarama.PacketDecodingError{Info: "message contents does not match data"}
+	if !IsCorruptionError(&err) {
+		t.Errorf("expected IsCorruptionError to return true for message contents mismatch")
+	}
+}
+
+func TestIsCorruptionError_NilError(t *testing.T) {
+	if IsCorruptionError(nil) {
+		t.Errorf("expected IsCorruptionError to return false for nil")
+	}
+}
+
+func TestIsCorruptionError_GenericError(t *testing.T) {
+	err := sarama.PacketDecodingError{Info: "some generic error"}
+	if IsCorruptionError(&err) {
+		t.Errorf("expected IsCorruptionError to return false for generic error")
+	}
+}
+
+func TestWithSkipCorruptBatches_Option(t *testing.T) {
+	opts := ConsumerOptions{}
+	WithSkipCorruptBatches(true)(&opts)
+	if !opts.SkipCorruptBatches {
+		t.Errorf("expected SkipCorruptBatches to be true")
+	}
+
+	opts = ConsumerOptions{}
+	WithSkipCorruptBatches(false)(&opts)
+	if opts.SkipCorruptBatches {
+		t.Errorf("expected SkipCorruptBatches to be false")
+	}
+}
