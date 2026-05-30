@@ -1,8 +1,10 @@
 ---
+status: approved
 tags:
-  - dark-factory
-  - spec
-status: draft
+    - dark-factory
+    - spec
+approved: "2026-05-30T10:44:42Z"
+branch: dark-factory/crc-corruption-skip
 ---
 
 ## Summary
