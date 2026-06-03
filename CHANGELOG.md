@@ -8,6 +8,14 @@ Please choose versions by [Semantic Versioning](http://semver.org/).
 * MINOR version when you add functionality in a backwards-compatible manner, and
 * PATCH version when you make backwards-compatible bug fixes.
 
+## v1.23.1
+
+- bump go 1.26.3 → 1.26.4
+- bump IBM/sarama v1.48.1 → v1.50.1
+- bump bborbe/* dependencies to latest
+- bump golang.org/x/* and prometheus/* deps
+- add cloud.google.com/go v0.26.0 exclude
+
 ## v1.23.0
 
 - feat(consumer): add opt-in CRC corruption skip mode to offset consumer via `WithSkipCorruptBatches(bool)` option
