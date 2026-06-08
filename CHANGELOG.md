@@ -8,6 +8,13 @@ Please choose versions by [Semantic Versioning](http://semver.org/).
 * MINOR version when you add functionality in a backwards-compatible manner, and
 * PATCH version when you make backwards-compatible bug fixes.
 
+## v1.23.2
+
+- bump github.com/IBM/sarama v1.50.1 → v1.50.2
+- bump github.com/bborbe/http v1.26.12 → v1.26.13
+- bump github.com/bborbe/kv v1.21.1 → v1.21.2
+- bump github.com/pierrec/lz4/v4 v4.1.26 → v4.1.27
+
 ## v1.23.1
 
 - bump go 1.26.3 → 1.26.4

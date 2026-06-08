@@ -3,12 +3,12 @@ module github.com/bborbe/kafka
 go 1.26.4
 
 require (
-	github.com/IBM/sarama v1.50.1
+	github.com/IBM/sarama v1.50.2
 	github.com/bborbe/boltkv v1.14.1
 	github.com/bborbe/collection v1.20.13
 	github.com/bborbe/errors v1.5.13
-	github.com/bborbe/http v1.26.12
-	github.com/bborbe/kv v1.21.1
+	github.com/bborbe/http v1.26.13
+	github.com/bborbe/kv v1.21.2
 	github.com/bborbe/log v1.6.14
 	github.com/bborbe/memorykv v1.6.1
 	github.com/bborbe/parse v1.10.13
@@ -23,7 +23,7 @@ require (
 
 require (
 	github.com/Masterminds/semver/v3 v3.5.0 // indirect
-	github.com/bborbe/math v1.3.10 // indirect
+	github.com/bborbe/math v1.3.11 // indirect
 	github.com/bborbe/sentry v1.9.18 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
@@ -43,7 +43,7 @@ require (
 	github.com/jcmturner/rpc/v2 v2.0.3 // indirect
 	github.com/klauspost/compress v1.18.6 // indirect
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
-	github.com/pierrec/lz4/v4 v4.1.26 // indirect
+	github.com/pierrec/lz4/v4 v4.1.27 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/prometheus/client_model v0.6.2 // indirect
 	github.com/prometheus/common v0.68.0 // indirect

@@ -32,6 +32,19 @@ type KafkaSaramaSyncProducer struct {
 	addMessageToTxnReturnsOnCall map[int]struct {
 		result1 error
 	}
+	AddMessageToTxnWithGroupMetadataStub        func(*sarama.ConsumerMessage, *sarama.ConsumerGroupMetadata, *string) error
+	addMessageToTxnWithGroupMetadataMutex       sync.RWMutex
+	addMessageToTxnWithGroupMetadataArgsForCall []struct {
+		arg1 *sarama.ConsumerMessage
+		arg2 *sarama.ConsumerGroupMetadata
+		arg3 *string
+	}
+	addMessageToTxnWithGroupMetadataReturns struct {
+		result1 error
+	}
+	addMessageToTxnWithGroupMetadataReturnsOnCall map[int]struct {
+		result1 error
+	}
 	AddOffsetsToTxnStub        func(map[string][]*sarama.PartitionOffsetMetadata, string) error
 	addOffsetsToTxnMutex       sync.RWMutex
 	addOffsetsToTxnArgsForCall []struct {
@@ -42,6 +55,18 @@ type KafkaSaramaSyncProducer struct {
 		result1 error
 	}
 	addOffsetsToTxnReturnsOnCall map[int]struct {
+		result1 error
+	}
+	AddOffsetsToTxnWithGroupMetadataStub        func(map[string][]*sarama.PartitionOffsetMetadata, *sarama.ConsumerGroupMetadata) error
+	addOffsetsToTxnWithGroupMetadataMutex       sync.RWMutex
+	addOffsetsToTxnWithGroupMetadataArgsForCall []struct {
+		arg1 map[string][]*sarama.PartitionOffsetMetadata
+		arg2 *sarama.ConsumerGroupMetadata
+	}
+	addOffsetsToTxnWithGroupMetadataReturns struct {
+		result1 error
+	}
+	addOffsetsToTxnWithGroupMetadataReturnsOnCall map[int]struct {
 		result1 error
 	}
 	BeginTxnStub        func() error
@@ -240,6 +265,69 @@ func (fake *KafkaSaramaSyncProducer) AddMessageToTxnReturnsOnCall(i int, result1
 	}{result1}
 }
 
+func (fake *KafkaSaramaSyncProducer) AddMessageToTxnWithGroupMetadata(arg1 *sarama.ConsumerMessage, arg2 *sarama.ConsumerGroupMetadata, arg3 *string) error {
+	fake.addMessageToTxnWithGroupMetadataMutex.Lock()
+	ret, specificReturn := fake.addMessageToTxnWithGroupMetadataReturnsOnCall[len(fake.addMessageToTxnWithGroupMetadataArgsForCall)]
+	fake.addMessageToTxnWithGroupMetadataArgsForCall = append(fake.addMessageToTxnWithGroupMetadataArgsForCall, struct {
+		arg1 *sarama.ConsumerMessage
+		arg2 *sarama.ConsumerGroupMetadata
+		arg3 *string
+	}{arg1, arg2, arg3})
+	stub := fake.AddMessageToTxnWithGroupMetadataStub
+	fakeReturns := fake.addMessageToTxnWithGroupMetadataReturns
+	fake.recordInvocation("AddMessageToTxnWithGroupMetadata", []interface{}{arg1, arg2, arg3})
+	fake.addMessageToTxnWithGroupMetadataMutex.Unlock()
+	if stub != nil {
+		return stub(arg1, arg2, arg3)
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	return fakeReturns.result1
+}
+
+func (fake *KafkaSaramaSyncProducer) AddMessageToTxnWithGroupMetadataCallCount() int {
+	fake.addMessageToTxnWithGroupMetadataMutex.RLock()
+	defer fake.addMessageToTxnWithGroupMetadataMutex.RUnlock()
+	return len(fake.addMessageToTxnWithGroupMetadataArgsForCall)
+}
+
+func (fake *KafkaSaramaSyncProducer) AddMessageToTxnWithGroupMetadataCalls(stub func(*sarama.ConsumerMessage, *sarama.ConsumerGroupMetadata, *string) error) {
+	fake.addMessageToTxnWithGroupMetadataMutex.Lock()
+	defer fake.addMessageToTxnWithGroupMetadataMutex.Unlock()
+	fake.AddMessageToTxnWithGroupMetadataStub = stub
+}
+
+func (fake *KafkaSaramaSyncProducer) AddMessageToTxnWithGroupMetadataArgsForCall(i int) (*sarama.ConsumerMessage, *sarama.ConsumerGroupMetadata, *string) {
+	fake.addMessageToTxnWithGroupMetadataMutex.RLock()
+	defer fake.addMessageToTxnWithGroupMetadataMutex.RUnlock()
+	argsForCall := fake.addMessageToTxnWithGroupMetadataArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
+}
+
+func (fake *KafkaSaramaSyncProducer) AddMessageToTxnWithGroupMetadataReturns(result1 error) {
+	fake.addMessageToTxnWithGroupMetadataMutex.Lock()
+	defer fake.addMessageToTxnWithGroupMetadataMutex.Unlock()
+	fake.AddMessageToTxnWithGroupMetadataStub = nil
+	fake.addMessageToTxnWithGroupMetadataReturns = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *KafkaSaramaSyncProducer) AddMessageToTxnWithGroupMetadataReturnsOnCall(i int, result1 error) {
+	fake.addMessageToTxnWithGroupMetadataMutex.Lock()
+	defer fake.addMessageToTxnWithGroupMetadataMutex.Unlock()
+	fake.AddMessageToTxnWithGroupMetadataStub = nil
+	if fake.addMessageToTxnWithGroupMetadataReturnsOnCall == nil {
+		fake.addMessageToTxnWithGroupMetadataReturnsOnCall = make(map[int]struct {
+			result1 error
+		})
+	}
+	fake.addMessageToTxnWithGroupMetadataReturnsOnCall[i] = struct {
+		result1 error
+	}{result1}
+}
+
 func (fake *KafkaSaramaSyncProducer) AddOffsetsToTxn(arg1 map[string][]*sarama.PartitionOffsetMetadata, arg2 string) error {
 	fake.addOffsetsToTxnMutex.Lock()
 	ret, specificReturn := fake.addOffsetsToTxnReturnsOnCall[len(fake.addOffsetsToTxnArgsForCall)]
@@ -298,6 +386,68 @@ func (fake *KafkaSaramaSyncProducer) AddOffsetsToTxnReturnsOnCall(i int, result1
 		})
 	}
 	fake.addOffsetsToTxnReturnsOnCall[i] = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *KafkaSaramaSyncProducer) AddOffsetsToTxnWithGroupMetadata(arg1 map[string][]*sarama.PartitionOffsetMetadata, arg2 *sarama.ConsumerGroupMetadata) error {
+	fake.addOffsetsToTxnWithGroupMetadataMutex.Lock()
+	ret, specificReturn := fake.addOffsetsToTxnWithGroupMetadataReturnsOnCall[len(fake.addOffsetsToTxnWithGroupMetadataArgsForCall)]
+	fake.addOffsetsToTxnWithGroupMetadataArgsForCall = append(fake.addOffsetsToTxnWithGroupMetadataArgsForCall, struct {
+		arg1 map[string][]*sarama.PartitionOffsetMetadata
+		arg2 *sarama.ConsumerGroupMetadata
+	}{arg1, arg2})
+	stub := fake.AddOffsetsToTxnWithGroupMetadataStub
+	fakeReturns := fake.addOffsetsToTxnWithGroupMetadataReturns
+	fake.recordInvocation("AddOffsetsToTxnWithGroupMetadata", []interface{}{arg1, arg2})
+	fake.addOffsetsToTxnWithGroupMetadataMutex.Unlock()
+	if stub != nil {
+		return stub(arg1, arg2)
+	}
+	if specificReturn {
+		return ret.result1
+	}
+	return fakeReturns.result1
+}
+
+func (fake *KafkaSaramaSyncProducer) AddOffsetsToTxnWithGroupMetadataCallCount() int {
+	fake.addOffsetsToTxnWithGroupMetadataMutex.RLock()
+	defer fake.addOffsetsToTxnWithGroupMetadataMutex.RUnlock()
+	return len(fake.addOffsetsToTxnWithGroupMetadataArgsForCall)
+}
+
+func (fake *KafkaSaramaSyncProducer) AddOffsetsToTxnWithGroupMetadataCalls(stub func(map[string][]*sarama.PartitionOffsetMetadata, *sarama.ConsumerGroupMetadata) error) {
+	fake.addOffsetsToTxnWithGroupMetadataMutex.Lock()
+	defer fake.addOffsetsToTxnWithGroupMetadataMutex.Unlock()
+	fake.AddOffsetsToTxnWithGroupMetadataStub = stub
+}
+
+func (fake *KafkaSaramaSyncProducer) AddOffsetsToTxnWithGroupMetadataArgsForCall(i int) (map[string][]*sarama.PartitionOffsetMetadata, *sarama.ConsumerGroupMetadata) {
+	fake.addOffsetsToTxnWithGroupMetadataMutex.RLock()
+	defer fake.addOffsetsToTxnWithGroupMetadataMutex.RUnlock()
+	argsForCall := fake.addOffsetsToTxnWithGroupMetadataArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2
+}
+
+func (fake *KafkaSaramaSyncProducer) AddOffsetsToTxnWithGroupMetadataReturns(result1 error) {
+	fake.addOffsetsToTxnWithGroupMetadataMutex.Lock()
+	defer fake.addOffsetsToTxnWithGroupMetadataMutex.Unlock()
+	fake.AddOffsetsToTxnWithGroupMetadataStub = nil
+	fake.addOffsetsToTxnWithGroupMetadataReturns = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *KafkaSaramaSyncProducer) AddOffsetsToTxnWithGroupMetadataReturnsOnCall(i int, result1 error) {
+	fake.addOffsetsToTxnWithGroupMetadataMutex.Lock()
+	defer fake.addOffsetsToTxnWithGroupMetadataMutex.Unlock()
+	fake.AddOffsetsToTxnWithGroupMetadataStub = nil
+	if fake.addOffsetsToTxnWithGroupMetadataReturnsOnCall == nil {
+		fake.addOffsetsToTxnWithGroupMetadataReturnsOnCall = make(map[int]struct {
+			result1 error
+		})
+	}
+	fake.addOffsetsToTxnWithGroupMetadataReturnsOnCall[i] = struct {
 		result1 error
 	}{result1}
 }
