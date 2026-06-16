@@ -1,4 +1,4 @@
-// Copyright (c) 2025 Benjamin Borbe All rights reserved.
+// Copyright (c) 2026 Benjamin Borbe All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -12,6 +12,15 @@ import (
 	"github.com/IBM/sarama"
 	"github.com/bborbe/errors"
 )
+
+// GzipHeaderKey is the Kafka message header key set by gzip-compressing
+// producers and read by gzip-decompressing consumers. Wire-compatible with the
+// legacy seibert-data/lib-kafka constant of the same name and value.
+const GzipHeaderKey string = "gzip"
+
+// GzipHeaderValue is the Kafka message header value indicating that the
+// payload has been gzip-compressed. Wire-compatible with seibert-data/lib-kafka.
+const GzipHeaderValue string = "active"
 
 // NewGzipEncoder compresses a byte slice using gzip compression with default compression level.
 // It returns the compressed data as a sarama.ByteEncoder.

@@ -8,6 +8,13 @@ Please choose versions by [Semantic Versioning](http://semver.org/).
 * MINOR version when you add functionality in a backwards-compatible manner, and
 * PATCH version when you make backwards-compatible bug fixes.
 
+## Unreleased
+
+- add NewSyncProducerGzipValue producer wrapper (drop-in for seibert-data/lib-kafka)
+- add NewSyncProducerEncryptValue producer wrapper accepting a ValueModifierFunc (no crypto package dep)
+- export GzipHeaderKey / GzipHeaderValue constants + GzipActive / RemoveGzipHeader helpers (wire-compatible with seibert-data/lib-kafka)
+- export GzipMaxMsgBytes constant
+
 ## v1.23.2
 
 - bump github.com/IBM/sarama v1.50.1 → v1.50.2
