@@ -157,6 +157,20 @@ var _ = Describe("NewSyncProducerGzipValue", func() {
 		})
 	})
 
+	Context("cancelled ctx in SendMessages", func() {
+		It("returns ctx.Err() without compressing or sending", func() {
+			cctx, cancel := context.WithCancel(context.Background())
+			cancel()
+			msgs := []*sarama.ProducerMessage{
+				{Value: sarama.ByteEncoder([]byte(strings.Repeat("x", 200)))},
+				{Value: sarama.ByteEncoder([]byte(strings.Repeat("y", 200)))},
+			}
+			err := gzp.SendMessages(cctx, msgs)
+			Expect(err).To(MatchError(context.Canceled))
+			Expect(inner.SendMessagesCallCount()).To(Equal(0))
+		})
+	})
+
 	Context("Close", func() {
 		It("closes the inner producer", func() {
 			Expect(gzp.Close()).To(BeNil())

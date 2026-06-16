@@ -176,6 +176,20 @@ var _ = Describe("GzipActive", func() {
 		}
 		Expect(libkafka.GzipActive(headers)).To(BeTrue())
 	})
+
+	It("returns false when a header has a nil Key", func() {
+		headers := []*sarama.RecordHeader{
+			{Key: nil, Value: []byte(libkafka.GzipHeaderValue)},
+		}
+		Expect(libkafka.GzipActive(headers)).To(BeFalse())
+	})
+
+	It("returns false when a header has a nil Value", func() {
+		headers := []*sarama.RecordHeader{
+			{Key: []byte(libkafka.GzipHeaderKey), Value: nil},
+		}
+		Expect(libkafka.GzipActive(headers)).To(BeFalse())
+	})
 })
 
 var _ = Describe("RemoveGzipHeader", func() {
@@ -213,5 +227,23 @@ var _ = Describe("RemoveGzipHeader", func() {
 		out := libkafka.RemoveGzipHeader(headers)
 		Expect(out).To(HaveLen(1))
 		Expect(string(out[0].Key)).To(Equal("foo"))
+	})
+
+	It("keeps a header with a nil Key (it is not the gzip marker)", func() {
+		headers := []*sarama.RecordHeader{
+			{Key: nil, Value: []byte(libkafka.GzipHeaderValue)},
+		}
+		out := libkafka.RemoveGzipHeader(headers)
+		Expect(out).To(HaveLen(1))
+		Expect(out[0].Key).To(BeNil())
+	})
+
+	It("keeps a header with a nil Value (it is not the gzip marker)", func() {
+		headers := []*sarama.RecordHeader{
+			{Key: []byte(libkafka.GzipHeaderKey), Value: nil},
+		}
+		out := libkafka.RemoveGzipHeader(headers)
+		Expect(out).To(HaveLen(1))
+		Expect(out[0].Value).To(BeNil())
 	})
 })
