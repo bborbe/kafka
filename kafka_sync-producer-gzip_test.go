@@ -49,6 +49,25 @@ var _ = Describe("NewSyncProducerGzipValue", func() {
 		})
 	})
 
+	Context("payload exactly at the threshold", func() {
+		It("passes the message through unmodified (boundary: len == maxMsgBytes)", func() {
+			value := make([]byte, 100) // exactly maxMsgBytes
+			for i := range value {
+				value[i] = 'x'
+			}
+			msg := &sarama.ProducerMessage{Value: sarama.ByteEncoder(value)}
+			_, _, err := gzp.SendMessage(ctx, msg)
+			Expect(err).To(BeNil())
+			Expect(inner.SendMessageCallCount()).To(Equal(1))
+
+			_, sent := inner.SendMessageArgsForCall(0)
+			encoded, eerr := sent.Value.Encode()
+			Expect(eerr).To(BeNil())
+			Expect(encoded).To(Equal(value))
+			Expect(hasGzipHeader(sent.Headers)).To(BeFalse())
+		})
+	})
+
 	Context("payload above the threshold", func() {
 		It("compresses the value and adds the gzip header", func() {
 			value := []byte(strings.Repeat("compressible payload ", 100))
@@ -109,6 +128,20 @@ var _ = Describe("NewSyncProducerGzipValue", func() {
 			msg := &sarama.ProducerMessage{Value: sarama.ByteEncoder([]byte("ok"))}
 			_, _, err := gzp.SendMessage(ctx, msg)
 			Expect(err).NotTo(BeNil())
+		})
+	})
+
+	Context("nil-Headers safety", func() {
+		It("appends the gzip header even when msg.Headers is nil", func() {
+			value := []byte(strings.Repeat("x", 200))
+			msg := &sarama.ProducerMessage{
+				Value:   sarama.ByteEncoder(value),
+				Headers: nil,
+			}
+			_, _, err := gzp.SendMessage(ctx, msg)
+			Expect(err).To(BeNil())
+			_, sent := inner.SendMessageArgsForCall(0)
+			Expect(hasGzipHeader(sent.Headers)).To(BeTrue())
 		})
 	})
 

@@ -93,6 +93,19 @@ var _ = Describe("NewSyncProducerEncryptValue", func() {
 		Expect(inner.SendMessagesCallCount()).To(Equal(1))
 	})
 
+	It("returns ctx.Err() without encrypting when ctx is cancelled in SendMessages", func() {
+		cctx, cancel := context.WithCancel(context.Background())
+		cancel()
+		msgs := []*sarama.ProducerMessage{
+			{Value: sarama.ByteEncoder([]byte("a"))},
+			{Value: sarama.ByteEncoder([]byte("b"))},
+		}
+		err := ep.SendMessages(cctx, msgs)
+		Expect(err).To(MatchError(context.Canceled))
+		Expect(called).To(Equal(0))
+		Expect(inner.SendMessagesCallCount()).To(Equal(0))
+	})
+
 	It("closes the inner producer", func() {
 		Expect(ep.Close()).To(BeNil())
 		Expect(inner.CloseCallCount()).To(Equal(1))
