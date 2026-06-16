@@ -13,6 +13,15 @@ import (
 	"github.com/bborbe/errors"
 )
 
+// GzipHeaderKey is the Kafka message header key set by gzip-compressing
+// producers and read by gzip-decompressing consumers. Wire-compatible with the
+// legacy seibert-data/lib-kafka constant of the same name and value.
+const GzipHeaderKey string = "gzip"
+
+// GzipHeaderValue is the Kafka message header value indicating that the
+// payload has been gzip-compressed. Wire-compatible with seibert-data/lib-kafka.
+const GzipHeaderValue string = "active"
+
 // NewGzipEncoder compresses a byte slice using gzip compression with default compression level.
 // It returns the compressed data as a sarama.ByteEncoder.
 // Returns an error if compression fails.

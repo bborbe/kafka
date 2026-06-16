@@ -10,8 +10,42 @@ import (
 	"context"
 	"io"
 
+	"github.com/IBM/sarama"
 	"github.com/bborbe/errors"
 )
+
+// GzipActive reports whether the given record headers carry the gzip "active"
+// marker (GzipHeaderKey / GzipHeaderValue) written by gzip-compressing producers.
+func GzipActive(headers []*sarama.RecordHeader) bool {
+	for _, header := range headers {
+		if header == nil {
+			continue
+		}
+		if bytes.Equal(header.Key, []byte(GzipHeaderKey)) &&
+			bytes.Equal(header.Value, []byte(GzipHeaderValue)) {
+			return true
+		}
+	}
+	return false
+}
+
+// RemoveGzipHeader returns a copy of headers with the gzip "active" marker
+// stripped out. Use after successfully decompressing a value so downstream
+// handlers don't see a stale compression marker.
+func RemoveGzipHeader(headers []*sarama.RecordHeader) []*sarama.RecordHeader {
+	out := make([]*sarama.RecordHeader, 0, len(headers))
+	for _, header := range headers {
+		if header == nil {
+			continue
+		}
+		if bytes.Equal(header.Key, []byte(GzipHeaderKey)) &&
+			bytes.Equal(header.Value, []byte(GzipHeaderValue)) {
+			continue
+		}
+		out = append(out, header)
+	}
+	return out
+}
 
 // GzipDecoder decompresses gzip-compressed data.
 // It takes compressed data as a byte slice, decompresses it using gzip,
