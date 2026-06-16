@@ -11,7 +11,7 @@ import (
 	"github.com/bborbe/errors"
 )
 
-// ValueModifier transforms a raw message-value byte slice into a new byte
+// ValueModifierFunc transforms a raw message-value byte slice into a new byte
 // slice. Used by NewSyncProducerEncryptValue (and decrypt-message-handler
 // wrappers on the consumer side) to plug a caller-supplied encrypt/decrypt
 // function into the producer/consumer pipeline without forcing a particular
@@ -20,10 +20,10 @@ import (
 // Pass `crypter.Encrypt` directly when using github.com/bborbe/crypto:
 //
 //	sp = libkafka.NewSyncProducerEncryptValue(sp, crypter.Encrypt)
-type ValueModifier func(ctx context.Context, value []byte) ([]byte, error)
+type ValueModifierFunc func(ctx context.Context, value []byte) ([]byte, error)
 
 // NewSyncProducerEncryptValue wraps a SyncProducer and applies the given
-// ValueModifier (typically a crypter's Encrypt method) to every non-empty
+// ValueModifierFunc (typically a crypter's Encrypt method) to every non-empty
 // message value before delegating to the underlying producer. Nil / empty
 // values pass through unmodified.
 //
@@ -32,7 +32,7 @@ type ValueModifier func(ctx context.Context, value []byte) ([]byte, error)
 // github.com/bborbe/crypto and pass crypter.Encrypt as the modifier.
 func NewSyncProducerEncryptValue(
 	syncProducer SyncProducer,
-	encrypt ValueModifier,
+	encrypt ValueModifierFunc,
 ) SyncProducer {
 	return &syncProducerEncryptValue{
 		syncProducer: syncProducer,
@@ -42,7 +42,7 @@ func NewSyncProducerEncryptValue(
 
 type syncProducerEncryptValue struct {
 	syncProducer SyncProducer
-	encrypt      ValueModifier
+	encrypt      ValueModifierFunc
 }
 
 // SendMessage encrypts the message value (when non-empty) and delegates to the

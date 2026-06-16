@@ -64,7 +64,7 @@ func (s *syncProducerGzipValue) SendMessages(
 			return ctx.Err()
 		default:
 			if err := s.compressIfNeeded(ctx, msg); err != nil {
-				return err
+				return errors.Wrapf(ctx, err, "compress message failed")
 			}
 		}
 	}

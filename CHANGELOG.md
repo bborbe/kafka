@@ -11,7 +11,7 @@ Please choose versions by [Semantic Versioning](http://semver.org/).
 ## Unreleased
 
 - add NewSyncProducerGzipValue producer wrapper (drop-in for seibert-data/lib-kafka)
-- add NewSyncProducerEncryptValue producer wrapper accepting a ValueModifier func (no crypto package dep)
+- add NewSyncProducerEncryptValue producer wrapper accepting a ValueModifierFunc (no crypto package dep)
 - export GzipHeaderKey / GzipHeaderValue constants + GzipActive / RemoveGzipHeader helpers (wire-compatible with seibert-data/lib-kafka)
 - export GzipMaxMsgBytes constant
 
