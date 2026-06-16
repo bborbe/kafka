@@ -58,7 +58,9 @@ func (s *syncProducerEncryptValue) SendMessage(
 }
 
 // SendMessages encrypts each message value (when non-empty) and delegates to
-// the underlying SyncProducer.
+// the underlying SyncProducer. Atomicity: if encryption fails on message N,
+// messages 1..N-1 are NOT sent — the inner SendMessages call happens only
+// after every message has been successfully prepared.
 func (s *syncProducerEncryptValue) SendMessages(
 	ctx context.Context,
 	msgs []*sarama.ProducerMessage,

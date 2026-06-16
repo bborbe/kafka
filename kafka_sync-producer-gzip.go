@@ -22,6 +22,10 @@ const GzipMaxMsgBytes int = 1048576
 // GzipHeaderKey / GzipHeaderValue header so consumers can detect and decompress.
 // Smaller messages and nil/empty values pass through unmodified.
 //
+// If maxMsgBytes is negative, GzipMaxMsgBytes (1 MiB) is used instead — a
+// negative threshold would otherwise compress every message, which is never the
+// intent.
+//
 // Use this as a drop-in replacement for the legacy
 // seibert-data/lib-kafka/producer.NewSyncProducerGzipValue. The on-the-wire
 // format (header + compressed bytes) is identical.
@@ -29,6 +33,9 @@ func NewSyncProducerGzipValue(
 	syncProducer SyncProducer,
 	maxMsgBytes int,
 ) SyncProducer {
+	if maxMsgBytes < 0 {
+		maxMsgBytes = GzipMaxMsgBytes
+	}
 	return &syncProducerGzipValue{
 		syncProducer: syncProducer,
 		maxMsgBytes:  maxMsgBytes,
@@ -53,7 +60,9 @@ func (s *syncProducerGzipValue) SendMessage(
 }
 
 // SendMessages compresses each message's value when above the threshold and
-// delegates to the underlying SyncProducer.
+// delegates to the underlying SyncProducer. Atomicity: if compression fails
+// on message N, messages 1..N-1 are NOT sent — the inner SendMessages call
+// happens only after every message has been successfully prepared.
 func (s *syncProducerGzipValue) SendMessages(
 	ctx context.Context,
 	msgs []*sarama.ProducerMessage,

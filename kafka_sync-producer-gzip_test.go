@@ -131,6 +131,18 @@ var _ = Describe("NewSyncProducerGzipValue", func() {
 		})
 	})
 
+	Context("negative maxMsgBytes falls back to the default", func() {
+		It("uses GzipMaxMsgBytes when maxMsgBytes < 0", func() {
+			fallback := libkafka.NewSyncProducerGzipValue(inner, -1)
+			// A small payload is well below the 1 MiB default, so no compression.
+			msg := &sarama.ProducerMessage{Value: sarama.ByteEncoder([]byte("ok"))}
+			_, _, err := fallback.SendMessage(ctx, msg)
+			Expect(err).To(BeNil())
+			_, sent := inner.SendMessageArgsForCall(0)
+			Expect(hasGzipHeader(sent.Headers)).To(BeFalse())
+		})
+	})
+
 	Context("nil-Headers safety", func() {
 		It("appends the gzip header even when msg.Headers is nil", func() {
 			value := []byte(strings.Repeat("x", 200))
