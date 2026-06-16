@@ -8,6 +8,11 @@ Please choose versions by [Semantic Versioning](http://semver.org/).
 * MINOR version when you add functionality in a backwards-compatible manner, and
 * PATCH version when you make backwards-compatible bug fixes.
 
+## Unreleased
+
+- add NewDecryptMessageHandlerTx consumer wrapper that decrypts msg.Value via a ValueModifierFunc before delegating to the inner MessageHandlerTx (drop-in for seibert-data/lib-kafka/consumer.NewDecryptMessageHandler, but for the Tx variant + no crypto package dep)
+- add NewGzipMessageHandlerTx consumer wrapper that gunzips msg.Value when the GzipHeaderKey marker is present and strips the header (drop-in for seibert-data/lib-kafka/consumer.NewGzipMessageHandler, but for the Tx variant)
+
 ## v1.24.0
 
 - add NewSyncProducerGzipValue producer wrapper (drop-in for seibert-data/lib-kafka)
