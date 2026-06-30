@@ -8,6 +8,13 @@ Please choose versions by [Semantic Versioning](http://semver.org/).
 * MINOR version when you add functionality in a backwards-compatible manner, and
 * PATCH version when you make backwards-compatible bug fixes.
 
+## v1.25.1
+
+- update github.com/IBM/sarama v1.50.2 → v1.50.3
+- update ginkgo/v2 v2.29.0 → v2.32.0 and gomega v1.41.0 → v1.42.1
+- update golang.org/x/* packages (crypto, net, sync, sys, text, tools, mod)
+- update prometheus/common, prometheus/procfs, getsentry/sentry-go
+
 ## v1.25.0
 
 - add NewDecryptMessageHandlerTx consumer wrapper that decrypts msg.Value via a ValueModifierFunc before delegating to the inner MessageHandlerTx (drop-in for seibert-data/lib-kafka/consumer.NewDecryptMessageHandler, but for the Tx variant + no crypto package dep)
