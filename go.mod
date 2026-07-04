@@ -5,16 +5,16 @@ go 1.26.4
 require (
 	github.com/IBM/sarama v1.50.3
 	github.com/bborbe/boltkv v1.14.3
-	github.com/bborbe/collection v1.20.15
+	github.com/bborbe/collection v1.20.16
 	github.com/bborbe/errors v1.5.15
 	github.com/bborbe/http v1.26.13
 	github.com/bborbe/kv v1.21.4
 	github.com/bborbe/log v1.6.15
 	github.com/bborbe/memorykv v1.6.3
-	github.com/bborbe/parse v1.10.15
-	github.com/bborbe/run v1.9.29
-	github.com/bborbe/time v1.27.3
-	github.com/bborbe/validation v1.4.15
+	github.com/bborbe/parse v1.10.16
+	github.com/bborbe/run v1.9.30
+	github.com/bborbe/time v1.27.4
+	github.com/bborbe/validation v1.4.16
 	github.com/golang/glog v1.2.5
 	github.com/onsi/ginkgo/v2 v2.32.0
 	github.com/onsi/gomega v1.42.1
@@ -23,7 +23,7 @@ require (
 
 require (
 	github.com/Masterminds/semver/v3 v3.5.0 // indirect
-	github.com/bborbe/math v1.3.11 // indirect
+	github.com/bborbe/math v1.3.12 // indirect
 	github.com/bborbe/sentry v1.9.20 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect

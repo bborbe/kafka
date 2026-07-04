@@ -8,6 +8,15 @@ Please choose versions by [Semantic Versioning](http://semver.org/).
 * MINOR version when you add functionality in a backwards-compatible manner, and
 * PATCH version when you make backwards-compatible bug fixes.
 
+## v1.25.3
+
+- Update bborbe/collection to v1.20.16
+- Update bborbe/parse to v1.10.16
+- Update bborbe/run to v1.9.30
+- Update bborbe/time to v1.27.4
+- Update bborbe/validation to v1.4.16
+- Update bborbe/math to v1.3.12
+
 ## v1.25.2
 
 - Update bborbe/boltkv, collection, errors, kv, log, memorykv, parse, run, time, validation dependencies
