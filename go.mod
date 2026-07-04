@@ -4,17 +4,17 @@ go 1.26.4
 
 require (
 	github.com/IBM/sarama v1.50.3
-	github.com/bborbe/boltkv v1.14.1
-	github.com/bborbe/collection v1.20.13
-	github.com/bborbe/errors v1.5.13
+	github.com/bborbe/boltkv v1.14.3
+	github.com/bborbe/collection v1.20.15
+	github.com/bborbe/errors v1.5.15
 	github.com/bborbe/http v1.26.13
-	github.com/bborbe/kv v1.21.2
-	github.com/bborbe/log v1.6.14
-	github.com/bborbe/memorykv v1.6.1
-	github.com/bborbe/parse v1.10.13
-	github.com/bborbe/run v1.9.28
-	github.com/bborbe/time v1.27.1
-	github.com/bborbe/validation v1.4.14
+	github.com/bborbe/kv v1.21.4
+	github.com/bborbe/log v1.6.15
+	github.com/bborbe/memorykv v1.6.3
+	github.com/bborbe/parse v1.10.15
+	github.com/bborbe/run v1.9.29
+	github.com/bborbe/time v1.27.3
+	github.com/bborbe/validation v1.4.15
 	github.com/golang/glog v1.2.5
 	github.com/onsi/ginkgo/v2 v2.32.0
 	github.com/onsi/gomega v1.42.1
@@ -24,7 +24,7 @@ require (
 require (
 	github.com/Masterminds/semver/v3 v3.5.0 // indirect
 	github.com/bborbe/math v1.3.11 // indirect
-	github.com/bborbe/sentry v1.9.18 // indirect
+	github.com/bborbe/sentry v1.9.20 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
@@ -49,10 +49,10 @@ require (
 	github.com/prometheus/common v0.69.0 // indirect
 	github.com/prometheus/procfs v0.21.0 // indirect
 	github.com/rcrowley/go-metrics v0.0.0-20250401214520-65e299d6c5c9 // indirect
-	go.etcd.io/bbolt v1.4.3 // indirect
+	go.etcd.io/bbolt v1.5.0 // indirect
 	go.yaml.in/yaml/v3 v3.0.4 // indirect
 	golang.org/x/crypto v0.53.0 // indirect
-	golang.org/x/exp v0.0.0-20260529124908-c761662dc8c9 // indirect
+	golang.org/x/exp v0.0.0-20260611194520-c48552f49976 // indirect
 	golang.org/x/mod v0.37.0 // indirect
 	golang.org/x/net v0.56.0 // indirect
 	golang.org/x/sync v0.21.0 // indirect

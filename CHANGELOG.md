@@ -8,6 +8,12 @@ Please choose versions by [Semantic Versioning](http://semver.org/).
 * MINOR version when you add functionality in a backwards-compatible manner, and
 * PATCH version when you make backwards-compatible bug fixes.
 
+## v1.25.2
+
+- Update bborbe/boltkv, collection, errors, kv, log, memorykv, parse, run, time, validation dependencies
+- Update bborbe/sentry indirect dependency
+- Update go.etcd.io/bbolt and golang.org/x/exp indirect dependencies
+
 ## v1.25.1
 
 - update github.com/IBM/sarama v1.50.2 → v1.50.3
