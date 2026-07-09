@@ -8,6 +8,11 @@ Please choose versions by [Semantic Versioning](http://semver.org/).
 * MINOR version when you add functionality in a backwards-compatible manner, and
 * PATCH version when you make backwards-compatible bug fixes.
 
+## v1.25.4
+
+- update go and dependencies (boltkv, collection, errors, http, kv, log, memorykv, parse, time, math, sentry)
+- exclude no-fix advisory GO-2026-5932 (x/crypto/openpgp unmaintained) in osv-scanner and vulncheck
+
 ## v1.25.3
 
 - Update bborbe/collection to v1.20.16
