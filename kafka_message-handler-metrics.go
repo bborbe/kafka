@@ -6,9 +6,9 @@ package kafka
 
 import (
 	"context"
-	"time"
 
 	"github.com/IBM/sarama"
+	libtime "github.com/bborbe/time"
 )
 
 // NewMessageHandlerMetrics is a MessageHandler adapter that create Prometheus metrics for started, completed and failed.
@@ -17,7 +17,7 @@ func NewMessageHandlerMetrics(
 	metrics MetricsMessageHandler,
 ) MessageHandler {
 	return MessageHandlerFunc(func(ctx context.Context, msg *sarama.ConsumerMessage) error {
-		start := time.Now()
+		start := libtime.Now()
 		metrics.MessageHandlerTotalCounterInc(Topic(msg.Topic), Partition(msg.Partition))
 		if err := messageHandler.ConsumeMessage(ctx, msg); err != nil {
 			metrics.MessageHandlerFailureCounterInc(Topic(msg.Topic), Partition(msg.Partition))
@@ -27,7 +27,7 @@ func NewMessageHandlerMetrics(
 		metrics.MessageHandlerDurationMeasure(
 			Topic(msg.Topic),
 			Partition(msg.Partition),
-			time.Since(start),
+			libtime.Now().Sub(start),
 		)
 		return nil
 	})
