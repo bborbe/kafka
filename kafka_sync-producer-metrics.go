@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/IBM/sarama"
+	libtime "github.com/bborbe/time"
 )
 
 // NewSyncProducerMetrics creates a sync producer decorator that records metrics for all operations.
@@ -32,7 +33,7 @@ func (s *syncProducerMetrics) SendMessage(
 	ctx context.Context,
 	msg *sarama.ProducerMessage,
 ) (int32, int64, error) {
-	start := time.Now()
+	start := libtime.Now()
 	s.metricsSyncProducer.SyncProducerTotalCounterInc(Topic(msg.Topic))
 	partition, offset, err := s.syncProducer.SendMessage(ctx, msg)
 	if err != nil {
@@ -40,7 +41,7 @@ func (s *syncProducerMetrics) SendMessage(
 		return 0, 0, err
 	}
 	s.metricsSyncProducer.SyncProducerSuccessCounterInc(Topic(msg.Topic))
-	s.metricsSyncProducer.SyncProducerDurationMeasure(Topic(msg.Topic), time.Since(start))
+	s.metricsSyncProducer.SyncProducerDurationMeasure(Topic(msg.Topic), libtime.Now().Sub(start))
 	return partition, offset, nil
 }
 
@@ -49,7 +50,7 @@ func (s *syncProducerMetrics) SendMessages(
 	ctx context.Context,
 	msgs []*sarama.ProducerMessage,
 ) error {
-	start := time.Now()
+	start := libtime.Now()
 	for _, msg := range msgs {
 		s.metricsSyncProducer.SyncProducerTotalCounterInc(Topic(msg.Topic))
 	}
@@ -63,7 +64,7 @@ func (s *syncProducerMetrics) SendMessages(
 		s.metricsSyncProducer.SyncProducerSuccessCounterInc(Topic(msg.Topic))
 		s.metricsSyncProducer.SyncProducerDurationMeasure(
 			Topic(msg.Topic),
-			time.Since(start)/time.Duration(len(msgs)),
+			libtime.Now().Sub(start)/time.Duration(len(msgs)),
 		)
 	}
 	return nil

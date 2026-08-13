@@ -8,6 +8,11 @@ Please choose versions by [Semantic Versioning](http://semver.org/).
 * MINOR version when you add functionality in a backwards-compatible manner, and
 * PATCH version when you make backwards-compatible bug fixes.
 
+## Unreleased
+
+- fix: measure handler and producer durations with the injectable libtime clock instead of time.Now
+- test: add a fake-clock regression spec pinning the measured duration
+
 ## v1.25.6
 
 - update Go to 1.26.5 and update dependencies (IBM/sarama, bborbe/*, klauspost/compress, prometheus/*, golang.org/x/*)

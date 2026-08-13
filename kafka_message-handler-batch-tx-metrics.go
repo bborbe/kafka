@@ -6,10 +6,10 @@ package kafka
 
 import (
 	"context"
-	"time"
 
 	"github.com/IBM/sarama"
 	libkv "github.com/bborbe/kv"
+	libtime "github.com/bborbe/time"
 )
 
 // NewMessageHandlerBatchTxMetrics is a MessageHandler adapter that create Prometheus metrics for started, completed and failed.
@@ -19,7 +19,7 @@ func NewMessageHandlerBatchTxMetrics(
 ) MessageHandlerBatchTx {
 	return MessageHandlerBatchTxFunc(
 		func(ctx context.Context, tx libkv.Tx, msgs []*sarama.ConsumerMessage) error {
-			start := time.Now()
+			start := libtime.Now()
 			for _, msg := range msgs {
 				metrics.MessageHandlerTotalCounterInc(Topic(msg.Topic), Partition(msg.Partition))
 			}
@@ -37,7 +37,7 @@ func NewMessageHandlerBatchTxMetrics(
 				metrics.MessageHandlerDurationMeasure(
 					Topic(msg.Topic),
 					Partition(msg.Partition),
-					time.Since(start),
+					libtime.Now().Sub(start),
 				)
 			}
 			return nil
