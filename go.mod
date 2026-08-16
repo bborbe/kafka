@@ -1,29 +1,29 @@
 module github.com/bborbe/kafka
 
-go 1.26.5
+go 1.26.6
 
 require (
 	github.com/IBM/sarama v1.60.1
 	github.com/bborbe/boltkv v1.14.4
-	github.com/bborbe/collection v1.20.19
+	github.com/bborbe/collection v1.20.20
 	github.com/bborbe/errors v1.5.17
-	github.com/bborbe/http v1.26.18
-	github.com/bborbe/kv v1.21.7
-	github.com/bborbe/log v1.6.19
+	github.com/bborbe/http v1.26.20
+	github.com/bborbe/kv v1.21.9
+	github.com/bborbe/log v1.6.21
 	github.com/bborbe/memorykv v1.6.5
-	github.com/bborbe/parse v1.10.18
-	github.com/bborbe/run v1.9.32
-	github.com/bborbe/time v1.27.7
+	github.com/bborbe/parse v1.10.19
+	github.com/bborbe/run v1.9.34
+	github.com/bborbe/time v1.27.8
 	github.com/bborbe/validation v1.4.18
 	github.com/golang/glog v1.2.5
-	github.com/onsi/ginkgo/v2 v2.32.0
+	github.com/onsi/ginkgo/v2 v2.32.1
 	github.com/onsi/gomega v1.42.1
 	github.com/prometheus/client_golang v1.24.1
 )
 
 require (
 	github.com/Masterminds/semver/v3 v3.5.0 // indirect
-	github.com/bborbe/math v1.3.17 // indirect
+	github.com/bborbe/math v1.3.18 // indirect
 	github.com/bborbe/sentry v1.9.24 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
@@ -51,14 +51,14 @@ require (
 	github.com/rcrowley/go-metrics v0.0.0-20250401214520-65e299d6c5c9 // indirect
 	go.etcd.io/bbolt v1.5.0 // indirect
 	go.yaml.in/yaml/v3 v3.0.5 // indirect
-	golang.org/x/crypto v0.54.0 // indirect
+	golang.org/x/crypto v0.55.0 // indirect
 	golang.org/x/exp v0.0.0-20260611194520-c48552f49976 // indirect
-	golang.org/x/mod v0.38.0 // indirect
-	golang.org/x/net v0.57.0 // indirect
+	golang.org/x/mod v0.40.0 // indirect
+	golang.org/x/net v0.58.0 // indirect
 	golang.org/x/sync v0.22.0 // indirect
 	golang.org/x/sys v0.47.0 // indirect
-	golang.org/x/text v0.40.0 // indirect
-	golang.org/x/tools v0.48.0 // indirect
+	golang.org/x/text v0.41.0 // indirect
+	golang.org/x/tools v0.49.0 // indirect
 	google.golang.org/protobuf v1.36.12 // indirect
 )
 
