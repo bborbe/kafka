@@ -8,6 +8,10 @@ Please choose versions by [Semantic Versioning](http://semver.org/).
 * MINOR version when you add functionality in a backwards-compatible manner, and
 * PATCH version when you make backwards-compatible bug fixes.
 
+## Unreleased
+
+- update Go to 1.26.6 and update dependencies (golang.org/x/mod to v0.40.0, GO-2026-6179, GO-2026-6180, CVE-2026-56864, CVE-2026-56865)
+
 ## v1.25.7
 
 - fix: measure handler and producer durations with the injectable libtime clock instead of time.Now
