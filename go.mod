@@ -11,7 +11,7 @@ require (
 	github.com/bborbe/kv v1.21.13
 	github.com/bborbe/log v1.6.25
 	github.com/bborbe/memorykv v1.6.5
-	github.com/bborbe/parse v1.11.2
+	github.com/bborbe/parse v1.11.3
 	github.com/bborbe/run v1.10.2
 	github.com/bborbe/time v1.27.14
 	github.com/bborbe/validation v1.5.0
