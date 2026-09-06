@@ -1,20 +1,20 @@
 module github.com/bborbe/kafka
 
-go 1.27.0
+go 1.27.1
 
 require (
 	github.com/IBM/sarama v1.60.2
 	github.com/bborbe/boltkv v1.14.4
 	github.com/bborbe/collection v1.20.26
 	github.com/bborbe/errors v1.6.0
-	github.com/bborbe/http v1.26.25
+	github.com/bborbe/http v1.26.26
 	github.com/bborbe/kv v1.21.13
 	github.com/bborbe/log v1.6.25
 	github.com/bborbe/memorykv v1.6.5
-	github.com/bborbe/parse v1.11.1
+	github.com/bborbe/parse v1.11.2
 	github.com/bborbe/run v1.10.2
-	github.com/bborbe/time v1.27.12
-	github.com/bborbe/validation v1.4.23
+	github.com/bborbe/time v1.27.14
+	github.com/bborbe/validation v1.5.0
 	github.com/golang/glog v1.2.5
 	github.com/onsi/ginkgo/v2 v2.32.1
 	github.com/onsi/gomega v1.43.0
