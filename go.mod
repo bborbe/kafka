@@ -6,7 +6,7 @@ require (
 	github.com/IBM/sarama v1.60.2
 	github.com/bborbe/boltkv v1.14.4
 	github.com/bborbe/collection v1.20.26
-	github.com/bborbe/errors v1.6.0
+	github.com/bborbe/errors v1.6.1
 	github.com/bborbe/http v1.26.26
 	github.com/bborbe/kv v1.21.13
 	github.com/bborbe/log v1.6.25
@@ -33,7 +33,7 @@ require (
 	github.com/go-logr/logr v1.4.4 // indirect
 	github.com/go-task/slim-sprig/v3 v3.0.0 // indirect
 	github.com/google/go-cmp v0.7.0 // indirect
-	github.com/google/pprof v0.0.0-20260903180319-d6c3cb2f37ec // indirect
+	github.com/google/pprof v0.0.0-20260906184651-6331bc6350fe // indirect
 	github.com/gorilla/mux v1.8.1 // indirect
 	github.com/hashicorp/go-uuid v1.0.3 // indirect
 	github.com/jcmturner/aescts/v2 v2.0.0 // indirect
