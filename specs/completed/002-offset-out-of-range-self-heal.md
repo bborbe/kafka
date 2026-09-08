@@ -1,7 +1,8 @@
 ---
-status: verifying
+status: completed
 approved: "2026-09-08T19:44:14Z"
 verifying: "2026-09-08T20:10:52Z"
+completed: "2026-09-08T20:18:05Z"
 branch: dark-factory/offset-out-of-range-self-heal
 ---
 
