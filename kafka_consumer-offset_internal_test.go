@@ -1371,8 +1371,8 @@ func TestResetOnOffsetOutOfRange_LogsWarn(t *testing.T) {
 		stuckOffset,
 	)
 
-	w.Close()
 	os.Stderr = old
+	w.Close()
 	out, err := io.ReadAll(r)
 	if err != nil {
 		t.Fatalf("read captured stderr: %v", err)
