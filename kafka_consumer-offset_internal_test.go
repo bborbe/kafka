@@ -951,6 +951,11 @@ func testIsOffsetGoodNonCorruptionError(t *testing.T) {
 	}
 }
 
+// The offset-out-of-range self-heal tests below use plain testing.T, NOT Ginkgo,
+// by explicit spec constraint (specs/completed/002-offset-out-of-range-self-heal.md):
+// this package already runs a single Ginkgo suite via kafka_suite_test.go
+// (one-RunSpecs-per-binary), and these tests follow the file's existing
+// in-package fake pattern (fakePartitionConsumer / newOffsetConsumerForTest).
 func TestWithAutoResetOffsetOutOfRange_Option(t *testing.T) {
 	opts := ConsumerOptions{}
 	WithAutoResetOffsetOutOfRange(true)(&opts)
