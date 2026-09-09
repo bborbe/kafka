@@ -7,12 +7,16 @@ package kafka
 import (
 	"context"
 	stderrors "errors"
+	"flag"
+	"io"
+	"os"
 	"strings"
 	"sync/atomic"
 	"testing"
 	"time"
 
 	"github.com/IBM/sarama"
+	"github.com/bborbe/errors"
 	libtime "github.com/bborbe/time"
 )
 
@@ -27,6 +31,8 @@ type fakeOffsetManager struct {
 	markOffsetOffset  Offset
 	markOffsetErr     error
 	resetOffsetCalled int32
+	resetOffsetOffset Offset
+	resetOffsetErr    error
 }
 
 func (f *fakeOffsetManager) InitialOffset() Offset { return OffsetOldest }
@@ -50,22 +56,30 @@ func (f *fakeOffsetManager) MarkOffset(
 	return f.markOffsetErr
 }
 
-func (f *fakeOffsetManager) ResetOffset(context.Context, Topic, Partition, Offset) error {
+func (f *fakeOffsetManager) ResetOffset(
+	_ context.Context,
+	_ Topic,
+	_ Partition,
+	offset Offset,
+) error {
 	atomic.AddInt32(&f.resetOffsetCalled, 1)
-	return nil
+	f.resetOffsetOffset = offset
+	return f.resetOffsetErr
 }
 
 func (f *fakeOffsetManager) Close() error { return nil }
 
 // fakeMessageHandlerBatch is a minimal fake for MessageHandlerBatch.
 type fakeMessageHandlerBatch struct {
-	err error
+	err      error
+	received [][]*sarama.ConsumerMessage
 }
 
 func (f *fakeMessageHandlerBatch) ConsumeMessages(
-	context.Context,
-	[]*sarama.ConsumerMessage,
+	_ context.Context,
+	messages []*sarama.ConsumerMessage,
 ) error {
+	f.received = append(f.received, messages)
 	return f.err
 }
 
@@ -934,5 +948,454 @@ func testIsOffsetGoodNonCorruptionError(t *testing.T) {
 
 	if err == nil {
 		t.Fatalf("expected error, got nil")
+	}
+}
+
+// The offset-out-of-range self-heal tests below use plain testing.T, NOT Ginkgo,
+// by explicit spec constraint (specs/completed/002-offset-out-of-range-self-heal.md):
+// this package already runs a single Ginkgo suite via kafka_suite_test.go
+// (one-RunSpecs-per-binary), and these tests follow the file's existing
+// in-package fake pattern (fakePartitionConsumer / newOffsetConsumerForTest).
+func TestWithAutoResetOffsetOutOfRange_Option(t *testing.T) {
+	opts := ConsumerOptions{}
+	WithAutoResetOffsetOutOfRange(true)(&opts)
+	if !opts.AutoResetOffsetOutOfRange {
+		t.Errorf("expected AutoResetOffsetOutOfRange to be true")
+	}
+
+	opts = ConsumerOptions{}
+	WithAutoResetOffsetOutOfRange(false)(&opts)
+	if opts.AutoResetOffsetOutOfRange {
+		t.Errorf("expected AutoResetOffsetOutOfRange to be false")
+	}
+}
+
+func TestIsOffsetOutOfRange(t *testing.T) {
+	ctx := context.Background()
+	tests := []struct {
+		name string
+		err  error
+		want bool
+	}{
+		{
+			name: "sarama ErrOffsetOutOfRange",
+			err:  sarama.ErrOffsetOutOfRange,
+			want: true,
+		},
+		{
+			name: "sarama KError ErrOffsetOutOfRange",
+			err:  sarama.KError(sarama.ErrOffsetOutOfRange),
+			want: true,
+		},
+		{
+			name: "bborbe-wrapped ErrOffsetOutOfRange",
+			err:  errors.Wrapf(ctx, sarama.ErrOffsetOutOfRange, "wrapped error"),
+			want: true,
+		},
+		{
+			name: "bborbe-wrapped KError ErrOffsetOutOfRange",
+			err:  errors.Wrapf(ctx, sarama.KError(sarama.ErrOffsetOutOfRange), "wrapped kerror"),
+			want: true,
+		},
+		{
+			name: "string fallback OutOfRangeErrorMessage",
+			err:  stderrors.New(OutOfRangeErrorMessage),
+			want: true,
+		},
+		{
+			name: "nil error",
+			err:  nil,
+			want: false,
+		},
+		{
+			name: "unrelated KError",
+			err:  sarama.ErrNotLeaderForPartition,
+			want: false,
+		},
+		{
+			name: "unrelated error",
+			err:  stderrors.New("some other error"),
+			want: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := IsOffsetOutOfRange(tt.err); got != tt.want {
+				t.Errorf("IsOffsetOutOfRange() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestConsumeMessages_OffsetOutOfRange_ResetOff_PropagatesError(t *testing.T) {
+	pc := &fakePartitionConsumer{}
+	errCh := make(chan *sarama.ConsumerError, 1)
+	errCh <- &sarama.ConsumerError{
+		Topic:     "test-topic",
+		Partition: 0,
+		Err:       sarama.ErrOffsetOutOfRange,
+	}
+	pc.errors = errCh
+
+	consumer := newOffsetConsumerForTest(1)
+	consumer.consumerOptions.AutoResetOffsetOutOfRange = false
+
+	result, err := consumer.consumeMessages(context.Background(), pc)
+
+	if err == nil {
+		t.Fatalf("expected error, got nil")
+	}
+	if result != nil {
+		t.Errorf("expected nil result, got %v", result)
+	}
+}
+
+func TestConsumeMessages_OffsetOutOfRange_ResetOn_ReturnsSentinel(t *testing.T) {
+	pc := &fakePartitionConsumer{}
+	errCh := make(chan *sarama.ConsumerError, 1)
+	errCh <- &sarama.ConsumerError{
+		Topic:     "test-topic",
+		Partition: 0,
+		Err:       sarama.ErrOffsetOutOfRange,
+	}
+	pc.errors = errCh
+
+	consumer := newOffsetConsumerForTest(1)
+	consumer.consumerOptions.AutoResetOffsetOutOfRange = true
+
+	result, err := consumer.consumeMessages(context.Background(), pc)
+
+	if err == nil {
+		t.Fatalf("expected error, got nil")
+	}
+	if !strings.Contains(err.Error(), "offset out of range") {
+		t.Errorf("expected sentinel error 'offset out of range', got: %v", err)
+	}
+	if result != nil {
+		t.Errorf("expected nil result, got %v", result)
+	}
+}
+
+func TestConsumeMessages_UnrelatedError_ResetOn_Propagates(t *testing.T) {
+	pc := &fakePartitionConsumer{}
+	errCh := make(chan *sarama.ConsumerError, 1)
+	errCh <- &sarama.ConsumerError{
+		Topic:     "test-topic",
+		Partition: 0,
+		Err:       stderrors.New("rebalance timeout"),
+	}
+	pc.errors = errCh
+
+	consumer := newOffsetConsumerForTest(1)
+	consumer.consumerOptions.AutoResetOffsetOutOfRange = true
+
+	result, err := consumer.consumeMessages(context.Background(), pc)
+
+	if err == nil {
+		t.Fatalf("expected error, got nil")
+	}
+	if !strings.Contains(err.Error(), "rebalance timeout") {
+		t.Errorf("expected unrelated error to propagate, got: %v", err)
+	}
+	if result != nil {
+		t.Errorf("expected nil result, got %v", result)
+	}
+}
+
+func TestConsumerErrorHandler_HandleError_OffsetOutOfRange_ReturnsNonNil(t *testing.T) {
+	handler := NewConsumerErrorHandler(NewMetrics())
+
+	err := handler.HandleError(&sarama.ConsumerError{
+		Topic:     "test-topic",
+		Partition: 0,
+		Err:       sarama.ErrOffsetOutOfRange,
+	})
+
+	if err == nil {
+		t.Errorf("expected non-nil error, got nil")
+	}
+}
+
+func buildAutoResetTestConsumer(
+	topic Topic,
+	partition Partition,
+	stuckOffset Offset,
+	outOfRangePC *fakePartitionConsumer,
+	goodPC *fakePartitionConsumer,
+	callCount *int32,
+	offsets *[]int64,
+) (*offsetConsumer, *fakeOffsetManager, *fakeMessageHandlerBatch) {
+	fakeConsumer := &testSaramaConsumer{
+		consumePartitionFn: func(topic string, partition int32, offset int64) (sarama.PartitionConsumer, error) {
+			atomic.AddInt32(callCount, 1)
+			*offsets = append(*offsets, offset)
+			if atomic.LoadInt32(callCount) == 1 {
+				return outOfRangePC, nil
+			}
+			return goodPC, nil
+		},
+	}
+
+	offsetManager := &fakeOffsetManager{
+		nextOffset:     stuckOffset,
+		fallbackOffset: OffsetOldest,
+	}
+	messageHandlerBatch := &fakeMessageHandlerBatch{}
+
+	consumer := &offsetConsumer{
+		saramaClientProvider: &testSaramaClientProvider{
+			client: &testSaramaClient{partitions: []int32{partition.Int32()}},
+		},
+		topic:               topic,
+		offsetManager:       offsetManager,
+		messageHandlerBatch: messageHandlerBatch,
+		metrics:             &fakeMetricsConsumer{},
+		batchSize:           BatchSize(10),
+		logSampler:          &fakeLogSampler{},
+		consumerOptions:     ConsumerOptions{AutoResetOffsetOutOfRange: true},
+		skipper:             &fakeSkipper{},
+		saramaConsumerFunc:  func(sarama.Client) (sarama.Consumer, error) { return fakeConsumer, nil },
+		waiter:              &fakeWaiter{},
+	}
+	return consumer, offsetManager, messageHandlerBatch
+}
+
+func TestOffsetConsumerAutoResetOffsetOutOfRange(t *testing.T) {
+	topic := Topic("test-topic")
+	partition := Partition(0)
+	stuckOffset := Offset(100)
+
+	outOfRangePC := &fakePartitionConsumer{
+		errors: make(chan *sarama.ConsumerError, 10),
+	}
+	outOfRangePC.errors <- &sarama.ConsumerError{
+		Topic:     topic.String(),
+		Partition: partition.Int32(),
+		Err:       sarama.ErrOffsetOutOfRange,
+	}
+
+	goodMsg := &sarama.ConsumerMessage{
+		Topic:     topic.String(),
+		Partition: partition.Int32(),
+		Offset:    5,
+	}
+	goodPC := &fakePartitionConsumer{
+		messages: make(chan *sarama.ConsumerMessage, 10),
+	}
+	goodPC.messages <- goodMsg
+
+	var callCount int32
+	var offsets []int64
+	consumer, offsetManager, messageHandlerBatch := buildAutoResetTestConsumer(
+		topic, partition, stuckOffset, outOfRangePC, goodPC, &callCount, &offsets,
+	)
+
+	ctx, cancel := context.WithCancel(context.Background())
+	var consumeErr error
+	done := make(chan struct{})
+	go func() {
+		consumeErr = consumer.Consume(ctx)
+		close(done)
+	}()
+
+	waitForCalls(&callCount, 2)
+	cancel()
+	<-done
+
+	// (i) the recreated partition consumer was created at the fallback offset
+	if len(offsets) != 2 {
+		t.Errorf("expected 2 ConsumePartition calls, got %d: %v", len(offsets), offsets)
+	}
+	if offsets[0] != stuckOffset.Int64() {
+		t.Errorf("expected first call at stuck offset %d, got %d", stuckOffset.Int64(), offsets[0])
+	}
+	if offsets[1] != OffsetOldest.Int64() {
+		t.Errorf(
+			"expected second call at fallback offset %d, got %d",
+			OffsetOldest.Int64(),
+			offsets[1],
+		)
+	}
+
+	// (ii) the good message after the reset was delivered/processed
+	if len(messageHandlerBatch.received) != 1 || len(messageHandlerBatch.received[0]) != 1 {
+		t.Fatalf("expected 1 batch of 1 message received, got %v", messageHandlerBatch.received)
+	}
+	if messageHandlerBatch.received[0][0].Offset != goodMsg.Offset {
+		t.Errorf(
+			"expected received good message offset %d, got %d",
+			goodMsg.Offset,
+			messageHandlerBatch.received[0][0].Offset,
+		)
+	}
+
+	// (iii) Consume did NOT return the offset error — it only ended on cancellation
+	if !errors.Is(consumeErr, context.Canceled) {
+		t.Errorf("expected Consume to end with context.Canceled, got: %v", consumeErr)
+	}
+
+	// (iv) ResetOffset was invoked with the fallback offset
+	if atomic.LoadInt32(&offsetManager.resetOffsetCalled) != 1 {
+		t.Errorf("expected ResetOffset called 1 time, got %d", offsetManager.resetOffsetCalled)
+	}
+	if offsetManager.resetOffsetOffset != OffsetOldest {
+		t.Errorf(
+			"expected ResetOffset with fallback offset %s, got %s",
+			OffsetOldest,
+			offsetManager.resetOffsetOffset,
+		)
+	}
+}
+
+func TestResetOnOffsetOutOfRange_ResetOffsetError(t *testing.T) {
+	topic := Topic("test-topic")
+	partition := Partition(0)
+	stuckOffset := Offset(100)
+
+	oldPC := &fakePartitionConsumer{
+		messages: make(chan *sarama.ConsumerMessage, 10),
+	}
+	fakeConsumer := &testSaramaConsumer{
+		consumePartitionFn: func(string, int32, int64) (sarama.PartitionConsumer, error) {
+			return oldPC, nil
+		},
+	}
+
+	c := &offsetConsumer{
+		topic: topic,
+		offsetManager: &fakeOffsetManager{
+			fallbackOffset: OffsetOldest,
+			resetOffsetErr: stderrors.New("reset offset failed"),
+		},
+		metrics: &fakeMetricsConsumer{},
+	}
+
+	newPC, _, err := c.resetOnOffsetOutOfRange(
+		context.Background(),
+		fakeConsumer,
+		oldPC,
+		partition,
+		stuckOffset,
+	)
+
+	if err == nil {
+		t.Fatalf("expected error, got nil")
+	}
+	if newPC != nil {
+		t.Errorf("expected nil newPC on error, got %v", newPC)
+	}
+}
+
+func TestResetOnOffsetOutOfRange_CreatePartitionConsumerError(t *testing.T) {
+	topic := Topic("test-topic")
+	partition := Partition(0)
+	stuckOffset := Offset(100)
+	fallbackOffset := OffsetOldest
+
+	oldPC := &fakePartitionConsumer{
+		messages: make(chan *sarama.ConsumerMessage, 10),
+	}
+	fakeConsumer := &testSaramaConsumer{
+		consumePartitionFn: func(topic string, partition int32, offset int64) (sarama.PartitionConsumer, error) {
+			if offset == fallbackOffset.Int64() {
+				return nil, stderrors.New("create partition consumer failed")
+			}
+			return oldPC, nil
+		},
+	}
+
+	c := &offsetConsumer{
+		topic: topic,
+		offsetManager: &fakeOffsetManager{
+			fallbackOffset: fallbackOffset,
+		},
+		metrics: &fakeMetricsConsumer{},
+	}
+
+	newPC, _, err := c.resetOnOffsetOutOfRange(
+		context.Background(),
+		fakeConsumer,
+		oldPC,
+		partition,
+		stuckOffset,
+	)
+
+	if err == nil {
+		t.Fatalf("expected error, got nil")
+	}
+	if newPC != nil {
+		t.Errorf("expected nil newPC on error, got %v", newPC)
+	}
+}
+
+func TestResetOnOffsetOutOfRange_LogsWarn(t *testing.T) {
+	topic := Topic("test-topic")
+	partition := Partition(0)
+	stuckOffset := Offset(100)
+	fallbackOffset := OffsetOldest
+
+	oldPC := &fakePartitionConsumer{
+		messages: make(chan *sarama.ConsumerMessage, 10),
+	}
+	newPC := &fakePartitionConsumer{
+		messages: make(chan *sarama.ConsumerMessage, 10),
+	}
+	fakeConsumer := &testSaramaConsumer{
+		consumePartitionFn: func(string, int32, int64) (sarama.PartitionConsumer, error) {
+			return newPC, nil
+		},
+	}
+
+	c := &offsetConsumer{
+		topic:         topic,
+		offsetManager: &fakeOffsetManager{fallbackOffset: fallbackOffset},
+		metrics:       &fakeMetricsConsumer{},
+	}
+
+	if err := flag.Set("logtostderr", "true"); err != nil {
+		t.Fatalf("set logtostderr flag: %v", err)
+	}
+	defer func() {
+		if err := flag.Set("logtostderr", "false"); err != nil {
+			t.Errorf("reset logtostderr flag: %v", err)
+		}
+	}()
+
+	r, w, err := os.Pipe()
+	if err != nil {
+		t.Fatalf("create pipe: %v", err)
+	}
+	old := os.Stderr
+	os.Stderr = w
+
+	_, _, resetErr := c.resetOnOffsetOutOfRange(
+		context.Background(),
+		fakeConsumer,
+		oldPC,
+		partition,
+		stuckOffset,
+	)
+
+	os.Stderr = old
+	w.Close()
+	out, err := io.ReadAll(r)
+	if err != nil {
+		t.Fatalf("read captured stderr: %v", err)
+	}
+
+	if resetErr != nil {
+		t.Fatalf("unexpected error: %v", resetErr)
+	}
+
+	captured := string(out)
+	for _, want := range []string{
+		topic.String(),
+		partition.String(),
+		stuckOffset.String(),
+		fallbackOffset.String(),
+	} {
+		if !strings.Contains(captured, want) {
+			t.Errorf("expected captured stderr to contain %q, got: %s", want, captured)
+		}
 	}
 }
