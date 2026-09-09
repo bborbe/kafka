@@ -20,15 +20,24 @@ import (
 
 // ConsumerOptions configures optional parameters for offset consumers.
 type ConsumerOptions struct {
-	TargetLag          int64
-	Delay              libtime.Duration
-	SkipCorruptBatches bool
+	TargetLag                 int64
+	Delay                     libtime.Duration
+	SkipCorruptBatches        bool
+	AutoResetOffsetOutOfRange bool
 }
 
 // WithSkipCorruptBatches enables skipping corrupt record batches (CRC decode failures) and resuming at the next healthy offset.
 func WithSkipCorruptBatches(skip bool) func(*ConsumerOptions) {
 	return func(o *ConsumerOptions) {
 		o.SkipCorruptBatches = skip
+	}
+}
+
+// WithAutoResetOffsetOutOfRange enables self-healing when the stored offset is outside the
+// broker's retained range: the consumer resets to the fallback offset and resumes instead of erroring.
+func WithAutoResetOffsetOutOfRange(reset bool) func(*ConsumerOptions) {
+	return func(o *ConsumerOptions) {
+		o.AutoResetOffsetOutOfRange = reset
 	}
 }
 
@@ -47,6 +56,20 @@ func IsCorruptionError(err error) bool {
 		strings.Contains(msg, "message contents does not match")
 }
 
+// IsOffsetOutOfRange reports whether err indicates a Kafka offset-out-of-range condition.
+func IsOffsetOutOfRange(err error) bool {
+	if err == nil {
+		return false
+	}
+	if errors.Cause(err) == sarama.ErrOffsetOutOfRange {
+		return true
+	}
+	if kerr, ok := errors.Cause(err).(sarama.KError); ok && kerr == sarama.ErrOffsetOutOfRange {
+		return true
+	}
+	return strings.Contains(err.Error(), OutOfRangeErrorMessage)
+}
+
 // corruptionSkipper handles finding the next healthy offset after detecting corruption.
 type corruptionSkipper interface {
 	FindNextHealthyOffset(
@@ -61,6 +84,9 @@ type corruptionSkipper interface {
 
 // errSkipCorruptBatch is a sentinel error indicating a corrupt batch was detected and skipped.
 var errSkipCorruptBatch = stderrors.New("skip corrupt batch")
+
+// errOffsetOutOfRange is a sentinel error indicating the stored offset is outside the broker's retained range.
+var errOffsetOutOfRange = stderrors.New("offset out of range")
 
 const probeTimeout = 5 * time.Second
 
@@ -353,17 +379,18 @@ func (c *offsetConsumer) Consume(ctx context.Context) error {
 			for {
 				messages, err := c.consumeMessages(ctx, consumePartition)
 				if err != nil {
-					if c.consumerOptions.SkipCorruptBatches && errors.Is(err, errSkipCorruptBatch) {
-						newPC, newOff, skipErr := c.skipAndAdvance(
-							ctx,
-							consumerFromClient,
-							consumePartition,
-							Partition(partition),
-							nextOffset,
-						)
-						if skipErr != nil {
-							return errors.Wrapf(ctx, skipErr, "skip and advance failed")
-						}
+					newPC, newOff, handled, recoverErr := c.recoverFromConsumeError(
+						ctx,
+						consumerFromClient,
+						consumePartition,
+						Partition(partition),
+						nextOffset,
+						err,
+					)
+					if recoverErr != nil {
+						return recoverErr
+					}
+					if handled {
 						consumePartition = newPC
 						nextOffset = newOff
 						continue
@@ -455,6 +482,12 @@ func (c *offsetConsumer) consumeMessages(
 			}
 			return nil, errSkipCorruptBatch
 		}
+		if c.consumerOptions.AutoResetOffsetOutOfRange && IsOffsetOutOfRange(err.Err) {
+			if len(result) > 0 {
+				return result, nil
+			}
+			return nil, errOffsetOutOfRange
+		}
 		if err := c.errorHandler.HandleError(err); err != nil {
 			return nil, errors.Wrapf(ctx, err, "parition consumer returns error")
 		}
@@ -482,6 +515,12 @@ func (c *offsetConsumer) consumeMessages(
 					return result, nil
 				}
 				return nil, errSkipCorruptBatch
+			}
+			if c.consumerOptions.AutoResetOffsetOutOfRange && IsOffsetOutOfRange(err.Err) {
+				if len(result) > 0 {
+					return result, nil
+				}
+				return nil, errOffsetOutOfRange
 			}
 			if err := c.errorHandler.HandleError(err); err != nil {
 				return nil, errors.Wrapf(ctx, err, "parition consumer returns error")
@@ -571,4 +610,104 @@ func (c *offsetConsumer) skipAndAdvance(
 		newOffset,
 	)
 	return newPC, newOffset, nil
+}
+
+// recoverFromConsumeError handles recoverable consume errors (skip corrupt batches or reset on
+// offset-out-of-range) by recreating the partition consumer. It returns the recreated consumer, the
+// next offset to read, whether the error was handled, and any error from the recovery itself.
+func (c *offsetConsumer) recoverFromConsumeError(
+	ctx context.Context,
+	consumer sarama.Consumer,
+	consumePartition sarama.PartitionConsumer,
+	partition Partition,
+	nextOffset Offset,
+	err error,
+) (sarama.PartitionConsumer, Offset, bool, error) {
+	if c.consumerOptions.SkipCorruptBatches && errors.Is(err, errSkipCorruptBatch) {
+		newPC, newOff, skipErr := c.skipAndAdvance(
+			ctx,
+			consumer,
+			consumePartition,
+			partition,
+			nextOffset,
+		)
+		if skipErr != nil {
+			return nil, Offset(0), false, errors.Wrapf(ctx, skipErr, "skip and advance failed")
+		}
+		return newPC, newOff, true, nil
+	}
+	if c.consumerOptions.AutoResetOffsetOutOfRange && errors.Is(err, errOffsetOutOfRange) {
+		newPC, newOff, resetErr := c.resetOnOffsetOutOfRange(
+			ctx,
+			consumer,
+			consumePartition,
+			partition,
+			nextOffset,
+		)
+		if resetErr != nil {
+			return nil, Offset(
+					0,
+				), false, errors.Wrapf(
+					ctx,
+					resetErr,
+					"reset offset out of range failed",
+				)
+		}
+		return newPC, newOff, true, nil
+	}
+	return nil, Offset(0), false, nil
+}
+
+// resetOnOffsetOutOfRange resets the stored offset to the fallback offset and recreates the partition
+// consumer at the fallback offset so the read position advances past the stuck offset. It must not be
+// implemented by swallowing the error in the error handler — that would leave the partition consumer
+// stuck at the invalid offset forever.
+func (c *offsetConsumer) resetOnOffsetOutOfRange(
+	ctx context.Context,
+	consumer sarama.Consumer,
+	oldPartitionConsumer sarama.PartitionConsumer,
+	partition Partition,
+	stuckOffset Offset,
+) (sarama.PartitionConsumer, Offset, error) {
+	fallbackOffset := c.offsetManager.FallbackOffset()
+	glog.Warningf(
+		"reset offset out of range in topic(%s) partition(%d): offset %s -> fallback %s",
+		c.topic,
+		partition,
+		stuckOffset,
+		fallbackOffset,
+	)
+	if err := c.offsetManager.ResetOffset(ctx, c.topic, partition, fallbackOffset); err != nil {
+		return nil, Offset(
+				0,
+			), errors.Wrapf(
+				ctx,
+				err,
+				"reset offset to fallback %s failed",
+				fallbackOffset,
+			)
+	}
+	newPC, err := CreatePartitionConsumer(
+		ctx,
+		consumer,
+		c.metrics,
+		c.topic,
+		partition,
+		fallbackOffset,
+		fallbackOffset,
+	)
+	if err != nil {
+		return nil, Offset(
+				0,
+			), errors.Wrapf(
+				ctx,
+				err,
+				"create partition consumer at fallback offset %s failed",
+				fallbackOffset,
+			)
+	}
+	if err := oldPartitionConsumer.Close(); err != nil {
+		glog.V(4).Infof("closing old partition consumer returned error: %v", err)
+	}
+	return newPC, fallbackOffset, nil
 }
