@@ -1,0 +1,92 @@
+name: check-unfinished-pipeline
+on:
+  pull_request:
+    types: [opened, reopened, synchronize, ready_for_review]
+
+# Sibling to check-do-not-merge.yml. Job name `unfinished-pipeline` IS the
+# required status-check context wired into the repo's master-protection ruleset.
+#
+# Shells out to `dark-factory doctor` rather than reimplementing the state read
+# in bash. Two reasons, both load-bearing:
+#   1. Spec staleness reads the `verifying` frontmatter timestamp, not file
+#      mtime (pkg/doctor/verifying_stale.go). actions/checkout rewrites every
+#      mtime in the tree, so an mtime-based reimplementation would silently
+#      reset each spec's clock on every run and never report a parked spec.
+#   2. The daemon-refusal gate consumes the same detector set, so the two
+#      mechanisms cannot drift apart by construction.
+
+jobs:
+  unfinished-pipeline:
+    runs-on: ubuntu-latest
+    env:
+      # v0.196.0 (published 2026-09-15) is the first release carrying
+      # `missing-completed-prompt`. Verified 6/6 against the DOWNLOADED
+      # PUBLISHED ARTIFACT, not a local build. A tag is not enough — this
+      # repo auto-tags every merge but only builds assets on a published
+      # release, so pinning an unpromoted tag 404s here.
+      DARK_FACTORY_VERSION: v0.196.0
+      # Only these categories block. Operator decision 2026-09-15.
+      #   Blocking: gaps never self-resolve; an unreadable file is
+      #   unresolvable; a dangling spec ref is durable.
+      #   NOT blocking: prompted-but-not-swept is the NORMAL state between
+      #   the factory finishing a spec's prompts and sweeping it forward —
+      #   blocking it would stop the factory's own PRs. status-dir-mismatch
+      #   is bookkeeping drift. duplicate-spec-numbers leaves execution
+      #   unaffected. verifying-stale is an owner-disposition backlog.
+      BLOCKING_CATEGORIES: 'missing-completed-prompt|parse-errors|orphan-prompt-link'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Skip repos with no pipeline tree
+        id: guard
+        run: |
+          if [ ! -d prompts ] && [ ! -d specs ]; then
+            echo "no prompts/ or specs/ tree — nothing to gate"
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Install dark-factory
+        if: steps.guard.outputs.skip == 'false'
+        run: |
+          set -euo pipefail
+          base="https://github.com/bborbe/dark-factory/releases/download/${DARK_FACTORY_VERSION}"
+          # Keep the released filename: checksums.txt names it, and
+          # `sha256sum -c` resolves that name on disk.
+          curl -fsSL "$base/dark-factory_linux_amd64.tar.gz" -O
+          curl -fsSL "$base/checksums.txt" -O
+          grep 'dark-factory_linux_amd64.tar.gz' checksums.txt | sha256sum -c -
+          tar xzf dark-factory_linux_amd64.tar.gz dark-factory
+
+      - name: Check for unresolved pipeline state
+        if: steps.guard.outputs.skip == 'false'
+        run: |
+          set +e
+          out="$(./dark-factory doctor 2>&1)"
+          rc=$?
+          set -e
+          echo "$out"
+
+          if [ "$rc" -eq 0 ]; then
+            echo "pipeline clean — merge allowed"; exit 0
+          fi
+
+          # An uninitialized pipeline is NOT a broken check: a prompts/ tree
+          # with no specs/ tree is a legitimate shape.
+          if grep -q 'not a dark-factory project' <<<"$out"; then
+            echo "pipeline not initialized — nothing to gate"; exit 0
+          fi
+
+          # doctor exits non-zero for findings AND for its own failures.
+          # Without this, a crashed doctor silently passes every PR.
+          if ! grep -qE 'doctor found [0-9]+ finding' <<<"$out"; then
+            echo "::error::dark-factory doctor failed to run (exit $rc). This is a broken check, not a clean repo."
+            exit 1
+          fi
+
+          if grep -qE "^(${BLOCKING_CATEGORIES})$" <<<"$out"; then
+            echo "::error::Merge blocked: this branch would leave unresolved dark-factory pipeline state on master. This does NOT necessarily mean work is unfinished — a gap in completed/ numbering is often bookkeeping drift from a failed completion report. Run 'dark-factory doctor' locally to see the findings, reconcile or rerun as appropriate ('dark-factory doctor --fix' applies the automatic ones), then re-push."
+            exit 1
+          fi
+          echo "findings present, but none in a blocking category — merge allowed"
