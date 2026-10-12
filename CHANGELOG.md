@@ -8,6 +8,13 @@ Please choose versions by [Semantic Versioning](http://semver.org/).
 * MINOR version when you add functionality in a backwards-compatible manner, and
 * PATCH version when you make backwards-compatible bug fixes.
 
+## Unreleased
+
+- Update Go to 1.27.2
+- Bump sarama to v1.61.1, boltkv to v1.16.1, collection to v1.21.0, and other bborbe libraries
+- Update ginkgo, gomega, prometheus client_golang, and golang.org/x/* dependencies
+- Bump golangci-lint to v2.14.0 and add `make fix` target
+
 ## v1.26.0
 
 - feat: Add WithAutoResetOffsetOutOfRange functional option to offset consumer to reset and resume on sarama.ErrOffsetOutOfRange instead of erroring
