@@ -8,7 +8,7 @@ Please choose versions by [Semantic Versioning](http://semver.org/).
 * MINOR version when you add functionality in a backwards-compatible manner, and
 * PATCH version when you make backwards-compatible bug fixes.
 
-## Unreleased
+## v1.27.0
 
 - Update Go to 1.27.2
 - Bump sarama to v1.61.1, boltkv to v1.16.1, collection to v1.21.0, and other bborbe libraries
