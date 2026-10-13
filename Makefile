@@ -89,3 +89,17 @@ trivy:
 .PHONY: addlicense
 addlicense:
 	go run github.com/google/addlicense@$(ADDLICENSE_VERSION) -c "Benjamin Borbe" -y $$(date +'%Y') -l bsd $$(find . -name "*.go" -not -path './vendor/*')
+
+.PHONY: fix
+fix:
+	go get \
+	github.com/containerd/containerd@latest \
+	github.com/go-git/go-git/v5@latest \
+	golang.org/x/crypto@latest \
+	golang.org/x/mod@latest \
+	golang.org/x/net@latest \
+	golang.org/x/sync@latest \
+	golang.org/x/sys@latest \
+	golang.org/x/term@latest \
+	golang.org/x/text@latest \
+	google.golang.org/grpc@latest
