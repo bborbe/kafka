@@ -435,11 +435,19 @@ type fakePartitionConsumer struct {
 	messages            chan *sarama.ConsumerMessage
 	errors              chan *sarama.ConsumerError
 	highWaterMarkOffset int64
+	closeCount          int32
 }
 
 func (f *fakePartitionConsumer) AsyncClose() {}
 
-func (f *fakePartitionConsumer) Close() error { return nil }
+func (f *fakePartitionConsumer) Close() error {
+	atomic.AddInt32(&f.closeCount, 1)
+	return nil
+}
+
+func (f *fakePartitionConsumer) isClosed() bool {
+	return atomic.LoadInt32(&f.closeCount) > 0
+}
 
 func (f *fakePartitionConsumer) Messages() <-chan *sarama.ConsumerMessage { return f.messages }
 
@@ -724,10 +732,13 @@ func TestSkipAndAdvance_FindNextHealthyOffsetError(t *testing.T) {
 	if newPC != nil {
 		t.Errorf("expected nil newPC on error, got %v", newPC)
 	}
+	if !oldPC.isClosed() {
+		t.Errorf("expected old partition consumer to be closed on error")
+	}
 }
 
 // TestSkipAndAdvance_CreatePartitionConsumerError tests that when CreatePartitionConsumer
-// fails at the healthy offset, skipAndAdvance returns an error without closing the old consumer.
+// fails at the healthy offset, skipAndAdvance returns an error after closing the old consumer.
 func TestSkipAndAdvance_CreatePartitionConsumerError(t *testing.T) {
 	topic := Topic("test-topic")
 	partition := Partition(0)
@@ -779,6 +790,9 @@ func TestSkipAndAdvance_CreatePartitionConsumerError(t *testing.T) {
 	}
 	if newPC != nil {
 		t.Errorf("expected nil newPC on error, got %v", newPC)
+	}
+	if !oldPC.isClosed() {
+		t.Errorf("expected old partition consumer to be closed on error")
 	}
 }
 
@@ -1286,6 +1300,9 @@ func TestResetOnOffsetOutOfRange_ResetOffsetError(t *testing.T) {
 	if newPC != nil {
 		t.Errorf("expected nil newPC on error, got %v", newPC)
 	}
+	if !oldPC.isClosed() {
+		t.Errorf("expected old partition consumer to be closed on error")
+	}
 }
 
 func TestResetOnOffsetOutOfRange_CreatePartitionConsumerError(t *testing.T) {
@@ -1327,6 +1344,9 @@ func TestResetOnOffsetOutOfRange_CreatePartitionConsumerError(t *testing.T) {
 	}
 	if newPC != nil {
 		t.Errorf("expected nil newPC on error, got %v", newPC)
+	}
+	if !oldPC.isClosed() {
+		t.Errorf("expected old partition consumer to be closed on error")
 	}
 }
 
