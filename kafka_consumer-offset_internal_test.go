@@ -9,9 +9,11 @@ import (
 	stderrors "errors"
 	"flag"
 	"io"
+	"net"
 	"os"
 	"strings"
 	"sync/atomic"
+	"syscall"
 	"testing"
 	"time"
 
@@ -1396,6 +1398,161 @@ func TestResetOnOffsetOutOfRange_LogsWarn(t *testing.T) {
 	} {
 		if !strings.Contains(captured, want) {
 			t.Errorf("expected captured stderr to contain %q, got: %s", want, captured)
+		}
+	}
+}
+
+// transientMarker is the structural interface a downstream reporter uses to recognise
+// transient broker-unreachable errors without importing this package's concrete type.
+type transientMarker interface {
+	Transient() bool
+}
+
+func hasTransientMarker(err error) bool {
+	var marker transientMarker
+	if !errors.As(err, &marker) {
+		return false
+	}
+	return marker.Transient()
+}
+
+// newTransientTestConsumer builds an offsetConsumer with every field Consume dereferences
+// before reaching the error handler set to a non-nil fake.
+func newTransientTestConsumer(
+	pc *fakePartitionConsumer,
+	options ConsumerOptions,
+) *offsetConsumer {
+	return &offsetConsumer{
+		saramaClientProvider: &testSaramaClientProvider{
+			client: &testSaramaClient{partitions: []int32{0}},
+		},
+		topic: Topic("test-topic"),
+		offsetManager: &fakeOffsetManager{
+			nextOffset:     Offset(100),
+			fallbackOffset: OffsetOldest,
+		},
+		messageHandlerBatch: &fakeMessageHandlerBatch{},
+		metrics:             &fakeMetricsConsumer{},
+		batchSize:           BatchSize(10),
+		logSampler:          &fakeLogSampler{},
+		consumerOptions:     options,
+		errorHandler:        NewConsumerErrorHandler(NewMetrics()),
+		skipper:             &fakeSkipper{},
+		saramaConsumerFunc: func(sarama.Client) (sarama.Consumer, error) {
+			return &testSaramaConsumer{
+				consumePartitionFn: func(string, int32, int64) (sarama.PartitionConsumer, error) {
+					return pc, nil
+				},
+			}, nil
+		},
+		waiter: &fakeWaiter{},
+	}
+}
+
+func newConsumerError(err error) *sarama.ConsumerError {
+	return &sarama.ConsumerError{
+		Topic:     "test-topic",
+		Partition: 0,
+		Err:       err,
+	}
+}
+
+func TestConsume_TransientBrokerErrorSatisfiesMarker(t *testing.T) {
+	connectionRefused := &net.OpError{
+		Op:  "dial",
+		Net: "tcp",
+		Err: os.NewSyscallError("connect", syscall.ECONNREFUSED),
+	}
+	connectionReset := &net.OpError{
+		Op:  "read",
+		Net: "tcp",
+		Err: os.NewSyscallError("read", syscall.ECONNRESET),
+	}
+
+	tests := []struct {
+		name      string
+		err       error
+		transient bool
+	}{
+		{name: "io.EOF", err: io.EOF, transient: true},
+		{name: "io.ErrUnexpectedEOF", err: io.ErrUnexpectedEOF, transient: true},
+		{name: "connection refused", err: connectionRefused, transient: true},
+		{name: "connection reset", err: connectionReset, transient: true},
+		{name: "broker not available", err: sarama.ErrBrokerNotAvailable, transient: true},
+		{name: "rebalance timeout", err: stderrors.New("rebalance timeout"), transient: false},
+		{name: "auth failure", err: sarama.ErrSASLAuthenticationFailed, transient: false},
+		{name: "offset out of range", err: sarama.ErrOffsetOutOfRange, transient: false},
+		{
+			name:      "corruption",
+			err:       sarama.PacketDecodingError{Info: "CRC mismatch"},
+			transient: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			pc := &fakePartitionConsumer{
+				errors:   make(chan *sarama.ConsumerError, 1),
+				messages: make(chan *sarama.ConsumerMessage, 1),
+			}
+			pc.errors <- newConsumerError(tt.err)
+
+			consumer := newTransientTestConsumer(pc, ConsumerOptions{})
+
+			returnedErr := consumer.Consume(context.Background())
+			if returnedErr == nil {
+				t.Fatalf("expected error, got nil")
+			}
+			for _, want := range []string{
+				"parition consumer returns error",
+				"consume failed",
+			} {
+				if !strings.Contains(returnedErr.Error(), want) {
+					t.Errorf("expected returned error to contain %q, got: %v", want, returnedErr)
+				}
+			}
+			if got := hasTransientMarker(returnedErr); got != tt.transient {
+				t.Errorf(
+					"hasTransientMarker() = %v, want %v (err: %v)",
+					got,
+					tt.transient,
+					returnedErr,
+				)
+			}
+			if !errors.Is(returnedErr, tt.err) {
+				t.Errorf("expected returned error chain to still contain the cause %v", tt.err)
+			}
+		})
+	}
+}
+
+// TestConsume_TransientBrokerError_InnerErrorCallSite exercises the inner-loop HandleError
+// call site. Both channels are pre-filled, so the outer select randomly picks Errors() or
+// Messages(); a one-sided marker would fail whenever the message is picked first and the
+// inner select then sees the error. A fresh consumer and fake are used every iteration.
+func TestConsume_TransientBrokerError_InnerErrorCallSite(t *testing.T) {
+	const iterations = 50
+
+	for i := 0; i < iterations; i++ {
+		pc := &fakePartitionConsumer{
+			errors:   make(chan *sarama.ConsumerError, 1),
+			messages: make(chan *sarama.ConsumerMessage, 1),
+		}
+		pc.errors <- newConsumerError(io.EOF)
+		pc.messages <- &sarama.ConsumerMessage{Topic: "test-topic", Partition: 0, Offset: 100}
+
+		consumer := newTransientTestConsumer(pc, ConsumerOptions{})
+
+		returnedErr := consumer.Consume(context.Background())
+		if returnedErr == nil {
+			t.Fatalf("iteration %d: expected error, got nil", i)
+		}
+		if !hasTransientMarker(returnedErr) {
+			t.Fatalf(
+				"iteration %d: expected transient marker on returned error: %v",
+				i,
+				returnedErr,
+			)
 		}
 	}
 }
