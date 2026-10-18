@@ -7,7 +7,9 @@ package kafka
 import (
 	"context"
 	stderrors "errors"
+	"io"
 	"strings"
+	"syscall"
 	"time"
 
 	"github.com/IBM/sarama"
@@ -68,6 +70,56 @@ func IsOffsetOutOfRange(err error) bool {
 		return true
 	}
 	return strings.Contains(err.Error(), OutOfRangeErrorMessage)
+}
+
+// IsTransientBrokerError reports whether err's wrapped cause is a transient
+// broker-unreachable condition: an unexpected stream end, a refused or reset connection,
+// or an unavailable broker. These errors are expected during broker restarts and failover
+// and do not require operator attention.
+func IsTransientBrokerError(err error) bool {
+	if err == nil {
+		return false
+	}
+	cause := errors.Cause(err)
+	return errors.Is(cause, io.EOF) ||
+		errors.Is(cause, io.ErrUnexpectedEOF) ||
+		errors.Is(cause, syscall.ECONNREFUSED) ||
+		errors.Is(cause, syscall.ECONNRESET) ||
+		errors.Is(cause, sarama.ErrBrokerNotAvailable)
+}
+
+// transientError marks an error as transient while keeping its cause reachable through Unwrap.
+type transientError struct {
+	err error
+}
+
+// Error implements the error interface.
+func (t *transientError) Error() string {
+	return t.err.Error()
+}
+
+// Unwrap returns the original error so errors.Is / errors.As still reach the cause.
+func (t *transientError) Unwrap() error {
+	return t.err
+}
+
+// Transient reports that this error is a transient broker-unreachable condition.
+func (t *transientError) Transient() bool {
+	return true
+}
+
+// handleConsumerError passes err to the configured error handler and marks transient
+// broker-unreachable errors. Both consumeMessages call sites go through this helper so the
+// classification cannot be applied to one path but not the other.
+func (c *offsetConsumer) handleConsumerError(err *sarama.ConsumerError) error {
+	handledErr := c.errorHandler.HandleError(err)
+	if handledErr == nil {
+		return nil
+	}
+	if IsTransientBrokerError(handledErr) {
+		return &transientError{err: handledErr}
+	}
+	return handledErr
 }
 
 // corruptionSkipper handles finding the next healthy offset after detecting corruption.
@@ -488,7 +540,7 @@ func (c *offsetConsumer) consumeMessages(
 			}
 			return nil, errOffsetOutOfRange
 		}
-		if err := c.errorHandler.HandleError(err); err != nil {
+		if err := c.handleConsumerError(err); err != nil {
 			return nil, errors.Wrapf(ctx, err, "parition consumer returns error")
 		}
 	case msg, ok := <-consumePartition.Messages():
@@ -522,7 +574,7 @@ func (c *offsetConsumer) consumeMessages(
 				}
 				return nil, errOffsetOutOfRange
 			}
-			if err := c.errorHandler.HandleError(err); err != nil {
+			if err := c.handleConsumerError(err); err != nil {
 				return nil, errors.Wrapf(ctx, err, "parition consumer returns error")
 			}
 		case msg, ok := <-consumePartition.Messages():
