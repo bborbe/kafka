@@ -1,6 +1,5 @@
 ---
 status: completed
-spec: [003-transient-consumer-error-marker]
 summary: Added structural Transient() classification for broker-unreachable offset-consumer errors via a shared handler helper, with table-driven and inner-call-site tests
 execution_id: kafka-exec-009-transient-consumer-error-marker
 dark-factory-version: dev
