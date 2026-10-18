@@ -427,7 +427,14 @@ func (c *offsetConsumer) Consume(ctx context.Context) error {
 					nextOffset,
 				)
 			}
-			defer consumePartition.Close()
+			// Close whichever consumer is current when this partition run exits. recoverFromConsumeError
+			// replaces consumePartition, so closing the receiver captured at defer time would leak the
+			// replacement. Closing an already-closed sarama partition consumer is safe.
+			defer func() {
+				if err := consumePartition.Close(); err != nil {
+					glog.V(4).Infof("closing partition consumer returned error: %v", err)
+				}
+			}()
 			for {
 				messages, err := c.consumeMessages(ctx, consumePartition)
 				if err != nil {
@@ -589,7 +596,9 @@ func (c *offsetConsumer) consumeMessages(
 	}
 }
 
-// skipAndAdvance closes the current partition consumer, finds the next healthy offset, and recreates the consumer at that offset.
+// skipAndAdvance closes the current partition consumer, finds the next healthy offset, and recreates
+// the consumer at that offset. The old partition consumer is always closed when the function returns,
+// on success and on error, because sarama allows only one open consumer per topic/partition.
 func (c *offsetConsumer) skipAndAdvance(
 	ctx context.Context,
 	consumer sarama.Consumer,
@@ -605,6 +614,10 @@ func (c *offsetConsumer) skipAndAdvance(
 		c.topic,
 		partition,
 	)
+
+	if err := oldPartitionConsumer.Close(); err != nil {
+		glog.V(4).Infof("closing old partition consumer returned error: %v", err)
+	}
 
 	newOffset, err := c.skipper.FindNextHealthyOffset(
 		ctx,
@@ -646,10 +659,6 @@ func (c *offsetConsumer) skipAndAdvance(
 				"create partition consumer at offset %s failed",
 				newOffset,
 			)
-	}
-
-	if err := oldPartitionConsumer.Close(); err != nil {
-		glog.V(4).Infof("closing old partition consumer returned error: %v", err)
 	}
 
 	c.metrics.CorruptBatchSkippedCounterInc(c.topic, partition)
@@ -713,7 +722,8 @@ func (c *offsetConsumer) recoverFromConsumeError(
 // resetOnOffsetOutOfRange resets the stored offset to the fallback offset and recreates the partition
 // consumer at the fallback offset so the read position advances past the stuck offset. It must not be
 // implemented by swallowing the error in the error handler — that would leave the partition consumer
-// stuck at the invalid offset forever.
+// stuck at the invalid offset forever. The old partition consumer is always closed when the function
+// returns, on success and on error, because sarama allows only one open consumer per topic/partition.
 func (c *offsetConsumer) resetOnOffsetOutOfRange(
 	ctx context.Context,
 	consumer sarama.Consumer,
@@ -729,6 +739,9 @@ func (c *offsetConsumer) resetOnOffsetOutOfRange(
 		stuckOffset,
 		fallbackOffset,
 	)
+	if err := oldPartitionConsumer.Close(); err != nil {
+		glog.V(4).Infof("closing old partition consumer returned error: %v", err)
+	}
 	if err := c.offsetManager.ResetOffset(ctx, c.topic, partition, fallbackOffset); err != nil {
 		return nil, Offset(
 				0,
@@ -757,9 +770,6 @@ func (c *offsetConsumer) resetOnOffsetOutOfRange(
 				"create partition consumer at fallback offset %s failed",
 				fallbackOffset,
 			)
-	}
-	if err := oldPartitionConsumer.Close(); err != nil {
-		glog.V(4).Infof("closing old partition consumer returned error: %v", err)
 	}
 	return newPC, fallbackOffset, nil
 }
