@@ -8,7 +8,7 @@ Please choose versions by [Semantic Versioning](http://semver.org/).
 * MINOR version when you add functionality in a backwards-compatible manner, and
 * PATCH version when you make backwards-compatible bug fixes.
 
-## Unreleased
+## v1.28.1
 
 - fix: Close the old partition consumer before probing or reopening the same partition in corrupt-batch skip and offset-out-of-range reset, which previously failed against a real broker with "That topic/partition is already being consumed"
 
