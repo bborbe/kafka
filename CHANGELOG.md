@@ -8,7 +8,7 @@ Please choose versions by [Semantic Versioning](http://semver.org/).
 * MINOR version when you add functionality in a backwards-compatible manner, and
 * PATCH version when you make backwards-compatible bug fixes.
 
-## Unreleased
+## v1.28.0
 
 - feat: Mark transient broker-unreachable errors returned by the offset consumer with a structural `Transient() bool` marker so reporters can classify them without importing this library
 
