@@ -8,6 +8,7 @@ import (
 	"context"
 	stderrors "errors"
 	"flag"
+	"fmt"
 	"io"
 	"net"
 	"os"
@@ -177,6 +178,7 @@ func (f *testSaramaConsumer) ResumeAll() {}
 // It only implements the methods actually called by offsetConsumer.
 type testSaramaClient struct {
 	partitions []int32
+	closed     bool
 }
 
 func (f *testSaramaClient) Partitions(topic string) ([]int32, error) { return f.partitions, nil }
@@ -238,7 +240,7 @@ func (f *testSaramaClient) LeastLoadedBroker() *sarama.Broker { return nil }
 
 func (f *testSaramaClient) PartitionNotReadable(string, int32) bool { return false }
 
-func (f *testSaramaClient) Closed() bool { return false }
+func (f *testSaramaClient) Closed() bool { return f.closed }
 
 func (f *testSaramaClient) Coordinator(
 	consumerGroup string,
@@ -485,8 +487,8 @@ func TestConsumeMessages_OuterErrorsChannelClosed(t *testing.T) {
 	if err == nil {
 		t.Fatalf("expected error, got nil")
 	}
-	if !strings.Contains(err.Error(), "errors channel closed") {
-		t.Errorf("expected 'errors channel closed' in error, got: %v", err)
+	if !errors.Is(err, errPartitionConsumerClosed) {
+		t.Errorf("expected errPartitionConsumerClosed, got: %v", err)
 	}
 	if result != nil {
 		t.Errorf("expected nil result, got %v", result)
@@ -504,8 +506,8 @@ func TestConsumeMessages_OuterMessagesChannelClosed(t *testing.T) {
 	if err == nil {
 		t.Fatalf("expected error, got nil")
 	}
-	if !strings.Contains(err.Error(), "messages channel closed") {
-		t.Errorf("expected 'messages channel closed' in error, got: %v", err)
+	if !errors.Is(err, errPartitionConsumerClosed) {
+		t.Errorf("expected errPartitionConsumerClosed, got: %v", err)
 	}
 	if result != nil {
 		t.Errorf("expected nil result, got %v", result)
@@ -527,8 +529,8 @@ func TestConsumeMessages_InnerErrorsChannelClosed(t *testing.T) {
 	if err == nil {
 		t.Fatalf("expected error, got nil")
 	}
-	if !strings.Contains(err.Error(), "errors channel closed") {
-		t.Errorf("expected 'errors channel closed' in error, got: %v", err)
+	if !errors.Is(err, errPartitionConsumerClosed) {
+		t.Errorf("expected errPartitionConsumerClosed, got: %v", err)
 	}
 }
 
@@ -544,8 +546,390 @@ func TestConsumeMessages_InnerMessagesChannelClosed(t *testing.T) {
 	if err == nil {
 		t.Fatalf("expected error, got nil")
 	}
-	if !strings.Contains(err.Error(), "messages channel closed") {
-		t.Errorf("expected 'messages channel closed' in error, got: %v", err)
+	if !errors.Is(err, errPartitionConsumerClosed) {
+		t.Errorf("expected errPartitionConsumerClosed, got: %v", err)
+	}
+}
+
+func newClosedErrorsPartitionConsumer() *fakePartitionConsumer {
+	errCh := make(chan *sarama.ConsumerError)
+	close(errCh)
+	return &fakePartitionConsumer{errors: errCh}
+}
+
+func newClosedRecoveryConsumer(
+	client *testSaramaClient,
+	fakeConsumer sarama.Consumer,
+	offsetManager *fakeOffsetManager,
+	handler *fakeMessageHandlerBatch,
+	batchSize int,
+) *offsetConsumer {
+	return &offsetConsumer{
+		saramaClientProvider: &testSaramaClientProvider{client: client},
+		topic:                Topic("test-topic"),
+		offsetManager:        offsetManager,
+		messageHandlerBatch:  handler,
+		metrics:              &fakeMetricsConsumer{},
+		batchSize:            BatchSize(batchSize),
+		logSampler:           &fakeLogSampler{},
+		errorHandler:         NewConsumerErrorHandler(NewMetrics()),
+		skipper:              &fakeSkipper{},
+		saramaConsumerFunc: func(sarama.Client) (sarama.Consumer, error) {
+			return fakeConsumer, nil
+		},
+		waiter: &fakeWaiter{},
+	}
+}
+
+// TestConsume_PartitionConsumerClosed_RecoversAndContinues drives a partition whose first
+// consumer has a closed Errors() channel. The run must recreate the consumer exactly once at the
+// last good offset and deliver the replacement's message to the batch handler.
+func TestConsume_PartitionConsumerClosed_RecoversAndContinues(t *testing.T) {
+	topic := Topic("test-topic")
+	partition := Partition(0)
+	nextOffset := Offset(100)
+
+	closedPC := newClosedErrorsPartitionConsumer()
+	goodPC := &fakePartitionConsumer{
+		messages: make(chan *sarama.ConsumerMessage, 10),
+		errors:   make(chan *sarama.ConsumerError, 10),
+	}
+	goodPC.messages <- &sarama.ConsumerMessage{
+		Topic:     topic.String(),
+		Partition: partition.Int32(),
+		Offset:    nextOffset.Int64(),
+	}
+
+	var calls int32
+	var offsets []int64
+	fakeConsumer := &testSaramaConsumer{
+		consumePartitionFn: func(_ string, _ int32, offset int64) (sarama.PartitionConsumer, error) {
+			offsets = append(offsets, offset)
+			if atomic.AddInt32(&calls, 1) == 1 {
+				return closedPC, nil
+			}
+			return goodPC, nil
+		},
+	}
+	offsetManager := &fakeOffsetManager{
+		nextOffset:     nextOffset,
+		fallbackOffset: OffsetOldest,
+	}
+	handler := &fakeMessageHandlerBatch{}
+	c := newClosedRecoveryConsumer(
+		&testSaramaClient{partitions: []int32{partition.Int32()}},
+		fakeConsumer,
+		offsetManager,
+		handler,
+		1,
+	)
+
+	ctx, cancel := context.WithCancel(context.Background())
+	var consumeErr error
+	done := make(chan struct{})
+	go func() {
+		consumeErr = c.Consume(ctx)
+		close(done)
+	}()
+
+	waitForCalls(&offsetManager.markOffsetCalled, 1)
+	cancel()
+	<-done
+
+	if len(handler.received) != 1 || len(handler.received[0]) != 1 {
+		t.Fatalf("expected one batch of one message, got %v", handler.received)
+	}
+	if handler.received[0][0].Offset != nextOffset.Int64() {
+		t.Errorf(
+			"expected delivered message offset %d, got %d",
+			nextOffset.Int64(),
+			handler.received[0][0].Offset,
+		)
+	}
+	if got := atomic.LoadInt32(&calls); got != 2 {
+		t.Errorf("expected 2 ConsumePartition calls (1 recreation), got %d", got)
+	}
+	if len(offsets) != 2 || offsets[1] != nextOffset.Int64() {
+		t.Errorf("expected recreation at offset %d, got offsets %v", nextOffset.Int64(), offsets)
+	}
+	if !closedPC.isClosed() {
+		t.Errorf("expected the dead partition consumer to be closed before recreation")
+	}
+	if !errors.Is(consumeErr, context.Canceled) {
+		t.Errorf("expected Consume to end with context.Canceled, got: %v", consumeErr)
+	}
+}
+
+// TestRecoverFromConsumeError_PartitionConsumerClosed_RecreatesAtNextOffsetAndLogsWarn asserts the
+// replacement is created at the recorded nextOffset and that exactly one WARN line names the
+// partition, that offset and the attempt number.
+func TestRecoverFromConsumeError_PartitionConsumerClosed_RecreatesAtNextOffsetAndLogsWarn(
+	t *testing.T,
+) {
+	topic := Topic("test-topic")
+	partition := Partition(0)
+	nextOffset := Offset(123)
+
+	oldPC := newClosedErrorsPartitionConsumer()
+	newPC := &fakePartitionConsumer{}
+	var calls int32
+	var offsets []int64
+	fakeConsumer := &testSaramaConsumer{
+		consumePartitionFn: func(_ string, _ int32, offset int64) (sarama.PartitionConsumer, error) {
+			atomic.AddInt32(&calls, 1)
+			offsets = append(offsets, offset)
+			return newPC, nil
+		},
+	}
+	c := &offsetConsumer{
+		topic:         topic,
+		offsetManager: &fakeOffsetManager{fallbackOffset: OffsetOldest},
+		metrics:       &fakeMetricsConsumer{},
+	}
+
+	var gotPC sarama.PartitionConsumer
+	var gotOffset Offset
+	var handled bool
+	var recoverErr error
+	captured := captureStderrDuring(t, func() {
+		gotPC, gotOffset, handled, recoverErr = c.recoverFromConsumeError(
+			context.Background(),
+			&testSaramaClient{},
+			fakeConsumer,
+			oldPC,
+			partition,
+			nextOffset,
+			2,
+			errPartitionConsumerClosed,
+		)
+	})
+
+	if recoverErr != nil {
+		t.Fatalf("unexpected error: %v", recoverErr)
+	}
+	if !handled {
+		t.Fatalf("expected the closed consumer to be handled")
+	}
+	if gotPC != newPC {
+		t.Errorf("expected the recreated partition consumer to be returned")
+	}
+	if gotOffset != nextOffset {
+		t.Errorf("expected offset %s, got %s", nextOffset, gotOffset)
+	}
+	if !oldPC.isClosed() {
+		t.Errorf("expected the dead partition consumer to be closed")
+	}
+	if got := atomic.LoadInt32(&calls); got != 1 {
+		t.Errorf("expected exactly 1 recreation, got %d", got)
+	}
+	if len(offsets) != 1 || offsets[0] != nextOffset.Int64() {
+		t.Errorf("expected recreation at offset %d, got offsets %v", nextOffset.Int64(), offsets)
+	}
+	assertClosedRecoveryWarnLine(t, captured, topic, nextOffset, 2)
+}
+
+// captureStderrDuring runs fn with glog writing to stderr and returns everything written.
+func captureStderrDuring(t *testing.T, fn func()) string {
+	t.Helper()
+	if err := flag.Set("logtostderr", "true"); err != nil {
+		t.Fatalf("set logtostderr flag: %v", err)
+	}
+	defer func() {
+		if err := flag.Set("logtostderr", "false"); err != nil {
+			t.Errorf("reset logtostderr flag: %v", err)
+		}
+	}()
+
+	r, w, err := os.Pipe()
+	if err != nil {
+		t.Fatalf("create pipe: %v", err)
+	}
+	old := os.Stderr
+	os.Stderr = w
+	defer func() { os.Stderr = old }()
+
+	fn()
+
+	w.Close()
+	out, err := io.ReadAll(r)
+	if err != nil {
+		t.Fatalf("read captured stderr: %v", err)
+	}
+	return string(out)
+}
+
+// assertClosedRecoveryWarnLine asserts exactly one WARN line names the partition, offset and
+// attempt number.
+func assertClosedRecoveryWarnLine(
+	t *testing.T,
+	captured string,
+	topic Topic,
+	offset Offset,
+	attempt int,
+) {
+	t.Helper()
+	warnLines := 0
+	for _, line := range strings.Split(captured, "\n") {
+		if !strings.Contains(line, "partition consumer closed") {
+			continue
+		}
+		warnLines++
+		if !strings.HasPrefix(line, "W") {
+			t.Errorf("expected WARN log line, got: %s", line)
+		}
+		for _, want := range []string{
+			topic.String(),
+			offset.String(),
+			fmt.Sprintf("attempt %d", attempt),
+		} {
+			if !strings.Contains(line, want) {
+				t.Errorf("expected WARN line to contain %q, got: %s", want, line)
+			}
+		}
+	}
+	if warnLines != 1 {
+		t.Errorf("expected exactly 1 WARN line, got %d: %s", warnLines, captured)
+	}
+}
+
+// TestConsume_PartitionConsumerClosed_ClientClosedFailsWithoutRecreation verifies a permanently
+// closed client propagates the error without attempting recreation.
+func TestConsume_PartitionConsumerClosed_ClientClosedFailsWithoutRecreation(t *testing.T) {
+	partition := Partition(0)
+	closedPC := newClosedErrorsPartitionConsumer()
+
+	var calls int32
+	fakeConsumer := &testSaramaConsumer{
+		consumePartitionFn: func(string, int32, int64) (sarama.PartitionConsumer, error) {
+			atomic.AddInt32(&calls, 1)
+			return closedPC, nil
+		},
+	}
+	c := newClosedRecoveryConsumer(
+		&testSaramaClient{partitions: []int32{partition.Int32()}, closed: true},
+		fakeConsumer,
+		&fakeOffsetManager{nextOffset: Offset(100), fallbackOffset: OffsetOldest},
+		&fakeMessageHandlerBatch{},
+		1,
+	)
+
+	consumeErr := c.Consume(context.Background())
+	if consumeErr == nil {
+		t.Fatalf("expected error, got nil")
+	}
+	if !errors.Is(consumeErr, errPartitionConsumerClosed) {
+		t.Errorf("expected errPartitionConsumerClosed in error chain, got: %v", consumeErr)
+	}
+	if got := atomic.LoadInt32(&calls); got != 1 {
+		t.Errorf("expected no recreation (only the initial create), got %d calls", got)
+	}
+}
+
+// TestConsume_PartitionConsumerClosed_BoundedAfterThreeRecoveries drives four consecutive closed
+// channels with no successful batch between them. The first three are recovered; the fourth
+// propagates.
+func TestConsume_PartitionConsumerClosed_BoundedAfterThreeRecoveries(t *testing.T) {
+	var calls int32
+	fakeConsumer := &testSaramaConsumer{
+		consumePartitionFn: func(string, int32, int64) (sarama.PartitionConsumer, error) {
+			atomic.AddInt32(&calls, 1)
+			return newClosedErrorsPartitionConsumer(), nil
+		},
+	}
+	c := newClosedRecoveryConsumer(
+		&testSaramaClient{partitions: []int32{0}},
+		fakeConsumer,
+		&fakeOffsetManager{nextOffset: Offset(100), fallbackOffset: OffsetOldest},
+		&fakeMessageHandlerBatch{},
+		1,
+	)
+
+	consumeErr := c.Consume(context.Background())
+	if consumeErr == nil {
+		t.Fatalf("expected error, got nil")
+	}
+	if !errors.Is(consumeErr, errPartitionConsumerClosed) {
+		t.Errorf("expected errPartitionConsumerClosed in error chain, got: %v", consumeErr)
+	}
+	if got := atomic.LoadInt32(&calls); got != 4 {
+		t.Errorf("expected 1 initial create plus 3 recoveries = 4 calls, got %d", got)
+	}
+}
+
+// TestConsume_PartitionConsumerClosed_SuccessfulBatchResetsAttemptCounter drives
+// recovery, recovery, successful batch, recovery, recovery. A counter that never resets would
+// propagate on the third recovery; a resetting counter recovers and only ends on cancellation.
+func TestConsume_PartitionConsumerClosed_SuccessfulBatchResetsAttemptCounter(t *testing.T) {
+	messagePC := &fakePartitionConsumer{
+		messages: make(chan *sarama.ConsumerMessage, 1),
+		errors:   make(chan *sarama.ConsumerError, 10),
+	}
+	messagePC.messages <- &sarama.ConsumerMessage{
+		Topic:     "test-topic",
+		Partition: 0,
+		Offset:    100,
+	}
+	close(messagePC.messages)
+
+	blockingPC := &fakePartitionConsumer{
+		messages: make(chan *sarama.ConsumerMessage),
+		errors:   make(chan *sarama.ConsumerError),
+	}
+	pcs := []sarama.PartitionConsumer{
+		newClosedErrorsPartitionConsumer(),
+		newClosedErrorsPartitionConsumer(),
+		messagePC,
+		newClosedErrorsPartitionConsumer(),
+		newClosedErrorsPartitionConsumer(),
+		blockingPC,
+	}
+
+	var calls int32
+	fakeConsumer := &testSaramaConsumer{
+		consumePartitionFn: func(string, int32, int64) (sarama.PartitionConsumer, error) {
+			index := int(atomic.AddInt32(&calls, 1)) - 1
+			if index >= len(pcs) {
+				return nil, stderrors.New("unexpected extra ConsumePartition call")
+			}
+			return pcs[index], nil
+		},
+	}
+	offsetManager := &fakeOffsetManager{
+		nextOffset:     Offset(100),
+		fallbackOffset: OffsetOldest,
+	}
+	handler := &fakeMessageHandlerBatch{}
+	c := newClosedRecoveryConsumer(
+		&testSaramaClient{partitions: []int32{0}},
+		fakeConsumer,
+		offsetManager,
+		handler,
+		1,
+	)
+
+	ctx, cancel := context.WithCancel(context.Background())
+	var consumeErr error
+	done := make(chan struct{})
+	go func() {
+		consumeErr = c.Consume(ctx)
+		close(done)
+	}()
+
+	waitForCalls(&calls, 6)
+	cancel()
+	<-done
+
+	if len(handler.received) != 1 {
+		t.Fatalf("expected 1 successful batch, got %d", len(handler.received))
+	}
+	if errors.Is(consumeErr, errPartitionConsumerClosed) {
+		t.Errorf("expected the reset counter to recover, got: %v", consumeErr)
+	}
+	if !errors.Is(consumeErr, context.Canceled) {
+		t.Errorf("expected Consume to end with context.Canceled, got: %v", consumeErr)
+	}
+	if got := atomic.LoadInt32(&calls); got != 6 {
+		t.Errorf("expected 6 ConsumePartition calls, got %d", got)
 	}
 }
 
