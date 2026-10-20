@@ -8,6 +8,14 @@ Please choose versions by [Semantic Versioning](http://semver.org/).
 * MINOR version when you add functionality in a backwards-compatible manner, and
 * PATCH version when you make backwards-compatible bug fixes.
 
+## v1.28.3
+
+- chore: update github.com/bborbe/collection to v1.21.2, github.com/bborbe/http to v1.26.30, github.com/bborbe/kv to v1.21.18, github.com/bborbe/log to v1.7.4, github.com/bborbe/parse to v1.12.3, github.com/bborbe/run to v1.11.2, github.com/bborbe/validation to v1.5.5
+
+## v1.28.2
+
+- fix: Treat a closed partition consumer channel as recoverable and recreate the consumer at the last good offset instead of aborting every partition
+
 ## v1.28.1
 
 - fix: Close the old partition consumer before probing or reopening the same partition in corrupt-batch skip and offset-out-of-range reset, which previously failed against a real broker with "That topic/partition is already being consumed"
