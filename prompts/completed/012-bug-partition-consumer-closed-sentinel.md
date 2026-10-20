@@ -1,10 +1,12 @@
 ---
-status: approved
-summary: Added errPartitionConsumerClosed sentinel with four closed-channel branches in consumeMessages, bounded recovery in recoverFromConsumeError (3 consecutive max, counter reset on batch success), and all required tests
-execution_id: kafka-partition-consumer-closed-sentinel-003
-dark-factory-version: v0.173.0
+status: completed
+summary: Closed partition consumer channels now return a recoverable sentinel error; recovery recreates consumer at last good offset with bounded consecutive attempts and a single WARN log line
+execution_id: 16a0bd60-8d3a-50c8-8fdb-e3538828184d-exec-012-bug-partition-consumer-closed-sentinel
+dark-factory-version: dev
 created: "2026-10-20T18:36:24Z"
 queued: "2026-10-20T18:52:36Z"
+started: "2026-10-20T18:56:05Z"
+completed: "2026-10-20T18:59:23Z"
 branch: dark-factory/bug-partition-consumer-closed-sentinel
 ---
 
