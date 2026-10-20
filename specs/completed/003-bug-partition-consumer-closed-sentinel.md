@@ -1,9 +1,10 @@
 ---
-status: verifying
+status: completed
 approved: "2026-10-19T17:01:19Z"
 generating: "2026-10-20T18:36:24Z"
 prompted: "2026-10-20T18:51:18Z"
 verifying: "2026-10-20T18:59:23Z"
+completed: "2026-10-20T19:09:09Z"
 branch: dark-factory/bug-partition-consumer-closed-sentinel
 ---
 
