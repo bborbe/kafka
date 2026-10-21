@@ -8,12 +8,12 @@ require (
 	github.com/bborbe/collection v1.21.3
 	github.com/bborbe/errors v1.6.3
 	github.com/bborbe/http v1.26.30
-	github.com/bborbe/kv v1.21.18
-	github.com/bborbe/log v1.7.4
+	github.com/bborbe/kv v1.21.19
+	github.com/bborbe/log v1.7.5
 	github.com/bborbe/memorykv v1.6.15
 	github.com/bborbe/parse v1.12.4
 	github.com/bborbe/run v1.11.2
-	github.com/bborbe/time v1.27.17
+	github.com/bborbe/time v1.27.18
 	github.com/bborbe/validation v1.5.5
 	github.com/golang/glog v1.2.5
 	github.com/onsi/ginkgo/v2 v2.33.1
