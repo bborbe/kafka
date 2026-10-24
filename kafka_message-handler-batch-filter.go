@@ -32,10 +32,15 @@ func NewMessageHandlerBatchFilter(
 		func(ctx context.Context, messages []*sarama.ConsumerMessage) error {
 			kept := make([]*sarama.ConsumerMessage, 0, len(messages))
 			for _, msg := range messages {
-				if skip(msg) {
-					continue
+				select {
+				case <-ctx.Done():
+					return ctx.Err()
+				default:
+					if skip(msg) {
+						continue
+					}
+					kept = append(kept, msg)
 				}
-				kept = append(kept, msg)
 			}
 			if len(kept) == 0 {
 				return nil
