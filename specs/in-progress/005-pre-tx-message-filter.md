@@ -1,8 +1,9 @@
 ---
-status: prompted
+status: verifying
 approved: "2026-10-24T16:35:46Z"
 generating: "2026-10-24T16:58:09Z"
 prompted: "2026-10-24T16:58:09Z"
+verifying: "2026-10-24T17:04:33Z"
 branch: dark-factory/pre-tx-message-filter
 ---
 

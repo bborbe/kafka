@@ -11,6 +11,7 @@ Please choose versions by [Semantic Versioning](http://semver.org/).
 ## Unreleased
 
 - feat: Add NewMessageHandlerBatchFilter, a MessageHandlerBatch decorator that removes messages before the wrapped handler runs so a discarded message never opens a database transaction
+- feat: Add opt-in ttl-seek offset manager that starts a partition with no committed offset at the oldest message younger than a caller-supplied TTL
 
 ## v1.28.6
 

@@ -1,8 +1,13 @@
 ---
-status: approved
+status: completed
 spec: [004-ttl-seek-initial-offset]
+summary: Added opt-in NewTTLSeekOffsetManager that seeks to now-minus-TTL on a store miss, persists the resolved offset, reports newest for both sentinels, with 10 Ginkgo specs, a docs page, and a CHANGELOG entry
+execution_id: kafka-offset-ttl-exec-014-spec-004-ttl-seek-initial-offset
+dark-factory-version: v0.198.7
 created: "2026-10-24T16:53:53Z"
 queued: "2026-10-24T17:01:01Z"
+started: "2026-10-24T17:04:34Z"
+completed: "2026-10-24T17:06:23Z"
 ---
 
 # Add an opt-in TTL-seek offset manager
