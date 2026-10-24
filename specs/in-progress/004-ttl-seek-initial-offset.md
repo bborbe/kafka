@@ -1,8 +1,9 @@
 ---
-status: prompted
+status: verifying
 approved: "2026-10-24T16:35:43Z"
 generating: "2026-10-24T17:01:01Z"
 prompted: "2026-10-24T17:01:01Z"
+verifying: "2026-10-24T17:06:23Z"
 branch: dark-factory/ttl-seek-initial-offset
 ---
 
