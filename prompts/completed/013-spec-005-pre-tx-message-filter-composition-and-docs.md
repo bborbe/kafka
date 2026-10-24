@@ -1,8 +1,13 @@
 ---
-status: approved
+status: completed
 spec: [005-pre-tx-message-filter]
+summary: Added the transaction-count composition tests for NewMessageHandlerBatchFilter and documented the decorator, its outside-the-transaction rule, and the feature changelog entry.
+execution_id: kafka-offset-ttl-exec-013-spec-005-pre-tx-message-filter-composition-and-docs
+dark-factory-version: v0.198.7
 created: "2026-10-24T16:52:37Z"
 queued: "2026-10-24T16:58:13Z"
+started: "2026-10-24T17:03:13Z"
+completed: "2026-10-24T17:04:32Z"
 ---
 
 # Prove and document the outside-the-transaction composition
