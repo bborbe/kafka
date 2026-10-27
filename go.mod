@@ -6,13 +6,13 @@ require (
 	github.com/IBM/sarama v1.61.1
 	github.com/bborbe/boltkv v1.16.1
 	github.com/bborbe/collection v1.21.4
-	github.com/bborbe/errors v1.6.4
+	github.com/bborbe/errors v1.6.5
 	github.com/bborbe/http v1.26.31
 	github.com/bborbe/kv v1.21.19
 	github.com/bborbe/log v1.7.5
 	github.com/bborbe/memorykv v1.6.15
 	github.com/bborbe/parse v1.12.4
-	github.com/bborbe/run v1.11.3
+	github.com/bborbe/run v1.11.5
 	github.com/bborbe/time v1.27.18
 	github.com/bborbe/validation v1.5.6
 	github.com/golang/glog v1.2.5
@@ -33,7 +33,7 @@ require (
 	github.com/go-logr/logr v1.4.4 // indirect
 	github.com/go-task/slim-sprig/v3 v3.0.0 // indirect
 	github.com/google/go-cmp v0.7.0 // indirect
-	github.com/google/pprof v0.0.0-20261016150608-1facf8f91b50 // indirect
+	github.com/google/pprof v0.0.0-20261026192309-dbd0ed30aa88 // indirect
 	github.com/gorilla/mux v1.8.1 // indirect
 	github.com/hashicorp/go-uuid v1.0.4 // indirect
 	github.com/jcmturner/aescts/v2 v2.0.0 // indirect
@@ -54,7 +54,7 @@ require (
 	golang.org/x/crypto v0.58.0 // indirect
 	golang.org/x/exp v0.0.0-20260908205506-85c1c2202aba // indirect
 	golang.org/x/mod v0.42.0 // indirect
-	golang.org/x/net v0.61.0 // indirect
+	golang.org/x/net v0.62.0 // indirect
 	golang.org/x/sync v0.24.0 // indirect
 	golang.org/x/sys v0.49.0 // indirect
 	golang.org/x/text v0.43.0 // indirect
