@@ -7,13 +7,13 @@ require (
 	github.com/bborbe/boltkv v1.16.1
 	github.com/bborbe/collection v1.21.4
 	github.com/bborbe/errors v1.6.5
-	github.com/bborbe/http v1.26.31
-	github.com/bborbe/kv v1.21.19
+	github.com/bborbe/http v1.26.32
+	github.com/bborbe/kv v1.21.20
 	github.com/bborbe/log v1.7.5
 	github.com/bborbe/memorykv v1.6.15
 	github.com/bborbe/parse v1.12.4
 	github.com/bborbe/run v1.11.5
-	github.com/bborbe/time v1.27.18
+	github.com/bborbe/time v1.27.19
 	github.com/bborbe/validation v1.5.6
 	github.com/golang/glog v1.2.5
 	github.com/onsi/ginkgo/v2 v2.33.1
@@ -43,10 +43,11 @@ require (
 	github.com/jcmturner/rpc/v2 v2.0.3 // indirect
 	github.com/klauspost/compress v1.20.3 // indirect
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
+	github.com/pandatix/go-abnf v0.5.1 // indirect
 	github.com/pierrec/lz4/v4 v4.1.33 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/prometheus/client_model v0.6.3 // indirect
-	github.com/prometheus/common v0.72.1 // indirect
+	github.com/prometheus/common v0.73.0 // indirect
 	github.com/prometheus/procfs v0.23.0 // indirect
 	github.com/rcrowley/go-metrics v0.0.0-20250401214520-65e299d6c5c9 // indirect
 	go.etcd.io/bbolt v1.5.0 // indirect
