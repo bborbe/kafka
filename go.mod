@@ -12,7 +12,7 @@ require (
 	github.com/bborbe/log v1.7.5
 	github.com/bborbe/memorykv v1.6.15
 	github.com/bborbe/parse v1.12.4
-	github.com/bborbe/run v1.11.7
+	github.com/bborbe/run v1.11.8
 	github.com/bborbe/time v1.27.21
 	github.com/bborbe/validation v1.5.6
 	github.com/golang/glog v1.2.5
