@@ -8,7 +8,7 @@ require (
 	github.com/bborbe/collection v1.21.4
 	github.com/bborbe/errors v1.6.5
 	github.com/bborbe/http v1.26.32
-	github.com/bborbe/kv v1.21.25
+	github.com/bborbe/kv v1.21.26
 	github.com/bborbe/log v1.7.5
 	github.com/bborbe/memorykv v1.6.15
 	github.com/bborbe/parse v1.12.4
