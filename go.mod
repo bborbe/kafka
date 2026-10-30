@@ -8,12 +8,12 @@ require (
 	github.com/bborbe/collection v1.21.4
 	github.com/bborbe/errors v1.6.5
 	github.com/bborbe/http v1.26.32
-	github.com/bborbe/kv v1.21.26
+	github.com/bborbe/kv v1.21.27
 	github.com/bborbe/log v1.7.5
 	github.com/bborbe/memorykv v1.6.15
 	github.com/bborbe/parse v1.12.4
-	github.com/bborbe/run v1.11.8
-	github.com/bborbe/time v1.27.22
+	github.com/bborbe/run v1.11.9
+	github.com/bborbe/time v1.27.23
 	github.com/bborbe/validation v1.5.6
 	github.com/golang/glog v1.2.5
 	github.com/onsi/ginkgo/v2 v2.33.1
@@ -47,7 +47,7 @@ require (
 	github.com/pierrec/lz4/v4 v4.1.33 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/prometheus/client_model v0.6.3 // indirect
-	github.com/prometheus/common v0.73.0 // indirect
+	github.com/prometheus/common v0.73.1 // indirect
 	github.com/prometheus/procfs v0.23.0 // indirect
 	github.com/rcrowley/go-metrics v0.0.0-20250401214520-65e299d6c5c9 // indirect
 	go.etcd.io/bbolt v1.5.0 // indirect
