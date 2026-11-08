@@ -8,6 +8,10 @@ Please choose versions by [Semantic Versioning](http://semver.org/).
 * MINOR version when you add functionality in a backwards-compatible manner, and
 * PATCH version when you make backwards-compatible bug fixes.
 
+## Unreleased
+
+- chore: restate the do-not-merge contract in the gate workflow
+
 ## v1.29.11
 
 - chore: update github.com/bborbe/collection to v1.21.5, github.com/bborbe/errors to v1.6.6, github.com/bborbe/log to v1.7.6, github.com/bborbe/parse to v1.12.5, github.com/bborbe/time to v1.27.25, github.com/bborbe/validation to v1.5.8
