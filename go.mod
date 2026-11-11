@@ -1,19 +1,19 @@
 module github.com/bborbe/kafka
 
-go 1.27.3
+go 1.27.4
 
 require (
 	github.com/IBM/sarama v1.61.1
 	github.com/bborbe/boltkv v1.16.1
-	github.com/bborbe/collection v1.21.6
+	github.com/bborbe/collection v1.21.7
 	github.com/bborbe/errors v1.6.6
 	github.com/bborbe/http v1.26.33
-	github.com/bborbe/kv v1.21.28
+	github.com/bborbe/kv v1.21.29
 	github.com/bborbe/log v1.7.8
 	github.com/bborbe/memorykv v1.6.15
-	github.com/bborbe/parse v1.12.5
-	github.com/bborbe/run v1.11.10
-	github.com/bborbe/time v1.27.26
+	github.com/bborbe/parse v1.12.7
+	github.com/bborbe/run v1.11.11
+	github.com/bborbe/time v1.27.28
 	github.com/bborbe/validation v1.5.9
 	github.com/golang/glog v1.2.5
 	github.com/onsi/ginkgo/v2 v2.34.0
@@ -33,7 +33,7 @@ require (
 	github.com/go-logr/logr v1.4.4 // indirect
 	github.com/go-task/slim-sprig/v3 v3.0.0 // indirect
 	github.com/google/go-cmp v0.7.0 // indirect
-	github.com/google/pprof v0.0.0-20261110164715-8bb1ee682bd8 // indirect
+	github.com/google/pprof v0.0.0-20261111065629-49901cbc7227 // indirect
 	github.com/gorilla/mux v1.8.1 // indirect
 	github.com/hashicorp/go-uuid v1.0.4 // indirect
 	github.com/jcmturner/aescts/v2 v2.0.0 // indirect
