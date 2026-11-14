@@ -660,6 +660,76 @@ func TestConsume_PartitionConsumerClosed_RecoversAndContinues(t *testing.T) {
 	}
 }
 
+// partitionDispatchConsumer overrides ConsumePartition so the two partition goroutines dispatch
+// without appending to testSaramaConsumer.consumePartitionCalls, which is not concurrency-safe.
+type partitionDispatchConsumer struct {
+	*testSaramaConsumer
+	fn func(partition int32, offset int64) (sarama.PartitionConsumer, error)
+}
+
+func (c *partitionDispatchConsumer) ConsumePartition(
+	_ string,
+	partition int32,
+	offset int64,
+) (sarama.PartitionConsumer, error) {
+	return c.fn(partition, offset)
+}
+
+// TestConsume_TwoPartitions_OneClosedDoesNotAbortTheOther locks the NUKE-PROD-AJ failure mode:
+// one partition's normal channel teardown must not escalate to a whole-consumer abort. Each
+// partition must recover once and keep running until the context is cancelled.
+func TestConsume_TwoPartitions_OneClosedDoesNotAbortTheOther(t *testing.T) {
+	var count0, count1 int32
+	dispatch := func(partition int32, _ int64) (sarama.PartitionConsumer, error) {
+		switch {
+		case partition == 0 && atomic.AddInt32(&count0, 1) == 1:
+			return newClosedErrorsPartitionConsumer(), nil
+		case partition == 1 && atomic.AddInt32(&count1, 1) == 1:
+			return newClosedErrorsPartitionConsumer(), nil
+		}
+		return &fakePartitionConsumer{
+			messages: make(chan *sarama.ConsumerMessage),
+			errors:   make(chan *sarama.ConsumerError),
+		}, nil
+	}
+	c := newClosedRecoveryConsumer(
+		&testSaramaClient{partitions: []int32{0, 1}},
+		&partitionDispatchConsumer{testSaramaConsumer: &testSaramaConsumer{}, fn: dispatch},
+		&fakeOffsetManager{nextOffset: Offset(100), fallbackOffset: OffsetOldest},
+		&fakeMessageHandlerBatch{},
+		1,
+	)
+
+	ctx, cancel := context.WithCancel(context.Background())
+	var consumeErr error
+	done := make(chan struct{})
+	go func() {
+		consumeErr = c.Consume(ctx)
+		close(done)
+	}()
+
+	waitForCalls(&count0, 2)
+	waitForCalls(&count1, 2)
+	cancel()
+	<-done
+
+	if consumeErr == nil {
+		t.Fatalf("expected Consume to return an error after cancellation")
+	}
+	if !errors.Is(consumeErr, context.Canceled) {
+		t.Errorf("expected context.Canceled, got: %v", consumeErr)
+	}
+	if errors.Is(consumeErr, errPartitionConsumerClosed) {
+		t.Errorf("a closed partition must not abort the whole consumer: %v", consumeErr)
+	}
+	if got := atomic.LoadInt32(&count0); got != 2 {
+		t.Errorf("expected partition 0 to recover exactly once, got %d calls", got)
+	}
+	if got := atomic.LoadInt32(&count1); got != 2 {
+		t.Errorf("expected partition 1 to recover exactly once, got %d calls", got)
+	}
+}
+
 // TestRecoverFromConsumeError_PartitionConsumerClosed_RecreatesAtNextOffsetAndLogsWarn asserts the
 // replacement is created at the recorded nextOffset and that exactly one WARN line names the
 // partition, that offset and the attempt number.

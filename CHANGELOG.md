@@ -11,6 +11,7 @@ Please choose versions by [Semantic Versioning](http://semver.org/).
 ## Unreleased
 
 - fix: Persist the resume offset through the OffsetManager when skipping corrupt batches so durable consumers do not re-walk the corrupt range after a restart
+- test: Add a two-partition isolation regression test proving one closed partition consumer does not abort the whole consumer
 
 ## v1.29.14
 
