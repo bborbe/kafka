@@ -660,6 +660,76 @@ func TestConsume_PartitionConsumerClosed_RecoversAndContinues(t *testing.T) {
 	}
 }
 
+// partitionDispatchConsumer overrides ConsumePartition so the two partition goroutines dispatch
+// without appending to testSaramaConsumer.consumePartitionCalls, which is not concurrency-safe.
+type partitionDispatchConsumer struct {
+	*testSaramaConsumer
+	fn func(partition int32, offset int64) (sarama.PartitionConsumer, error)
+}
+
+func (c *partitionDispatchConsumer) ConsumePartition(
+	_ string,
+	partition int32,
+	offset int64,
+) (sarama.PartitionConsumer, error) {
+	return c.fn(partition, offset)
+}
+
+// TestConsume_TwoPartitions_OneClosedDoesNotAbortTheOther locks the NUKE-PROD-AJ failure mode:
+// one partition's normal channel teardown must not escalate to a whole-consumer abort. Each
+// partition must recover once and keep running until the context is cancelled.
+func TestConsume_TwoPartitions_OneClosedDoesNotAbortTheOther(t *testing.T) {
+	var count0, count1 int32
+	dispatch := func(partition int32, _ int64) (sarama.PartitionConsumer, error) {
+		switch {
+		case partition == 0 && atomic.AddInt32(&count0, 1) == 1:
+			return newClosedErrorsPartitionConsumer(), nil
+		case partition == 1 && atomic.AddInt32(&count1, 1) == 1:
+			return newClosedErrorsPartitionConsumer(), nil
+		}
+		return &fakePartitionConsumer{
+			messages: make(chan *sarama.ConsumerMessage),
+			errors:   make(chan *sarama.ConsumerError),
+		}, nil
+	}
+	c := newClosedRecoveryConsumer(
+		&testSaramaClient{partitions: []int32{0, 1}},
+		&partitionDispatchConsumer{testSaramaConsumer: &testSaramaConsumer{}, fn: dispatch},
+		&fakeOffsetManager{nextOffset: Offset(100), fallbackOffset: OffsetOldest},
+		&fakeMessageHandlerBatch{},
+		1,
+	)
+
+	ctx, cancel := context.WithCancel(context.Background())
+	var consumeErr error
+	done := make(chan struct{})
+	go func() {
+		consumeErr = c.Consume(ctx)
+		close(done)
+	}()
+
+	waitForCalls(&count0, 2)
+	waitForCalls(&count1, 2)
+	cancel()
+	<-done
+
+	if consumeErr == nil {
+		t.Fatalf("expected Consume to return an error after cancellation")
+	}
+	if !errors.Is(consumeErr, context.Canceled) {
+		t.Errorf("expected context.Canceled, got: %v", consumeErr)
+	}
+	if errors.Is(consumeErr, errPartitionConsumerClosed) {
+		t.Errorf("a closed partition must not abort the whole consumer: %v", consumeErr)
+	}
+	if got := atomic.LoadInt32(&count0); got != 2 {
+		t.Errorf("expected partition 0 to recover exactly once, got %d calls", got)
+	}
+	if got := atomic.LoadInt32(&count1); got != 2 {
+		t.Errorf("expected partition 1 to recover exactly once, got %d calls", got)
+	}
+}
+
 // TestRecoverFromConsumeError_PartitionConsumerClosed_RecreatesAtNextOffsetAndLogsWarn asserts the
 // replacement is created at the recorded nextOffset and that exactly one WARN line names the
 // partition, that offset and the attempt number.
@@ -1248,6 +1318,172 @@ func TestSkipAndAdvance_NewOffsetNegative_UsesHighWaterMark(t *testing.T) {
 	// so only one ConsumePartition call happens (at HWM)
 	if len(consumedOffsets) != 1 || consumedOffsets[0] != highWaterMark {
 		t.Errorf("expected consumed offset [500], got %v", consumedOffsets)
+	}
+}
+
+// TestSkipAndAdvance_PersistsHealthyOffsetThroughOffsetManager verifies that a successful skip
+// records the first healthy offset through the configured OffsetManager before recreating the
+// partition consumer, so a durable offset store can resume past the corrupt range after a restart.
+func TestSkipAndAdvance_PersistsHealthyOffsetThroughOffsetManager(t *testing.T) {
+	topic := Topic("test-topic")
+	partition := Partition(0)
+	corruptOffset := Offset(100)
+	healthyOffset := Offset(200)
+
+	om := &fakeOffsetManager{fallbackOffset: OffsetOldest}
+	oldPC := &fakePartitionConsumer{
+		messages:            make(chan *sarama.ConsumerMessage, 10),
+		highWaterMarkOffset: 1000,
+	}
+	newPC := &fakePartitionConsumer{messages: make(chan *sarama.ConsumerMessage, 10)}
+	fakeConsumer := &testSaramaConsumer{
+		consumePartitionFn: func(string, int32, int64) (sarama.PartitionConsumer, error) {
+			return newPC, nil
+		},
+	}
+	c := &offsetConsumer{
+		topic:           topic,
+		offsetManager:   om,
+		metrics:         &fakeMetricsConsumer{},
+		consumerOptions: ConsumerOptions{SkipCorruptBatches: true},
+		skipper:         &fakeSkipper{healthyOffset: healthyOffset},
+	}
+
+	resultPC, resultOffset, err := c.skipAndAdvance(
+		context.Background(),
+		fakeConsumer,
+		oldPC,
+		partition,
+		corruptOffset,
+	)
+
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if resultPC != newPC {
+		t.Errorf("expected the recreated partition consumer to be returned")
+	}
+	if resultOffset != healthyOffset {
+		t.Errorf("expected offset %d, got %d", healthyOffset, resultOffset)
+	}
+	if got := atomic.LoadInt32(&om.markOffsetCalled); got != 1 {
+		t.Errorf("expected MarkOffset called 1 time, got %d", got)
+	}
+	if om.markOffsetTopic != topic {
+		t.Errorf("expected MarkOffset topic %q, got %q", topic, om.markOffsetTopic)
+	}
+	if om.markOffsetPart != partition {
+		t.Errorf("expected MarkOffset partition %d, got %d", partition, om.markOffsetPart)
+	}
+	if om.markOffsetOffset != healthyOffset {
+		t.Errorf("expected MarkOffset offset %d, got %d", healthyOffset, om.markOffsetOffset)
+	}
+}
+
+// TestSkipAndAdvance_PersistsHighWaterMarkWhenCorruptionExtendsToEnd verifies that when the corrupt
+// range reaches the end of the partition, the high water mark is persisted as the resume position.
+func TestSkipAndAdvance_PersistsHighWaterMarkWhenCorruptionExtendsToEnd(t *testing.T) {
+	topic := Topic("test-topic")
+	partition := Partition(0)
+	corruptOffset := Offset(100)
+	highWaterMark := int64(500)
+
+	om := &fakeOffsetManager{fallbackOffset: OffsetOldest}
+	oldPC := &fakePartitionConsumer{
+		messages:            make(chan *sarama.ConsumerMessage, 10),
+		highWaterMarkOffset: highWaterMark,
+	}
+	newPC := &fakePartitionConsumer{messages: make(chan *sarama.ConsumerMessage, 10)}
+	fakeConsumer := &testSaramaConsumer{
+		consumePartitionFn: func(string, int32, int64) (sarama.PartitionConsumer, error) {
+			return newPC, nil
+		},
+	}
+	c := &offsetConsumer{
+		topic:           topic,
+		offsetManager:   om,
+		metrics:         &fakeMetricsConsumer{},
+		consumerOptions: ConsumerOptions{SkipCorruptBatches: true},
+		skipper:         &fakeSkipper{healthyOffset: Offset(-1)},
+	}
+
+	resultPC, resultOffset, err := c.skipAndAdvance(
+		context.Background(),
+		fakeConsumer,
+		oldPC,
+		partition,
+		corruptOffset,
+	)
+
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if resultPC != newPC {
+		t.Errorf("expected the recreated partition consumer to be returned")
+	}
+	if resultOffset != Offset(highWaterMark) {
+		t.Errorf("expected offset %d, got %d", highWaterMark, resultOffset)
+	}
+	if om.markOffsetOffset != Offset(highWaterMark) {
+		t.Errorf("expected MarkOffset offset %d, got %d", highWaterMark, om.markOffsetOffset)
+	}
+	if got := atomic.LoadInt32(&om.markOffsetCalled); got != 1 {
+		t.Errorf("expected MarkOffset called 1 time, got %d", got)
+	}
+}
+
+// TestSkipAndAdvance_MarkOffsetError_PropagatesWithoutRecreating verifies that a failed store write
+// fails the skip loudly and does not leak a replacement partition consumer.
+func TestSkipAndAdvance_MarkOffsetError_PropagatesWithoutRecreating(t *testing.T) {
+	topic := Topic("test-topic")
+	partition := Partition(0)
+	corruptOffset := Offset(100)
+	healthyOffset := Offset(200)
+
+	om := &fakeOffsetManager{
+		fallbackOffset: OffsetOldest,
+		markOffsetErr:  stderrors.New("offset store unavailable"),
+	}
+	oldPC := &fakePartitionConsumer{
+		messages:            make(chan *sarama.ConsumerMessage, 10),
+		highWaterMarkOffset: 1000,
+	}
+	newPC := &fakePartitionConsumer{messages: make(chan *sarama.ConsumerMessage, 10)}
+	fakeConsumer := &testSaramaConsumer{
+		consumePartitionFn: func(string, int32, int64) (sarama.PartitionConsumer, error) {
+			return newPC, nil
+		},
+	}
+	c := &offsetConsumer{
+		topic:           topic,
+		offsetManager:   om,
+		metrics:         &fakeMetricsConsumer{},
+		consumerOptions: ConsumerOptions{SkipCorruptBatches: true},
+		skipper:         &fakeSkipper{healthyOffset: healthyOffset},
+	}
+
+	resultPC, _, err := c.skipAndAdvance(
+		context.Background(),
+		fakeConsumer,
+		oldPC,
+		partition,
+		corruptOffset,
+	)
+
+	if err == nil {
+		t.Fatalf("expected error, got nil")
+	}
+	if resultPC != nil {
+		t.Errorf("expected nil consumer on store failure, got %v", resultPC)
+	}
+	if len(fakeConsumer.consumePartitionCalls) != 0 {
+		t.Errorf(
+			"expected no replacement partition consumer after failed store write, got %d calls",
+			len(fakeConsumer.consumePartitionCalls),
+		)
+	}
+	if !oldPC.isClosed() {
+		t.Errorf("expected old partition consumer to be closed")
 	}
 }
 
