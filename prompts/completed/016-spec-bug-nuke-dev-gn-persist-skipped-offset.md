@@ -1,7 +1,13 @@
 ---
-spec: ["bug-nuke-dev-gn"]
-status: draft
+status: completed
+spec: [bug-nuke-dev-gn]
+summary: Persisted the skip-path resume offset through the OffsetManager before recreating the partition consumer, added three unit tests, and documented the change in the Unreleased changelog.
+execution_id: 152272e4-4080-516f-8f60-497bb3030425-exec-016-spec-bug-nuke-dev-gn-persist-skipped-offset
+dark-factory-version: dev
 created: "2026-11-14T16:51:30Z"
+queued: "2026-11-14T16:57:30Z"
+started: "2026-11-14T16:57:31Z"
+completed: "2026-11-14T16:58:45Z"
 ---
 
 <summary>

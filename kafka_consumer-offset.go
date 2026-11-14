@@ -658,6 +658,13 @@ func (c *offsetConsumer) skipAndAdvance(
 		newOffset = Offset(highWaterMark)
 	}
 
+	// Persist the resume position before recreating the consumer so a consumer backed by a
+	// durable offset store resumes past the corrupt range after a restart. MarkOffset records
+	// the offset of the next message to read, which is exactly newOffset.
+	if err := c.offsetManager.MarkOffset(ctx, c.topic, partition, newOffset); err != nil {
+		return nil, Offset(0), errors.Wrapf(ctx, err, "mark skipped offset failed")
+	}
+
 	newPC, err := CreatePartitionConsumer(
 		ctx,
 		consumer,
