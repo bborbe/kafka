@@ -1,7 +1,13 @@
 ---
-spec: ["bug-nuke-dev-fb"]
-status: draft
+status: completed
+spec: [bug-nuke-dev-fb]
+summary: Added syscall.EPIPE to IsTransientBrokerError's positive cause list, extended the transient marker test table with broken-pipe rows, and recorded the fix in CHANGELOG.md
+execution_id: 28418769-b3b0-5b00-91ca-5793cfadaa49-exec-016-bug-nuke-dev-fb-epipe-transient
+dark-factory-version: dev
 created: "2026-11-15T15:40:51Z"
+queued: "2026-11-15T15:48:46Z"
+started: "2026-11-15T15:48:48Z"
+completed: "2026-11-15T15:50:47Z"
 ---
 
 # Classify broken-pipe broker writes as transient

@@ -11,6 +11,7 @@ Please choose versions by [Semantic Versioning](http://semver.org/).
 ## Unreleased
 
 - fix: Treat a closed partition consumer channel as recoverable and recreate the consumer at the last good offset instead of aborting every partition
+- fix: Treat a broken pipe (syscall.EPIPE) on a broker write as a transient broker-unreachable error so it no longer aborts the partition
 
 ## v1.29.14
 

@@ -73,9 +73,9 @@ func IsOffsetOutOfRange(err error) bool {
 }
 
 // IsTransientBrokerError reports whether err's wrapped cause is a transient
-// broker-unreachable condition: an unexpected stream end, a refused or reset connection,
-// or an unavailable broker. These errors are expected during broker restarts and failover
-// and do not require operator attention.
+// broker-unreachable condition: an unexpected stream end, a refused, reset, or broken-pipe
+// connection, or an unavailable broker. These errors are expected during broker restarts and
+// failover and do not require operator attention.
 func IsTransientBrokerError(err error) bool {
 	if err == nil {
 		return false
@@ -85,6 +85,7 @@ func IsTransientBrokerError(err error) bool {
 		errors.Is(cause, io.ErrUnexpectedEOF) ||
 		errors.Is(cause, syscall.ECONNREFUSED) ||
 		errors.Is(cause, syscall.ECONNRESET) ||
+		errors.Is(cause, syscall.EPIPE) ||
 		errors.Is(cause, sarama.ErrBrokerNotAvailable)
 }
 
