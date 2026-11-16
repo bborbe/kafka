@@ -1,6 +1,7 @@
 ---
 status: approved
 approved: "2026-10-19T17:01:19Z"
+generating: "2026-11-16T16:19:12Z"
 branch: dark-factory/bug-partition-consumer-closed-sentinel
 ---
 

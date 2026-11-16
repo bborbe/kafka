@@ -6,6 +6,7 @@ package kafka
 
 import (
 	"context"
+	"time"
 
 	"github.com/IBM/sarama"
 	"github.com/bborbe/errors"
@@ -13,6 +14,16 @@ import (
 	"github.com/bborbe/run"
 	"github.com/golang/glog"
 )
+
+// triggerOffsetsBackoff bounds retries of the startup trigger-offset computation.
+// Transient broker errors (for example ErrNotLeaderForPartition during a broker
+// restart) are retried; every other error fails on the first attempt.
+var triggerOffsetsBackoff = run.Backoff{
+	Delay:       time.Second,
+	Factor:      2,
+	Retries:     5,
+	IsRetryAble: IsTransientBrokerError,
+}
 
 // NewOffsetConsumerHighwaterMarks creates a consumer that processes messages up to high watermarks.
 func NewOffsetConsumerHighwaterMarks(
@@ -101,7 +112,13 @@ func NewOffsetConsumerHighwaterMarksBatchWithProvider(
 			return errors.Wrapf(ctx, err, "get saramaClient from saramaClientProvider failed")
 		}
 
-		triggerOffsets, err := createTriggerOffsets(ctx, saramaClient, topic, offsetManager)
+		triggerOffsets, err := createTriggerOffsets(
+			ctx,
+			saramaClient,
+			topic,
+			offsetManager,
+			triggerOffsetsBackoff,
+		)
 		if err != nil {
 			return errors.Wrapf(ctx, err, "create trigger offsets failed")
 		}
@@ -130,29 +147,45 @@ func createTriggerOffsets(
 	saramaClient sarama.Client,
 	topic Topic,
 	offsetManager OffsetManager,
+	backoff run.Backoff,
 ) (map[Partition]Offset, error) {
-	currentHighWaterMarks, err := HighWaterMarks(ctx, saramaClient, topic)
-	if err != nil {
-		return nil, errors.Wrapf(ctx, err, "get highwater marks failed")
-	}
-	glog.V(2).Infof("current highwater mark offsets of topic %s: %+v", topic, currentHighWaterMarks)
+	var triggerOffsets map[Partition]Offset
+	err := run.Retry(backoff, func(ctx context.Context) error {
+		currentHighWaterMarks, err := HighWaterMarks(ctx, saramaClient, topic)
+		if err != nil {
+			return errors.Wrapf(ctx, err, "get highwater marks failed")
+		}
+		glog.V(2).
+			Infof("current highwater mark offsets of topic %s: %+v", topic, currentHighWaterMarks)
 
-	consumerGroupOffsets, err := ConsumerGroupOffsets(ctx, saramaClient, offsetManager, topic)
-	if err != nil {
-		return nil, errors.Wrapf(ctx, err, "get consumer group offsets failed")
-	}
-	glog.V(2).Infof("consumer group offsets of topic %s: %+v", topic, consumerGroupOffsets)
+		consumerGroupOffsets, err := ConsumerGroupOffsets(ctx, saramaClient, offsetManager, topic)
+		if err != nil {
+			return errors.Wrapf(ctx, err, "get consumer group offsets failed")
+		}
+		glog.V(2).Infof("consumer group offsets of topic %s: %+v", topic, consumerGroupOffsets)
 
-	readConsumerGroupOffsets, err := GetRealOffset(ctx, saramaClient, topic, consumerGroupOffsets)
-	if err != nil {
-		return nil, errors.Wrapf(ctx, err, "get consumer group offsets failed")
-	}
-	glog.V(2).Infof("real consumer group offsets of topic %s: %+v", topic, readConsumerGroupOffsets)
+		readConsumerGroupOffsets, err := GetRealOffset(
+			ctx,
+			saramaClient,
+			topic,
+			consumerGroupOffsets,
+		)
+		if err != nil {
+			return errors.Wrapf(ctx, err, "get consumer group offsets failed")
+		}
+		glog.V(2).
+			Infof("real consumer group offsets of topic %s: %+v", topic, readConsumerGroupOffsets)
 
-	return combineConsumerGroupAndHighwaterMark(
-		readConsumerGroupOffsets,
-		currentHighWaterMarks,
-	), nil
+		triggerOffsets = combineConsumerGroupAndHighwaterMark(
+			readConsumerGroupOffsets,
+			currentHighWaterMarks,
+		)
+		return nil
+	})(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return triggerOffsets, nil
 }
 
 // combineConsumerGroupAndHighwaterMark combines consumer group offsets with highwater marks to determine trigger offsets.
