@@ -177,8 +177,12 @@ func (f *testSaramaConsumer) ResumeAll() {}
 // testSaramaClient is a minimal fake implementing SaramaClient (which embeds sarama.Client).
 // It only implements the methods actually called by offsetConsumer.
 type testSaramaClient struct {
-	partitions []int32
-	closed     bool
+	partitions      []int32
+	closed          bool
+	getOffset       int64
+	getOffsetErr    error
+	getOffsetErrors []error
+	getOffsetCalls  int
 }
 
 func (f *testSaramaClient) Partitions(topic string) ([]int32, error) { return f.partitions, nil }
@@ -223,7 +227,16 @@ func (f *testSaramaClient) RefreshBrokers(addrs []string) error { return nil }
 func (f *testSaramaClient) RefreshMetadata(topics ...string) error { return nil }
 
 func (f *testSaramaClient) GetOffset(topic string, partitionID int32, time int64) (int64, error) {
-	return 0, nil
+	f.getOffsetCalls++
+	if f.getOffsetErr != nil {
+		return 0, f.getOffsetErr
+	}
+	if len(f.getOffsetErrors) > 0 {
+		err := f.getOffsetErrors[0]
+		f.getOffsetErrors = f.getOffsetErrors[1:]
+		return 0, err
+	}
+	return f.getOffset, nil
 }
 
 func (f *testSaramaClient) RefreshCoordinator(consumerGroup string) error { return nil }
@@ -1427,6 +1440,58 @@ func TestIsOffsetOutOfRange(t *testing.T) {
 	}
 }
 
+func TestIsTransientBrokerError(t *testing.T) {
+	ctx := context.Background()
+	tests := []struct {
+		name string
+		err  error
+		want bool
+	}{
+		{
+			name: "not leader for partition",
+			err:  sarama.ErrNotLeaderForPartition,
+			want: true,
+		},
+		{
+			name: "wrapped not leader for partition",
+			err:  errors.Wrapf(ctx, sarama.ErrNotLeaderForPartition, "wrapped"),
+			want: true,
+		},
+		{
+			name: "broker not available",
+			err:  sarama.ErrBrokerNotAvailable,
+			want: true,
+		},
+		{
+			name: "io.EOF",
+			err:  io.EOF,
+			want: true,
+		},
+		{
+			name: "offset out of range",
+			err:  sarama.ErrOffsetOutOfRange,
+			want: false,
+		},
+		{
+			name: "unrelated error",
+			err:  stderrors.New("boom"),
+			want: false,
+		},
+		{
+			name: "nil error",
+			err:  nil,
+			want: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := IsTransientBrokerError(tt.err); got != tt.want {
+				t.Errorf("IsTransientBrokerError() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
 func TestConsumeMessages_OffsetOutOfRange_ResetOff_PropagatesError(t *testing.T) {
 	pc := &fakePartitionConsumer{}
 	errCh := make(chan *sarama.ConsumerError, 1)
@@ -1883,6 +1948,7 @@ func TestConsume_TransientBrokerErrorSatisfiesMarker(t *testing.T) {
 		{name: "connection refused", err: connectionRefused, transient: true},
 		{name: "connection reset", err: connectionReset, transient: true},
 		{name: "broker not available", err: sarama.ErrBrokerNotAvailable, transient: true},
+		{name: "not leader for partition", err: sarama.ErrNotLeaderForPartition, transient: true},
 		{name: "rebalance timeout", err: stderrors.New("rebalance timeout"), transient: false},
 		{name: "auth failure", err: sarama.ErrSASLAuthenticationFailed, transient: false},
 		{name: "offset out of range", err: sarama.ErrOffsetOutOfRange, transient: false},
