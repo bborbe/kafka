@@ -1,8 +1,9 @@
 ---
-status: prompted
+status: verifying
 approved: "2026-11-16T11:09:29Z"
 generating: "2026-11-16T11:29:26Z"
 prompted: "2026-11-16T11:29:26Z"
+verifying: "2026-11-17T01:10:50Z"
 branch: dark-factory/kafka-decode-error-attribution
 ---
 
