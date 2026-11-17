@@ -35,7 +35,7 @@ type MetricsMessageHandler interface {
 type MetricsConsumer interface {
 	CurrentOffset(topic Topic, partition Partition, offset Offset)
 	HighWaterMarkOffset(topic Topic, partition Partition, offset Offset)
-	ErrorCounterInc(topic Topic, partition Partition)
+	ErrorCounterInc(topic Topic, partition Partition, errorClass ErrorClass)
 	CorruptBatchSkippedCounterInc(topic Topic, partition Partition)
 }
 
@@ -66,7 +66,7 @@ var (
 		Subsystem: "consumer",
 		Name:      "error_counter",
 		Help:      "Kafka Consumer Error Counter",
-	}, []string{"topic", "partition"})
+	}, []string{"topic", "partition", "error_class"})
 	consumerCurrentOffset = prometheus.NewGaugeVec(prometheus.GaugeOpts{
 		Namespace: metricsNamespace,
 		Subsystem: "consumer",
@@ -200,10 +200,11 @@ func NewMetrics() Metrics {
 type metrics struct {
 }
 
-func (m *metrics) ErrorCounterInc(topic Topic, partition Partition) {
+func (m *metrics) ErrorCounterInc(topic Topic, partition Partition, errorClass ErrorClass) {
 	consumerErrorCounter.With(prometheus.Labels{
-		"topic":     topic.String(),
-		"partition": partition.String(),
+		"topic":       topic.String(),
+		"partition":   partition.String(),
+		"error_class": errorClass.String(),
 	}).Inc()
 }
 

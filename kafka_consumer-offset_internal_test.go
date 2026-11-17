@@ -112,7 +112,7 @@ func (f *fakeMetricsConsumer) CurrentOffset(Topic, Partition, Offset) {}
 
 func (f *fakeMetricsConsumer) HighWaterMarkOffset(Topic, Partition, Offset) {}
 
-func (f *fakeMetricsConsumer) ErrorCounterInc(Topic, Partition) {}
+func (f *fakeMetricsConsumer) ErrorCounterInc(Topic, Partition, ErrorClass) {}
 
 func (f *fakeMetricsConsumer) CorruptBatchSkippedCounterInc(Topic, Partition) {
 	atomic.AddInt32(&f.corruptBatchSkippedCount, 1)
@@ -2194,5 +2194,150 @@ func TestConsume_TransientBrokerError_InnerErrorCallSite(t *testing.T) {
 				returnedErr,
 			)
 		}
+	}
+}
+
+func TestNextExpectedOffset(t *testing.T) {
+	tests := []struct {
+		name           string
+		creationOffset Offset
+		messages       []*sarama.ConsumerMessage
+		want           Offset
+	}{
+		{
+			name:           "no messages uses creation offset",
+			creationOffset: Offset(100),
+			messages:       nil,
+			want:           Offset(100),
+		},
+		{
+			name:           "one message uses offset plus one",
+			creationOffset: Offset(100),
+			messages: []*sarama.ConsumerMessage{
+				{Topic: "t", Partition: 0, Offset: 105},
+			},
+			want: Offset(106),
+		},
+		{
+			name:           "several messages uses last offset plus one",
+			creationOffset: Offset(100),
+			messages: []*sarama.ConsumerMessage{
+				{Topic: "t", Partition: 0, Offset: 105},
+				{Topic: "t", Partition: 0, Offset: 106},
+			},
+			want: Offset(107),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := nextExpectedOffset(tt.creationOffset, tt.messages)
+			if got != tt.want {
+				t.Errorf("nextExpectedOffset() = %d, want %d", got, tt.want)
+			}
+		})
+	}
+}
+
+func newDecodeErrorTestConsumer(
+	topic Topic,
+	offsetManager *fakeOffsetManager,
+	handler *fakeMessageHandlerBatch,
+	pc *fakePartitionConsumer,
+) *offsetConsumer {
+	return &offsetConsumer{
+		saramaClientProvider: &testSaramaClientProvider{
+			client: &testSaramaClient{partitions: []int32{0}},
+		},
+		topic:               topic,
+		offsetManager:       offsetManager,
+		messageHandlerBatch: handler,
+		metrics:             &fakeMetricsConsumer{},
+		batchSize:           BatchSize(1),
+		logSampler:          &fakeLogSampler{},
+		waiter:              &fakeWaiter{},
+		consumerOptions:     ConsumerOptions{},
+		errorHandler:        NewConsumerErrorHandler(NewMetrics()),
+		skipper:             &fakeSkipper{},
+		saramaConsumerFunc: func(sarama.Client) (sarama.Consumer, error) {
+			return &testSaramaConsumer{
+				consumePartitionFn: func(string, int32, int64) (sarama.PartitionConsumer, error) {
+					return pc, nil
+				},
+			}, nil
+		},
+	}
+}
+
+func TestConsume_DecodeErrorCarriesCreationOffset(t *testing.T) {
+	topic := Topic("test-topic")
+	errCh := make(chan *sarama.ConsumerError, 1)
+	errCh <- &sarama.ConsumerError{
+		Topic:     topic.String(),
+		Partition: 0,
+		Err:       sarama.PacketDecodingError{Info: "CRC mismatch"},
+	}
+	pc := &fakePartitionConsumer{
+		messages: make(chan *sarama.ConsumerMessage, 1),
+		errors:   errCh,
+	}
+	consumer := newDecodeErrorTestConsumer(
+		topic,
+		&fakeOffsetManager{nextOffset: Offset(1000), fallbackOffset: OffsetOldest},
+		&fakeMessageHandlerBatch{},
+		pc,
+	)
+
+	err := consumer.Consume(context.Background())
+	if err == nil {
+		t.Fatalf("expected error, got nil")
+	}
+	if got := errors.DataFromError(err)["offset"]; got != int64(1000) {
+		t.Errorf("offset context data = %v, want %d", got, int64(1000))
+	}
+	for _, want := range []string{
+		"parition consumer returns error",
+		"consume failed",
+		"run failed",
+	} {
+		if !strings.Contains(err.Error(), want) {
+			t.Errorf("expected returned error to contain %q, got: %v", want, err)
+		}
+	}
+}
+
+func TestConsume_DecodeErrorCarriesLastDeliveredOffsetPlusOne(t *testing.T) {
+	topic := Topic("test-topic")
+	msgCh := make(chan *sarama.ConsumerMessage, 1)
+	msgCh <- &sarama.ConsumerMessage{Topic: topic.String(), Partition: 0, Offset: 105}
+	errCh := make(chan *sarama.ConsumerError, 1)
+	pc := &fakePartitionConsumer{messages: msgCh, errors: errCh}
+	go func() {
+		deadline := time.Now().Add(5 * time.Second)
+		for len(msgCh) > 0 && time.Now().Before(deadline) {
+			time.Sleep(time.Millisecond)
+		}
+		errCh <- &sarama.ConsumerError{
+			Topic:     topic.String(),
+			Partition: 0,
+			Err:       sarama.PacketDecodingError{Info: "CRC mismatch"},
+		}
+	}()
+	offsetManager := &fakeOffsetManager{nextOffset: Offset(100), fallbackOffset: OffsetOldest}
+	handler := &fakeMessageHandlerBatch{}
+	consumer := newDecodeErrorTestConsumer(topic, offsetManager, handler, pc)
+
+	err := consumer.Consume(context.Background())
+	if err == nil {
+		t.Fatalf("expected error, got nil")
+	}
+	if len(handler.received) != 1 {
+		t.Fatalf("expected 1 handled batch before the error, got %d", len(handler.received))
+	}
+	if offsetManager.markOffsetOffset != Offset(106) {
+		t.Errorf("marked offset = %d, want %d", offsetManager.markOffsetOffset, Offset(106))
+	}
+	if got := errors.DataFromError(err)["offset"]; got != int64(106) {
+		t.Errorf("offset context data = %v, want %d", got, int64(106))
 	}
 }

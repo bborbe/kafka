@@ -5,10 +5,7 @@
 package kafka
 
 import (
-	"errors"
-
 	"github.com/IBM/sarama"
-	"github.com/golang/glog"
 )
 
 // ConsumerErrorHandler defines an interface for handling Kafka consumer errors.
@@ -24,7 +21,7 @@ func (c ConsumerErrorHandlerFunc) HandleError(err *sarama.ConsumerError) error {
 	return c(err)
 }
 
-// NewConsumerErrorHandler creates a new ConsumerErrorHandler that logs errors and updates metrics.
+// NewConsumerErrorHandler creates a new ConsumerErrorHandler that updates metrics.
 func NewConsumerErrorHandler(
 	metricsConsumer MetricsConsumer,
 ) ConsumerErrorHandler {
@@ -32,8 +29,8 @@ func NewConsumerErrorHandler(
 		metricsConsumer.ErrorCounterInc(
 			Topic(err.Topic),
 			Partition(err.Partition),
+			ClassifyError(err),
 		)
-		glog.Warningf("got consumer error(%T) => skip: %v", errors.Unwrap(err), err)
 		return err
 	})
 }

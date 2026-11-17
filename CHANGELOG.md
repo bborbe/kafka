@@ -13,6 +13,13 @@ Please choose versions by [Semantic Versioning](http://semver.org/).
 - fix: Persist the resume offset through the OffsetManager when skipping corrupt batches so durable consumers do not re-walk the corrupt range after a restart
 - test: Add a two-partition isolation regression test proving one closed partition consumer does not abort the whole consumer
 
+## v1.30.0
+
+- feat: add `ClassifyError` with `ErrorClass` values `corruption`, `broker_side` and `other` for consumer error classification
+- feat: attach the next-expected offset as error context data on consumer errors in `Consume`
+- fix: remove the duplicated `glog.Warningf` from `NewConsumerErrorHandler` so a consumer error is reported once
+- feat: add `error_class` label to `kafka_consumer_error_counter` and an `ErrorClass` parameter to `MetricsConsumer.ErrorCounterInc`, fed from `ClassifyError` by the consumer error handler
+
 ## v1.29.14
 
 - chore: update Go to 1.27.4 and github.com/bborbe/collection to v1.21.7, github.com/bborbe/kv to v1.21.29, github.com/bborbe/parse to v1.12.7, github.com/bborbe/run to v1.11.11, github.com/bborbe/time to v1.27.28
