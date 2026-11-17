@@ -150,6 +150,9 @@ const maxConsecutivePartitionConsumerRecoveries = 3
 
 const probeTimeout = 5 * time.Second
 
+// offsetDataKey is the error-context-data key carrying the offset a consumer error occurred at.
+const offsetDataKey = "offset"
+
 // defaultCorruptionSkipper implements corruptionSkipper using exponential probe + binary search.
 type defaultCorruptionSkipper struct{}
 
@@ -449,11 +452,16 @@ func (c *offsetConsumer) Consume(ctx context.Context) error {
 			for {
 				messages, err := c.consumeMessages(ctx, consumePartition)
 				if err != nil {
+					offsetCtx := errors.AddToContext(
+						ctx,
+						offsetDataKey,
+						nextExpectedOffset(nextOffset, messages).Int64(),
+					)
 					if errors.Is(err, errPartitionConsumerClosed) {
 						consecutiveClosedRecoveries++
 					}
 					newPC, newOff, handled, recoverErr := c.recoverFromConsumeError(
-						ctx,
+						offsetCtx,
 						saramaClient,
 						consumerFromClient,
 						consumePartition,
@@ -470,7 +478,7 @@ func (c *offsetConsumer) Consume(ctx context.Context) error {
 						nextOffset = newOff
 						continue
 					}
-					return errors.Wrapf(ctx, err, "consume failed")
+					return errors.Wrapf(offsetCtx, err, "consume failed")
 				}
 				msg := messages[len(messages)-1]
 				glog.V(4).
@@ -547,10 +555,10 @@ func (c *offsetConsumer) consumeMessages(
 
 	select {
 	case <-ctx.Done():
-		return nil, ctx.Err()
+		return result, ctx.Err()
 	case err, ok := <-consumePartition.Errors():
 		if !ok {
-			return nil, errPartitionConsumerClosed
+			return result, errPartitionConsumerClosed
 		}
 		if c.consumerOptions.SkipCorruptBatches && IsCorruptionError(err.Err) {
 			if len(result) > 0 {
@@ -565,11 +573,11 @@ func (c *offsetConsumer) consumeMessages(
 			return nil, errOffsetOutOfRange
 		}
 		if err := c.handleConsumerError(err); err != nil {
-			return nil, errors.Wrapf(ctx, err, "parition consumer returns error")
+			return result, errors.Wrapf(ctx, err, "parition consumer returns error")
 		}
 	case msg, ok := <-consumePartition.Messages():
 		if !ok {
-			return nil, errPartitionConsumerClosed
+			return result, errPartitionConsumerClosed
 		}
 		result = append(result, msg)
 	}
@@ -581,10 +589,10 @@ func (c *offsetConsumer) consumeMessages(
 		}
 		select {
 		case <-ctx.Done():
-			return nil, ctx.Err()
+			return result, ctx.Err()
 		case err, ok := <-consumePartition.Errors():
 			if !ok {
-				return nil, errPartitionConsumerClosed
+				return result, errPartitionConsumerClosed
 			}
 			if c.consumerOptions.SkipCorruptBatches && IsCorruptionError(err.Err) {
 				if len(result) > 0 {
@@ -599,11 +607,11 @@ func (c *offsetConsumer) consumeMessages(
 				return nil, errOffsetOutOfRange
 			}
 			if err := c.handleConsumerError(err); err != nil {
-				return nil, errors.Wrapf(ctx, err, "parition consumer returns error")
+				return result, errors.Wrapf(ctx, err, "parition consumer returns error")
 			}
 		case msg, ok := <-consumePartition.Messages():
 			if !ok {
-				return nil, errPartitionConsumerClosed
+				return result, errPartitionConsumerClosed
 			}
 			result = append(result, msg)
 		default:
@@ -611,6 +619,19 @@ func (c *offsetConsumer) consumeMessages(
 			return result, nil
 		}
 	}
+}
+
+// nextExpectedOffset returns the offset the partition consumer will read next: the last delivered
+// message's offset plus one when a message was delivered, otherwise the offset the partition
+// consumer was created at.
+func nextExpectedOffset(
+	creationOffset Offset,
+	messages []*sarama.ConsumerMessage,
+) Offset {
+	if len(messages) > 0 {
+		return Offset(messages[len(messages)-1].Offset + 1)
+	}
+	return creationOffset
 }
 
 // skipAndAdvance closes the current partition consumer, finds the next healthy offset, and recreates
