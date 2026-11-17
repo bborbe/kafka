@@ -29,6 +29,7 @@ func NewConsumerErrorHandler(
 		metricsConsumer.ErrorCounterInc(
 			Topic(err.Topic),
 			Partition(err.Partition),
+			ClassifyError(err),
 		)
 		return err
 	})

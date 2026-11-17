@@ -13,6 +13,7 @@ Please choose versions by [Semantic Versioning](http://semver.org/).
 - feat: add `ClassifyError` with `ErrorClass` values `corruption`, `broker_side` and `other` for consumer error classification
 - feat: attach the next-expected offset as error context data on consumer errors in `Consume`
 - fix: remove the duplicated `glog.Warningf` from `NewConsumerErrorHandler` so a consumer error is reported once
+- feat: add `error_class` label to `kafka_consumer_error_counter` and an `ErrorClass` parameter to `MetricsConsumer.ErrorCounterInc`, fed from `ClassifyError` by the consumer error handler
 
 ## v1.29.14
 

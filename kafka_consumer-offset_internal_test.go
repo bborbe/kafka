@@ -112,7 +112,7 @@ func (f *fakeMetricsConsumer) CurrentOffset(Topic, Partition, Offset) {}
 
 func (f *fakeMetricsConsumer) HighWaterMarkOffset(Topic, Partition, Offset) {}
 
-func (f *fakeMetricsConsumer) ErrorCounterInc(Topic, Partition) {}
+func (f *fakeMetricsConsumer) ErrorCounterInc(Topic, Partition, ErrorClass) {}
 
 func (f *fakeMetricsConsumer) CorruptBatchSkippedCounterInc(Topic, Partition) {
 	atomic.AddInt32(&f.corruptBatchSkippedCount, 1)

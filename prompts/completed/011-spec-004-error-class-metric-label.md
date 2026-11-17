@@ -1,14 +1,13 @@
 ---
-status: approved
+status: completed
 spec: [004-kafka-decode-error-attribution]
+summary: Added the error_class label to kafka_consumer_error_counter, extended MetricsConsumer.ErrorCounterInc with a typed ErrorClass parameter fed by ClassifyError, regenerated the counterfeiter mock, updated the in-package fake, and added internal tests for both label directions and the registered label set.
+execution_id: kafka-exec-011-spec-004-error-class-metric-label
+dark-factory-version: v0.199.1
 created: "2026-11-16T11:20:24Z"
 queued: "2026-11-16T11:29:35Z"
-completed: "2026-11-17T00:59:09Z"
-lastFailReason: |-
-    setup workflow: git merge origin default branch: merge origin/master: error: Merging is not possible because you have unmerged files.
-    hint: Fix them up in the work tree, and then use 'git add/rm <file>'
-    hint: as appropriate to mark resolution and make a commit.
-    fatal: Exiting because of an unresolved conflict.: git merge origin/master failed: exit status 128
+started: "2026-11-17T01:08:03Z"
+completed: "2026-11-17T01:10:43Z"
 ---
 
 # Add the `error_class` label to the consumer error metric
