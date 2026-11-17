@@ -7,7 +7,9 @@ package kafka
 import (
 	"context"
 	stderrors "errors"
+	"io"
 	"strings"
+	"syscall"
 	"time"
 
 	"github.com/IBM/sarama"
@@ -70,6 +72,56 @@ func IsOffsetOutOfRange(err error) bool {
 	return strings.Contains(err.Error(), OutOfRangeErrorMessage)
 }
 
+// IsTransientBrokerError reports whether err's wrapped cause is a transient
+// broker-unreachable condition: an unexpected stream end, a refused or reset connection,
+// or an unavailable broker. These errors are expected during broker restarts and failover
+// and do not require operator attention.
+func IsTransientBrokerError(err error) bool {
+	if err == nil {
+		return false
+	}
+	cause := errors.Cause(err)
+	return errors.Is(cause, io.EOF) ||
+		errors.Is(cause, io.ErrUnexpectedEOF) ||
+		errors.Is(cause, syscall.ECONNREFUSED) ||
+		errors.Is(cause, syscall.ECONNRESET) ||
+		errors.Is(cause, sarama.ErrBrokerNotAvailable)
+}
+
+// transientError marks an error as transient while keeping its cause reachable through Unwrap.
+type transientError struct {
+	err error
+}
+
+// Error implements the error interface.
+func (t *transientError) Error() string {
+	return t.err.Error()
+}
+
+// Unwrap returns the original error so errors.Is / errors.As still reach the cause.
+func (t *transientError) Unwrap() error {
+	return t.err
+}
+
+// Transient reports that this error is a transient broker-unreachable condition.
+func (t *transientError) Transient() bool {
+	return true
+}
+
+// handleConsumerError passes err to the configured error handler and marks transient
+// broker-unreachable errors. Both consumeMessages call sites go through this helper so the
+// classification cannot be applied to one path but not the other.
+func (c *offsetConsumer) handleConsumerError(err *sarama.ConsumerError) error {
+	handledErr := c.errorHandler.HandleError(err)
+	if handledErr == nil {
+		return nil
+	}
+	if IsTransientBrokerError(handledErr) {
+		return &transientError{err: handledErr}
+	}
+	return handledErr
+}
+
 // corruptionSkipper handles finding the next healthy offset after detecting corruption.
 type corruptionSkipper interface {
 	FindNextHealthyOffset(
@@ -87,6 +139,14 @@ var errSkipCorruptBatch = stderrors.New("skip corrupt batch")
 
 // errOffsetOutOfRange is a sentinel error indicating the stored offset is outside the broker's retained range.
 var errOffsetOutOfRange = stderrors.New("offset out of range")
+
+// errPartitionConsumerClosed is a sentinel error indicating the partition consumer's channels
+// closed, which is normal sarama teardown (rebalance, connection drop, client close).
+var errPartitionConsumerClosed = stderrors.New("partition consumer closed")
+
+// maxConsecutivePartitionConsumerRecoveries bounds how many times a partition consumer is
+// recreated after a closed channel without a successful batch in between.
+const maxConsecutivePartitionConsumerRecoveries = 3
 
 const probeTimeout = 5 * time.Second
 
@@ -375,16 +435,31 @@ func (c *offsetConsumer) Consume(ctx context.Context) error {
 					nextOffset,
 				)
 			}
-			defer consumePartition.Close()
+			// Close whichever consumer is current when this partition run exits. recoverFromConsumeError
+			// replaces consumePartition, so closing the receiver captured at defer time would leak the
+			// replacement. Closing an already-closed sarama partition consumer is safe.
+			defer func() {
+				if err := consumePartition.Close(); err != nil {
+					glog.V(4).Infof("closing partition consumer returned error: %v", err)
+				}
+			}()
+			// consecutiveClosedRecoveries is local to this partition run: every partition counts its
+			// own attempts, and a successful batch resets the counter.
+			consecutiveClosedRecoveries := 0
 			for {
 				messages, err := c.consumeMessages(ctx, consumePartition)
 				if err != nil {
+					if errors.Is(err, errPartitionConsumerClosed) {
+						consecutiveClosedRecoveries++
+					}
 					newPC, newOff, handled, recoverErr := c.recoverFromConsumeError(
 						ctx,
+						saramaClient,
 						consumerFromClient,
 						consumePartition,
 						Partition(partition),
 						nextOffset,
+						consecutiveClosedRecoveries,
 						err,
 					)
 					if recoverErr != nil {
@@ -414,6 +489,7 @@ func (c *offsetConsumer) Consume(ctx context.Context) error {
 				if err := c.messageHandlerBatch.ConsumeMessages(ctx, messages); err != nil {
 					return errors.Wrapf(ctx, err, "consume message failed")
 				}
+				consecutiveClosedRecoveries = 0
 				nextOffset = Offset(msg.Offset + 1)
 				if err := c.offsetManager.MarkOffset(ctx, c.topic, Partition(partition), Offset(nextOffset)); err != nil {
 					return errors.Wrapf(ctx, err, "mark offset failed")
@@ -474,7 +550,7 @@ func (c *offsetConsumer) consumeMessages(
 		return nil, ctx.Err()
 	case err, ok := <-consumePartition.Errors():
 		if !ok {
-			return nil, errors.Errorf(ctx, "partition consumer errors channel closed")
+			return nil, errPartitionConsumerClosed
 		}
 		if c.consumerOptions.SkipCorruptBatches && IsCorruptionError(err.Err) {
 			if len(result) > 0 {
@@ -488,12 +564,12 @@ func (c *offsetConsumer) consumeMessages(
 			}
 			return nil, errOffsetOutOfRange
 		}
-		if err := c.errorHandler.HandleError(err); err != nil {
+		if err := c.handleConsumerError(err); err != nil {
 			return nil, errors.Wrapf(ctx, err, "parition consumer returns error")
 		}
 	case msg, ok := <-consumePartition.Messages():
 		if !ok {
-			return nil, errors.Errorf(ctx, "partition consumer messages channel closed")
+			return nil, errPartitionConsumerClosed
 		}
 		result = append(result, msg)
 	}
@@ -508,7 +584,7 @@ func (c *offsetConsumer) consumeMessages(
 			return nil, ctx.Err()
 		case err, ok := <-consumePartition.Errors():
 			if !ok {
-				return nil, errors.Errorf(ctx, "partition consumer errors channel closed")
+				return nil, errPartitionConsumerClosed
 			}
 			if c.consumerOptions.SkipCorruptBatches && IsCorruptionError(err.Err) {
 				if len(result) > 0 {
@@ -522,12 +598,12 @@ func (c *offsetConsumer) consumeMessages(
 				}
 				return nil, errOffsetOutOfRange
 			}
-			if err := c.errorHandler.HandleError(err); err != nil {
+			if err := c.handleConsumerError(err); err != nil {
 				return nil, errors.Wrapf(ctx, err, "parition consumer returns error")
 			}
 		case msg, ok := <-consumePartition.Messages():
 			if !ok {
-				return nil, errors.Errorf(ctx, "partition consumer messages channel closed")
+				return nil, errPartitionConsumerClosed
 			}
 			result = append(result, msg)
 		default:
@@ -537,7 +613,9 @@ func (c *offsetConsumer) consumeMessages(
 	}
 }
 
-// skipAndAdvance closes the current partition consumer, finds the next healthy offset, and recreates the consumer at that offset.
+// skipAndAdvance closes the current partition consumer, finds the next healthy offset, and recreates
+// the consumer at that offset. The old partition consumer is always closed when the function returns,
+// on success and on error, because sarama allows only one open consumer per topic/partition.
 func (c *offsetConsumer) skipAndAdvance(
 	ctx context.Context,
 	consumer sarama.Consumer,
@@ -553,6 +631,10 @@ func (c *offsetConsumer) skipAndAdvance(
 		c.topic,
 		partition,
 	)
+
+	if err := oldPartitionConsumer.Close(); err != nil {
+		glog.V(4).Infof("closing old partition consumer returned error: %v", err)
+	}
 
 	newOffset, err := c.skipper.FindNextHealthyOffset(
 		ctx,
@@ -596,10 +678,6 @@ func (c *offsetConsumer) skipAndAdvance(
 			)
 	}
 
-	if err := oldPartitionConsumer.Close(); err != nil {
-		glog.V(4).Infof("closing old partition consumer returned error: %v", err)
-	}
-
 	c.metrics.CorruptBatchSkippedCounterInc(c.topic, partition)
 
 	glog.V(1).Infof(
@@ -612,17 +690,53 @@ func (c *offsetConsumer) skipAndAdvance(
 	return newPC, newOffset, nil
 }
 
-// recoverFromConsumeError handles recoverable consume errors (skip corrupt batches or reset on
-// offset-out-of-range) by recreating the partition consumer. It returns the recreated consumer, the
-// next offset to read, whether the error was handled, and any error from the recovery itself.
+// recoverFromConsumeError handles recoverable consume errors (closed partition consumer, skip
+// corrupt batches, or reset on offset-out-of-range) by recreating the partition consumer. It
+// returns the recreated consumer, the next offset to read, whether the error was handled, and any
+// error from the recovery itself. attempt is the consecutive closed-channel recovery count.
 func (c *offsetConsumer) recoverFromConsumeError(
 	ctx context.Context,
+	client sarama.Client,
 	consumer sarama.Consumer,
 	consumePartition sarama.PartitionConsumer,
 	partition Partition,
 	nextOffset Offset,
+	attempt int,
 	err error,
 ) (sarama.PartitionConsumer, Offset, bool, error) {
+	if errors.Is(err, errPartitionConsumerClosed) {
+		if client.Closed() || attempt > maxConsecutivePartitionConsumerRecoveries {
+			return nil, Offset(0), false, nil
+		}
+		glog.Warningf(
+			"partition consumer closed in topic(%s) partition(%d) at offset %s, recreating consumer (attempt %d)",
+			c.topic,
+			partition,
+			nextOffset,
+			attempt,
+		)
+		if closeErr := consumePartition.Close(); closeErr != nil {
+			glog.V(4).Infof("closing old partition consumer returned error: %v", closeErr)
+		}
+		newPC, createErr := CreatePartitionConsumer(
+			ctx,
+			consumer,
+			c.metrics,
+			c.topic,
+			partition,
+			c.offsetManager.FallbackOffset(),
+			nextOffset,
+		)
+		if createErr != nil {
+			return nil, Offset(0), false, errors.Wrapf(
+				ctx,
+				createErr,
+				"create partition consumer at offset %s failed",
+				nextOffset,
+			)
+		}
+		return newPC, nextOffset, true, nil
+	}
 	if c.consumerOptions.SkipCorruptBatches && errors.Is(err, errSkipCorruptBatch) {
 		newPC, newOff, skipErr := c.skipAndAdvance(
 			ctx,
@@ -661,7 +775,8 @@ func (c *offsetConsumer) recoverFromConsumeError(
 // resetOnOffsetOutOfRange resets the stored offset to the fallback offset and recreates the partition
 // consumer at the fallback offset so the read position advances past the stuck offset. It must not be
 // implemented by swallowing the error in the error handler — that would leave the partition consumer
-// stuck at the invalid offset forever.
+// stuck at the invalid offset forever. The old partition consumer is always closed when the function
+// returns, on success and on error, because sarama allows only one open consumer per topic/partition.
 func (c *offsetConsumer) resetOnOffsetOutOfRange(
 	ctx context.Context,
 	consumer sarama.Consumer,
@@ -677,6 +792,9 @@ func (c *offsetConsumer) resetOnOffsetOutOfRange(
 		stuckOffset,
 		fallbackOffset,
 	)
+	if err := oldPartitionConsumer.Close(); err != nil {
+		glog.V(4).Infof("closing old partition consumer returned error: %v", err)
+	}
 	if err := c.offsetManager.ResetOffset(ctx, c.topic, partition, fallbackOffset); err != nil {
 		return nil, Offset(
 				0,
@@ -705,9 +823,6 @@ func (c *offsetConsumer) resetOnOffsetOutOfRange(
 				"create partition consumer at fallback offset %s failed",
 				fallbackOffset,
 			)
-	}
-	if err := oldPartitionConsumer.Close(); err != nil {
-		glog.V(4).Infof("closing old partition consumer returned error: %v", err)
 	}
 	return newPC, fallbackOffset, nil
 }

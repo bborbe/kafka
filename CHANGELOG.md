@@ -8,6 +8,95 @@ Please choose versions by [Semantic Versioning](http://semver.org/).
 * MINOR version when you add functionality in a backwards-compatible manner, and
 * PATCH version when you make backwards-compatible bug fixes.
 
+## v1.29.14
+
+- chore: update Go to 1.27.4 and github.com/bborbe/collection to v1.21.7, github.com/bborbe/kv to v1.21.29, github.com/bborbe/parse to v1.12.7, github.com/bborbe/run to v1.11.11, github.com/bborbe/time to v1.27.28
+
+## v1.29.13
+
+- chore: update github.com/bborbe/collection to v1.21.6, github.com/bborbe/http to v1.26.33, github.com/bborbe/kv to v1.21.28, github.com/bborbe/log to v1.7.8, github.com/bborbe/run to v1.11.10, github.com/bborbe/time to v1.27.26, github.com/bborbe/validation to v1.5.9, github.com/onsi/ginkgo/v2 to v2.34.0
+
+## v1.29.12
+
+- chore: restate the do-not-merge contract in the gate workflow
+
+## v1.29.11
+
+- chore: update github.com/bborbe/collection to v1.21.5, github.com/bborbe/errors to v1.6.6, github.com/bborbe/log to v1.7.6, github.com/bborbe/parse to v1.12.5, github.com/bborbe/time to v1.27.25, github.com/bborbe/validation to v1.5.8
+
+## v1.29.10
+
+- chore: update github.com/bborbe/kv to v1.21.27, github.com/bborbe/run to v1.11.9, github.com/bborbe/time to v1.27.23
+
+## v1.29.9
+
+- chore: update github.com/bborbe/kv to v1.21.26
+
+## v1.29.8
+
+- chore: update github.com/bborbe/kv to v1.21.25, github.com/bborbe/time to v1.27.22
+
+## v1.29.7
+
+- chore: update github.com/bborbe/run to v1.11.8
+
+## v1.29.6
+
+- chore: update github.com/bborbe/kv to v1.21.24
+
+## v1.29.5
+
+- chore: update github.com/bborbe/kv to v1.21.23, github.com/bborbe/time to v1.27.21
+
+## v1.29.4
+
+- chore: update github.com/bborbe/kv to v1.21.22, github.com/bborbe/run to v1.11.7, github.com/bborbe/time to v1.27.20
+
+## v1.29.3
+
+- chore: update github.com/bborbe/http to v1.26.32, github.com/bborbe/kv to v1.21.20, github.com/bborbe/time to v1.27.19
+
+## v1.29.2
+
+- chore: update github.com/bborbe/errors to v1.6.5, github.com/bborbe/run to v1.11.5
+
+## v1.29.1
+
+- chore: update github.com/bborbe/collection to v1.21.4, github.com/bborbe/errors to v1.6.4, github.com/bborbe/http to v1.26.31, github.com/bborbe/run to v1.11.3, github.com/bborbe/validation to v1.5.6
+
+## v1.29.0
+
+- feat: Add NewMessageHandlerBatchFilter, a MessageHandlerBatch decorator that removes messages before the wrapped handler runs so a discarded message never opens a database transaction
+- feat: Add opt-in ttl-seek offset manager that starts a partition with no committed offset at the oldest message younger than a caller-supplied TTL
+
+## v1.28.6
+
+- chore: update github.com/bborbe/kv to v1.21.19, github.com/bborbe/log to v1.7.5, github.com/bborbe/time to v1.27.18
+
+## v1.28.5
+
+- chore: update Go to 1.27.3 and github.com/bborbe/collection to v1.21.3, github.com/bborbe/parse to v1.12.4
+
+## v1.28.4
+
+- chore: update github.com/bborbe/time to v1.27.17
+
+## v1.28.3
+
+- chore: update github.com/bborbe/collection to v1.21.2, github.com/bborbe/http to v1.26.30, github.com/bborbe/kv to v1.21.18, github.com/bborbe/log to v1.7.4, github.com/bborbe/parse to v1.12.3, github.com/bborbe/run to v1.11.2, github.com/bborbe/validation to v1.5.5
+
+## v1.28.2
+
+- fix: Treat a closed partition consumer channel as recoverable and recreate the consumer at the last good offset instead of aborting every partition
+
+## v1.28.1
+
+- fix: Close the old partition consumer before probing or reopening the same partition in corrupt-batch skip and offset-out-of-range reset, which previously failed against a real broker with "That topic/partition is already being consumed"
+
+## v1.28.0
+
+- feat: Mark transient broker-unreachable errors returned by the offset consumer with a structural `Transient() bool` marker so reporters can classify them without importing this library
+
 ## v1.27.1
 
 - fix: bump `osv-scanner` to v2.6.0 so the Linux vulnerability gates stop failing. v2.3.1 pins `golang.org/x/tools` v0.38.0, whose SSA builder aborts with `unexpected expr: *ast.KeyValueExpr` on the promoted-field composite-literal key Go 1.27 permits in the Linux stdlib, so a repo on the old pin passes locally on darwin and fails only in Linux CI. Where `golang.org/x/net` is older than v0.60.0 it is raised to v0.60.0, clearing `GO-2026-6603/6610/6611/6612/6617`, which fail both `vulncheck` and `trivy`.

@@ -31,6 +31,7 @@ A production-ready Kafka abstraction library for Go, built on top of IBM's Saram
   - [Batch Processing](#batch-processing)
   - [Metrics Integration](#metrics-integration)
   - [Transaction Support](#transaction-support)
+  - [Handler Composition](#handler-composition)
   - [Performance Tuning](#performance-tuning)
 - [Architecture](#architecture)
 - [Testing](#testing)
@@ -228,6 +229,27 @@ txHandler := kafka.NewMessageHandlerTx(ctx, handler, db)
 
 consumer, err := kafka.NewSimpleConsumer(ctx, brokers, "my-topic", txHandler)
 ```
+
+### Handler Composition
+
+`NewMessageHandlerBatchFilter` is a `MessageHandlerBatch` decorator that removes messages before the wrapped handler runs. **It must be composed outside the transaction-opening handler (`NewMessageHandlerBatchTxUpdate`).** Composed inside, the messages are still dropped, but the transaction is opened for every batch, so the saving is lost.
+
+```go
+// Compose the filter OUTSIDE the transaction-opening handler.
+// A message dropped here never opens a database transaction.
+handler := kafka.NewMessageHandlerBatchFilter(
+	func(msg *sarama.ConsumerMessage) bool {
+		return shouldSkip(msg) // caller-supplied, pure, side-effect free
+	},
+	kafka.NewMessageHandlerBatchTxUpdate(db, batchTxHandler),
+)
+```
+
+- The wrapped handler is called at most once per batch with the surviving messages in their original order.
+- A batch where every message is dropped returns nil without calling the wrapped handler, so the consumer still marks the offset.
+- The caller's slice is not modified.
+- The returned handler is stateless and safe for concurrent use: the consumer runs one goroutine per partition, so all mutable state belongs to the predicate.
+- The wrapped handler's error is returned unchanged.
 
 ### Performance Tuning
 
