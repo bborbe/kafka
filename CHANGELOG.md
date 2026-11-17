@@ -8,7 +8,7 @@ Please choose versions by [Semantic Versioning](http://semver.org/).
 * MINOR version when you add functionality in a backwards-compatible manner, and
 * PATCH version when you make backwards-compatible bug fixes.
 
-## Unreleased
+## v1.30.0
 
 - feat: add `ClassifyError` with `ErrorClass` values `corruption`, `broker_side` and `other` for consumer error classification
 - feat: attach the next-expected offset as error context data on consumer errors in `Consume`
