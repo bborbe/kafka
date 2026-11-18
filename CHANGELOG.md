@@ -10,6 +10,8 @@ Please choose versions by [Semantic Versioning](http://semver.org/).
 
 ## v1.30.1
 
+- fix: Persist the resume offset through the OffsetManager when skipping corrupt batches so durable consumers do not re-walk the corrupt range after a restart
+- test: Add a two-partition isolation regression test proving one closed partition consumer does not abort the whole consumer
 - fix: Treat a closed partition consumer channel as recoverable and recreate the consumer at the last good offset instead of aborting every partition
 - fix: Treat a broken pipe (syscall.EPIPE) on a broker write as a transient broker-unreachable error so it no longer aborts the partition
 - fix(ci): install Trivy from a `signed-by` keyring instead of the removed `apt-key`. The `Install Trivy` step died with `sudo: 'apt-key': command not found` on the current Ubuntu runner image, failing every PR's required `test` check before any Go code compiled.
