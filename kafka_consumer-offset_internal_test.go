@@ -2108,6 +2108,11 @@ func TestConsume_TransientBrokerErrorSatisfiesMarker(t *testing.T) {
 		Net: "tcp",
 		Err: os.NewSyscallError("read", syscall.ECONNRESET),
 	}
+	brokenPipe := &net.OpError{
+		Op:  "write",
+		Net: "tcp",
+		Err: os.NewSyscallError("write", syscall.EPIPE),
+	}
 
 	tests := []struct {
 		name      string
@@ -2118,6 +2123,8 @@ func TestConsume_TransientBrokerErrorSatisfiesMarker(t *testing.T) {
 		{name: "io.ErrUnexpectedEOF", err: io.ErrUnexpectedEOF, transient: true},
 		{name: "connection refused", err: connectionRefused, transient: true},
 		{name: "connection reset", err: connectionReset, transient: true},
+		{name: "broken pipe", err: os.NewSyscallError("write", syscall.EPIPE), transient: true},
+		{name: "broken pipe op error", err: brokenPipe, transient: true},
 		{name: "broker not available", err: sarama.ErrBrokerNotAvailable, transient: true},
 		{name: "rebalance timeout", err: stderrors.New("rebalance timeout"), transient: false},
 		{name: "auth failure", err: sarama.ErrSASLAuthenticationFailed, transient: false},
