@@ -47,6 +47,10 @@ A production-ready Kafka abstraction library for Go, built on top of IBM's Saram
 go get github.com/bborbe/kafka
 ```
 
+### Minimum version for closed-partition-consumer recovery
+
+Consumers must use `github.com/bborbe/kafka` v1.28.2 or newer to receive the fix for `NUKE-PROD-AJ`. In older versions a normally-closed sarama partition-consumer channel is reported as a fatal `consume failed` error, which `run.CancelOnFirstError` escalates into a whole-consumer abort. From v1.28.2 the consumer recreates the partition consumer at the last good offset instead, bounded to three consecutive recoveries and reset by a successful batch.
+
 ## Quick Start
 
 ### Basic Producer
