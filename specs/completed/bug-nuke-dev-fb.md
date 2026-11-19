@@ -1,24 +1,24 @@
 ---
 status: completed
-approved: "2026-11-11T22:52:30.092061285Z"
-generating: "2026-11-15T15:39:49Z"
-prompted: "2026-11-15T15:45:32Z"
-verifying: "2026-11-15T15:50:47Z"
-completed: "2026-11-15T15:50:53Z"
+approved: "2026-11-19T01:28:36.663994323Z"
+generating: "2026-11-19T02:08:29Z"
+prompted: "2026-11-19T02:12:52Z"
+verifying: "2026-11-19T02:18:36Z"
+completed: "2026-11-19T02:18:44Z"
 ---
 
 ## Summary
 
-Sentry issue `NUKE-DEV-FB` is a real bug in `bborbe/kafka` at `bborbe/kafka/kafka_consumer-offset.go:79`, filed automatically by the sentry-fix-agent from the High/High real bug deep verdict — that verdict is the approval gate, so this spec is approved rather than drafted.
+Sentry issue `NUKE-DEV-FB` is a real bug in `bborbe/kafka` at `kafka_consumer-offset.go:79`, filed automatically by the sentry-fix-agent from the High/High real bug deep verdict — that verdict is the approval gate, so this spec is approved rather than drafted.
 
 ## Problem
 
-IsTransientBrokerError (bborbe/kafka/kafka_consumer-offset.go:79) omits syscall.EPIPE, so a sarama ConsumerError caused by a broken-pipe broker write is never marked transient, bypassing bborbe/service's default Transient() Sentry exclusion and aborting the partition (consume failed -> run failed -> pod restart).
+bborbe/kafka's IsTransientBrokerError (kafka_consumer-offset.go:79 in pinned v1.29.10) omits syscall.EPIPE, so a broken-pipe Sarama ConsumerError is not wrapped as transientError, escapes bborbe/service's Sentry exclusion, and aborts the partition ("parition consumer returns error -> consume failed -> run failed").
 
 ## Reproduction
 
-The implicated source location from the deep verdict is `bborbe/kafka/kafka_consumer-offset.go:79` in `bborbe/kafka` (resolution rule: `candidate position 2 (bborbe/kafka)`), Sentry issue `NUKE-DEV-FB`.
+The implicated source location from the deep verdict is `kafka_consumer-offset.go:79` in `bborbe/kafka` (resolution rule: `candidate position 2 (bborbe/kafka)`), Sentry issue `NUKE-DEV-FB`.
 
 ## Recommended Fix
 
-Add errors.Is(cause, syscall.EPIPE) to IsTransientBrokerError with EPIPE test rows in bborbe/kafka, then bump github.com/bborbe/kafka in the trading Kafka modules; handle bounded partition-consumer recovery as a separate spec.
+Bump github.com/bborbe/kafka from v1.29.10 to v1.30.1 (or latest v1.30.x) in every bborbe/trading Kafka-consuming module, run go mod tidy per module, and redeploy the candle consumers.
