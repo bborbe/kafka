@@ -51,6 +51,10 @@ go get github.com/bborbe/kafka
 
 Consumers must use `github.com/bborbe/kafka` v1.28.2 or newer to receive the fix for `NUKE-PROD-AJ`. In older versions a normally-closed sarama partition-consumer channel is reported as a fatal `consume failed` error, which `run.CancelOnFirstError` escalates into a whole-consumer abort. From v1.28.2 the consumer recreates the partition consumer at the last good offset instead, bounded to three consecutive recoveries and reset by a successful batch.
 
+### Minimum version for broken-pipe transient classification
+
+Consumers must use `github.com/bborbe/kafka` v1.30.1 or newer to receive the fix for `NUKE-DEV-FB`. In older versions (for example v1.29.10) a broken-pipe broker write (`syscall.EPIPE`) is not classified as transient, so a sarama `ConsumerError` escapes the downstream `Transient()` Sentry exclusion and aborts the partition (`consume failed` -> `run failed`). From v1.30.1 `IsTransientBrokerError` treats `syscall.EPIPE` as a transient broker-unreachable condition, so the error is wrapped as a transient error and the partition is not aborted.
+
 ## Quick Start
 
 ### Basic Producer

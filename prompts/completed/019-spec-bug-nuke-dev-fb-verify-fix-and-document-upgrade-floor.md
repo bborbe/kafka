@@ -1,8 +1,13 @@
 ---
-status: approved
+status: completed
 spec: [bug-nuke-dev-fb]
+summary: Verified the existing syscall.EPIPE transient classification and tests, and documented the v1.30.1 upgrade floor in README; no Go, dependency, test, or changelog changes made.
+execution_id: df0d4f74-cbc6-533a-9b06-a54cb6c72c1e-exec-019-spec-bug-nuke-dev-fb-verify-fix-and-document-upgrade-floor
+dark-factory-version: dev
 created: "2026-11-19T03:20:00Z"
 queued: "2026-11-19T02:15:15Z"
+started: "2026-11-19T02:16:25Z"
+completed: "2026-11-19T02:18:36Z"
 ---
 
 <!--
