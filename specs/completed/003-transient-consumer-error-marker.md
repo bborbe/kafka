@@ -1,7 +1,10 @@
 ---
-status: approved
+status: completed
 approved: "2026-10-18T10:25:26Z"
 generating: "2026-10-18T10:32:27Z"
+prompted: "2026-11-19T02:04:00Z"
+verifying: "2026-11-19T02:04:03Z"
+completed: "2026-11-19T03:42:59Z"
 branch: dark-factory/transient-consumer-error-marker
 ---
 

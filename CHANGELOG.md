@@ -8,6 +8,10 @@ Please choose versions by [Semantic Versioning](http://semver.org/).
 * MINOR version when you add functionality in a backwards-compatible manner, and
 * PATCH version when you make backwards-compatible bug fixes.
 
+## Unreleased
+
+- feat: Mark transient broker-unreachable errors from the offset consumer with a structural `Transient() bool` marker so reporters can classify them without importing this library
+
 ## v1.30.1
 
 - fix: Persist the resume offset through the OffsetManager when skipping corrupt batches so durable consumers do not re-walk the corrupt range after a restart
