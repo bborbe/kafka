@@ -8,6 +8,10 @@ Please choose versions by [Semantic Versioning](http://semver.org/).
 * MINOR version when you add functionality in a backwards-compatible manner, and
 * PATCH version when you make backwards-compatible bug fixes.
 
+## Unreleased
+
+- chore: remove stale vulnerability ignore IDs that no longer apply
+
 ## v1.30.1
 
 - fix: Persist the resume offset through the OffsetManager when skipping corrupt batches so durable consumers do not re-walk the corrupt range after a restart
