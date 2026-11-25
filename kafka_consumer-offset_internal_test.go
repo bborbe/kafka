@@ -2097,23 +2097,35 @@ func newConsumerError(err error) *sarama.ConsumerError {
 	}
 }
 
-func TestConsume_TransientBrokerErrorSatisfiesMarker(t *testing.T) {
-	connectionRefused := &net.OpError{
+var (
+	errTransientConnectionRefused = &net.OpError{
 		Op:  "dial",
 		Net: "tcp",
 		Err: os.NewSyscallError("connect", syscall.ECONNREFUSED),
 	}
-	connectionReset := &net.OpError{
+	errTransientConnectionReset = &net.OpError{
 		Op:  "read",
 		Net: "tcp",
 		Err: os.NewSyscallError("read", syscall.ECONNRESET),
 	}
-	brokenPipe := &net.OpError{
+	errTransientBrokenPipe = &net.OpError{
 		Op:  "write",
 		Net: "tcp",
 		Err: os.NewSyscallError("write", syscall.EPIPE),
 	}
+	errTransientIOTimeout = &net.OpError{
+		Op:  "read",
+		Net: "tcp",
+		Err: os.ErrDeadlineExceeded,
+	}
+	errTransientConnectionTimedOut = &net.OpError{
+		Op:  "read",
+		Net: "tcp",
+		Err: os.NewSyscallError("read", syscall.ETIMEDOUT),
+	}
+)
 
+func TestConsume_TransientBrokerErrorSatisfiesMarker(t *testing.T) {
 	tests := []struct {
 		name      string
 		err       error
@@ -2121,11 +2133,13 @@ func TestConsume_TransientBrokerErrorSatisfiesMarker(t *testing.T) {
 	}{
 		{name: "io.EOF", err: io.EOF, transient: true},
 		{name: "io.ErrUnexpectedEOF", err: io.ErrUnexpectedEOF, transient: true},
-		{name: "connection refused", err: connectionRefused, transient: true},
-		{name: "connection reset", err: connectionReset, transient: true},
+		{name: "connection refused", err: errTransientConnectionRefused, transient: true},
+		{name: "connection reset", err: errTransientConnectionReset, transient: true},
 		{name: "broken pipe", err: os.NewSyscallError("write", syscall.EPIPE), transient: true},
-		{name: "broken pipe op error", err: brokenPipe, transient: true},
+		{name: "broken pipe op error", err: errTransientBrokenPipe, transient: true},
 		{name: "broker not available", err: sarama.ErrBrokerNotAvailable, transient: true},
+		{name: "io timeout", err: errTransientIOTimeout, transient: true},
+		{name: "connection timed out", err: errTransientConnectionTimedOut, transient: true},
 		{name: "rebalance timeout", err: stderrors.New("rebalance timeout"), transient: false},
 		{name: "auth failure", err: sarama.ErrSASLAuthenticationFailed, transient: false},
 		{name: "offset out of range", err: sarama.ErrOffsetOutOfRange, transient: false},

@@ -8,6 +8,7 @@ import (
 	"context"
 	stderrors "errors"
 	"io"
+	"net"
 	"strings"
 	"syscall"
 	"time"
@@ -74,13 +75,17 @@ func IsOffsetOutOfRange(err error) bool {
 
 // IsTransientBrokerError reports whether err's wrapped cause is a transient
 // broker-unreachable condition: an unexpected stream end, a refused, reset, or broken-pipe
-// connection, or an unavailable broker. These errors are expected during broker restarts and
-// failover and do not require operator attention.
+// connection, a network timeout, or an unavailable broker. These errors are expected during
+// broker restarts and failover and do not require operator attention.
 func IsTransientBrokerError(err error) bool {
 	if err == nil {
 		return false
 	}
 	cause := errors.Cause(err)
+	var netErr net.Error
+	if errors.As(cause, &netErr) && netErr.Timeout() {
+		return true
+	}
 	return errors.Is(cause, io.EOF) ||
 		errors.Is(cause, io.ErrUnexpectedEOF) ||
 		errors.Is(cause, syscall.ECONNREFUSED) ||
