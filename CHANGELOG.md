@@ -8,6 +8,10 @@ Please choose versions by [Semantic Versioning](http://semver.org/).
 * MINOR version when you add functionality in a backwards-compatible manner, and
 * PATCH version when you make backwards-compatible bug fixes.
 
+## Unreleased
+
+- fix: Treat a broker network timeout (i/o timeout, connection timed out) as a transient broker-unreachable error so a consumer no longer reports it to Sentry on every retry during a broker outage
+
 ## v1.30.2
 
 - chore: remove stale vulnerability ignore IDs that no longer apply
