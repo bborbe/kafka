@@ -1,5 +1,12 @@
 ---
-status: draft
+status: completed
+summary: Classified broker network timeouts (i/o timeout, connection timed out) as transient broker errors in IsTransientBrokerError and covered both shapes in the existing table test
+execution_id: kafka-network-timeout-exec-018-mark-kafka-network-timeout-transient
+dark-factory-version: v0.198.17
+created: "2026-11-25T09:38:25Z"
+queued: "2026-11-25T09:38:25Z"
+started: "2026-11-25T09:39:01Z"
+completed: "2026-11-25T09:42:29Z"
 ---
 
 # Mark Kafka network timeouts as transient broker errors
