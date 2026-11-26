@@ -8,7 +8,7 @@ Please choose versions by [Semantic Versioning](http://semver.org/).
 * MINOR version when you add functionality in a backwards-compatible manner, and
 * PATCH version when you make backwards-compatible bug fixes.
 
-## Unreleased
+## v1.30.4
 
 - chore: update github.com/IBM/sarama to v1.62.0, github.com/bborbe/collection to v1.21.9, github.com/bborbe/errors to v1.7.1, github.com/bborbe/http to v1.28.0, github.com/bborbe/kv to v1.21.31, github.com/bborbe/log to v1.7.10, github.com/bborbe/parse to v1.12.8, github.com/bborbe/run to v1.13.0, github.com/bborbe/time to v1.27.29, github.com/bborbe/validation to v1.5.12
 
