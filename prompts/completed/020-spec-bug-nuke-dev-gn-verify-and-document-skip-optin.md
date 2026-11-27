@@ -1,8 +1,13 @@
 ---
-status: approved
+status: completed
 spec: [bug-nuke-dev-gn]
+summary: Verified the existing opt-in CRC-corruption skip and its restart-safe offset persistence, and documented opt-in, version floors (v1.23.0/v1.30.1), and the durable-offset-manager requirement in README.md only.
+execution_id: 3697a795-eb4f-5ca3-bdab-df0522872f7f-exec-020-spec-bug-nuke-dev-gn-verify-and-document-skip-optin
+dark-factory-version: dev
 created: "2026-11-27T07:10:00Z"
 queued: "2026-11-27T07:05:41Z"
+started: "2026-11-27T07:08:11Z"
+completed: "2026-11-27T07:10:19Z"
 ---
 
 <!--

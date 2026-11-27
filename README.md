@@ -51,6 +51,23 @@ go get github.com/bborbe/kafka
 
 Consumers must use `github.com/bborbe/kafka` v1.28.2 or newer to receive the fix for `NUKE-PROD-AJ`. In older versions a normally-closed sarama partition-consumer channel is reported as a fatal `consume failed` error, which `run.CancelOnFirstError` escalates into a whole-consumer abort. From v1.28.2 the consumer recreates the partition consumer at the last good offset instead, bounded to three consecutive recoveries and reset by a successful batch.
 
+### Corrupt-batch skip (CRC corruption) and offset persistence
+
+A CRC/decode corruption in a record batch is fatal by default: the consumer surfaces the error and stops. `SkipCorruptBatches` defaults to `false`.
+
+Corruption skipping is opt-in per consumer by passing the `kafka.WithSkipCorruptBatches(true)` functional option to a consumer constructor, for example:
+
+```go
+kafka.NewSimpleConsumer(..., kafka.WithSkipCorruptBatches(true))
+kafka.NewOffsetConsumerBatch(..., kafka.WithSkipCorruptBatches(true))
+```
+
+When enabled, on a corruption error the consumer closes the partition consumer, searches forward for the next healthy offset (falling back to the partition high-water mark when corruption runs to the end of the partition), and resumes there. Each skip increments the `kafka_consumer_corrupt_batch_skipped_total` metric.
+
+The opt-in skip mode is available since `github.com/bborbe/kafka` v1.23.0. From v1.30.1 the skip path also persists the resume offset through the consumer's `OffsetManager` before recreating the partition consumer, so a consumer backed by a durable offset manager does not re-walk the corrupt range after a restart.
+
+The skip only survives a restart when the consumer is backed by a durable offset manager. `NewSimpleConsumer` and `NewSimpleConsumerBatch` use the in-memory `NewSimpleOffsetManager`, which does not persist: after a restart such a consumer resumes at its configured initial offset and, with the flag enabled, re-skips the corrupt range instead of crash-looping. For durable progress, use `NewOffsetConsumerBatch` with `NewStoreOffsetManager(offsetStore, initialOffset, fallbackOffset)` or `NewSaramaOffsetManager(saramaClient, group, initialOffset, fallbackOffset)`.
+
 ## Quick Start
 
 ### Basic Producer
