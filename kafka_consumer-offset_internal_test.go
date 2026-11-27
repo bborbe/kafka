@@ -2167,6 +2167,7 @@ func TestConsume_TransientBrokerErrorSatisfiesMarker(t *testing.T) {
 			for _, want := range []string{
 				"parition consumer returns error",
 				"consume failed",
+				"run failed",
 			} {
 				if !strings.Contains(returnedErr.Error(), want) {
 					t.Errorf("expected returned error to contain %q, got: %v", want, returnedErr)
